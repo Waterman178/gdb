@@ -39,4 +39,6 @@ void destroy_psymtab_state (struct psymtab_state *state);
 
 extern const struct quick_symbol_functions psym_functions;
 
+extern struct quick_symbol_functions dwarf2_background_functions;
+
 #endif /* PSYMTAB_H */
