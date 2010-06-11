@@ -1,3 +1,27 @@
+2010-06-14  Tom Tromey  <tromey@redhat.com>
+
+	* libbfd.h: Rebuild.
+	* cache.c (thread_vector, cache_lock): New variables.
+	(struct thread_map_entry): New.
+	(thread_map, self_map_entry): New variables.
+	(insert): Update self_map.
+	(bfd_cache_delete): Update thread map.
+	(close_one): Likewise.
+	(bfd_cache_lookup): Now a function.  Use cache_lock.
+	(bfd_do_cache_init): New function.
+	(bfd_cache_init): Use it.  Lock cache.
+	(bfd_cache_do_close): New function.
+	(bfd_cache_close): Use it.  Lock cache.
+	(bfd_cache_close_all): Lock cache.  Use bfd_cache_do_close.
+	(bfd_do_open_file): New function.
+	(bfd_open_file): Use it.  Lock cache.
+	(dummy_void_star_void, dummy_void_void_star): New functions.
+	(dummy_thread_vector): New variable.
+	(bfd_init_threads, bfd_thread_exit): New functions.
+	* bfd.c (bfd_error, input_bfd, input_error): Use __thread.
+	* bfd-in2.h: Rebuild.
+	* archive.c (_bfd_ar_spacepad): Make 'buf' non-static.
+
 2010-06-11  Tristan Gingold  <gingold@adacore.com>
 
 	* vms-alpha.c (_bfd_vms_slurp_egsd): Always set vma of absolute

@@ -1,7 +1,7 @@
 /* BFD library -- caching of file descriptors.
 
    Copyright 1990, 1991, 1992, 1993, 1994, 1996, 2000, 2001, 2002,
-   2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    Hacked by Steve Chamberlain of Cygnus Support (steve@cygnus.com).
 
@@ -80,11 +80,56 @@ static int open_files;
 
 static bfd *bfd_last_cache = NULL;
 
+/* Forward declaration.  */
+
+static struct bfd_thread_info dummy_thread_vector;
+
+/* The threading dispatch vector.  If threading is not enabled, this
+   points to dummy_thread_vector.  */
+
+static const struct bfd_thread_info *thread_vector = &dummy_thread_vector;
+
+/* The lock held when accessing the cache or modifying any
+   cache-related fields of a cached BFD.  */
+
+static void *cache_lock;
+
+/* The most recently accessed BFDs for each thread are kept in a list
+   of this type.  */
+
+struct thread_map_entry
+{
+  /* The thread ID.  */
+  void *thread;
+  /* The BFD.  */
+  bfd *abfd;
+  /* Link.  */
+  struct thread_map_entry *next;
+};
+
+/* The list of all thread_map_entry structures.  */
+
+static struct thread_map_entry *thread_map;
+
+/* This thread's thread_map_entry.  */
+
+static __thread struct thread_map_entry self_map_entry;
+
+static FILE *bfd_do_open_file (bfd *abfd);
+
 /* Insert a BFD into the cache.  */
 
 static void
 insert (bfd *abfd)
 {
+  if (self_map_entry.thread == NULL)
+    {
+      self_map_entry.thread = thread_vector->self ();
+      self_map_entry.next = thread_map;
+      thread_map = &self_map_entry;
+    }
+  self_map_entry.abfd = abfd;
+
   if (bfd_last_cache == NULL)
     {
       abfd->lru_next = abfd;
@@ -121,6 +166,7 @@ static bfd_boolean
 bfd_cache_delete (bfd *abfd)
 {
   bfd_boolean ret;
+  struct thread_map_entry *iter;
 
   if (fclose ((FILE *) abfd->iostream) == 0)
     ret = TRUE;
@@ -131,6 +177,10 @@ bfd_cache_delete (bfd *abfd)
     }
 
   snip (abfd);
+
+  for (iter = thread_map; iter; iter = iter->next)
+    if (iter->abfd == abfd)
+      iter->abfd = NULL;
 
   abfd->iostream = NULL;
   --open_files;
@@ -151,9 +201,28 @@ close_one (void)
   else
     {
       for (to_kill = bfd_last_cache->lru_prev;
-	   ! to_kill->cacheable;
+	   ;
 	   to_kill = to_kill->lru_prev)
 	{
+	  if (! to_kill->cacheable)
+	    {
+	      struct thread_map_entry *entry;
+	      int found = 0;
+
+	      /* If the BFD is referenced by some thread, skip it.  */
+	      for (entry = thread_map; entry; entry = entry->next)
+		{
+		  if (to_kill == entry->abfd)
+		    {
+		      found = 1;
+		      break;
+		    }
+		}
+
+	      if (!found)
+		break;
+	    }
+
 	  if (to_kill == bfd_last_cache)
 	    {
 	      to_kill = NULL;
@@ -172,16 +241,6 @@ close_one (void)
 
   return bfd_cache_delete (to_kill);
 }
-
-/* Check to see if the required BFD is the same as the last one
-   looked up. If so, then it can use the stream in the BFD with
-   impunity, since it can't have changed since the last lookup;
-   otherwise, it has to perform the complicated lookup function.  */
-
-#define bfd_cache_lookup(x, flag) \
-  ((x) == bfd_last_cache			\
-   ? (FILE *) (bfd_last_cache->iostream)	\
-   : bfd_cache_lookup_worker (x, flag))
 
 /* Called when the macro <<bfd_cache_lookup>> fails to find a
    quick answer.  Find a file descriptor for @var{abfd}.  If
@@ -214,7 +273,7 @@ bfd_cache_lookup_worker (bfd *abfd, enum cache_flag flag)
   if (flag & CACHE_NO_OPEN)
     return NULL;
 
-  if (bfd_open_file (abfd) == NULL)
+  if (bfd_do_open_file (abfd) == NULL)
     ;
   else if (!(flag & CACHE_NO_SEEK)
 	   && real_fseek ((FILE *) abfd->iostream, abfd->where, SEEK_SET) != 0
@@ -226,6 +285,24 @@ bfd_cache_lookup_worker (bfd *abfd, enum cache_flag flag)
   (*_bfd_error_handler) (_("reopening %B: %s\n"),
 			 orig_bfd, bfd_errmsg (bfd_get_error ()));
   return NULL;
+}
+
+/* Check to see if the required BFD is the same as the last one
+   looked up. If so, then it can use the stream in the BFD with
+   impunity, since it can't have changed since the last lookup;
+   otherwise, it has to perform the complicated lookup function.  */
+
+static FILE *
+bfd_cache_lookup (struct bfd *x, enum cache_flag flag)
+{
+  FILE *result;
+  thread_vector->lock_mutex (cache_lock);
+  if (x == bfd_last_cache)
+    result = (FILE *) (bfd_last_cache->iostream);
+  else
+    result = bfd_cache_lookup_worker (x, flag);
+  thread_vector->unlock_mutex (cache_lock);
+  return result;
 }
 
 static file_ptr
@@ -426,6 +503,21 @@ static const struct bfd_iovec cache_iovec =
   &cache_bclose, &cache_bflush, &cache_bstat, &cache_bmmap
 };
 
+static bfd_boolean
+bfd_do_cache_init (bfd *abfd)
+{
+  BFD_ASSERT (abfd->iostream != NULL);
+  if (open_files >= BFD_CACHE_MAX_OPEN)
+    {
+      if (! close_one ())
+	return FALSE;
+    }
+  abfd->iovec = &cache_iovec;
+  insert (abfd);
+  ++open_files;
+  return TRUE;
+}
+
 /*
 INTERNAL_FUNCTION
 	bfd_cache_init
@@ -440,16 +532,24 @@ DESCRIPTION
 bfd_boolean
 bfd_cache_init (bfd *abfd)
 {
-  BFD_ASSERT (abfd->iostream != NULL);
-  if (open_files >= BFD_CACHE_MAX_OPEN)
-    {
-      if (! close_one ())
-	return FALSE;
-    }
-  abfd->iovec = &cache_iovec;
-  insert (abfd);
-  ++open_files;
-  return TRUE;
+  bfd_boolean result;
+  thread_vector->lock_mutex (cache_lock);
+  result = bfd_do_cache_init (abfd);
+  thread_vector->unlock_mutex (cache_lock);
+  return result;
+}
+
+static bfd_boolean
+bfd_cache_do_close (bfd *abfd)
+{
+  if (abfd->iovec != &cache_iovec)
+    return TRUE;
+
+  if (abfd->iostream == NULL)
+    /* Previously closed.  */
+    return TRUE;
+
+  return bfd_cache_delete (abfd);
 }
 
 /*
@@ -471,14 +571,12 @@ RETURNS
 bfd_boolean
 bfd_cache_close (bfd *abfd)
 {
-  if (abfd->iovec != &cache_iovec)
-    return TRUE;
+  bfd_boolean result;
 
-  if (abfd->iostream == NULL)
-    /* Previously closed.  */
-    return TRUE;
-
-  return bfd_cache_delete (abfd);
+  thread_vector->lock_mutex (cache_lock);
+  result = bfd_cache_do_close (abfd);
+  thread_vector->unlock_mutex (cache_lock);
+  return result;
 }
 
 /*
@@ -502,29 +600,16 @@ bfd_cache_close_all ()
 {
   bfd_boolean ret = TRUE;
 
+  thread_vector->lock_mutex (cache_lock);
   while (bfd_last_cache != NULL)
-    ret &= bfd_cache_close (bfd_last_cache);
+    ret &= bfd_cache_do_close (bfd_last_cache);
+  thread_vector->unlock_mutex (cache_lock);
 
   return ret;
 }
 
-/*
-INTERNAL_FUNCTION
-	bfd_open_file
-
-SYNOPSIS
-	FILE* bfd_open_file (bfd *abfd);
-
-DESCRIPTION
-	Call the OS to open a file for @var{abfd}.  Return the <<FILE *>>
-	(possibly <<NULL>>) that results from this operation.  Set up the
-	BFD so that future accesses know the file is open. If the <<FILE *>>
-	returned is <<NULL>>, then it won't have been put in the
-	cache, so it won't have to be removed from it.
-*/
-
-FILE *
-bfd_open_file (bfd *abfd)
+static FILE *
+bfd_do_open_file (bfd *abfd)
 {
   abfd->cacheable = TRUE;	/* Allow it to be closed later.  */
 
@@ -586,9 +671,136 @@ bfd_open_file (bfd *abfd)
     bfd_set_error (bfd_error_system_call);
   else
     {
-      if (! bfd_cache_init (abfd))
+      if (! bfd_do_cache_init (abfd))
 	return NULL;
     }
 
   return (FILE *) abfd->iostream;
+}
+
+/*
+INTERNAL_FUNCTION
+	bfd_open_file
+
+SYNOPSIS
+	FILE* bfd_open_file (bfd *abfd);
+
+DESCRIPTION
+	Call the OS to open a file for @var{abfd}.  Return the <<FILE *>>
+	(possibly <<NULL>>) that results from this operation.  Set up the
+	BFD so that future accesses know the file is open. If the <<FILE *>>
+	returned is <<NULL>>, then it won't have been put in the
+	cache, so it won't have to be removed from it.
+*/
+
+FILE *
+bfd_open_file (bfd *abfd)
+{
+  FILE *result;
+  thread_vector->lock_mutex (cache_lock);
+  result = bfd_do_open_file (abfd);
+  thread_vector->unlock_mutex (cache_lock);
+  return result;
+}
+
+/*
+SECTION
+	Thread awareness
+
+DESCRIPTION
+	BFD is optionally, and minimally, thread-aware.  The BFD user
+	is generally responsible for ensuring that multiple threads
+	synchronize their access to a BFD.
+
+	The exception to this general rule is the file cache, which
+	must be directly thread-aware to work properly.  When this
+	thread-awareness mode is enabled, the file cache ensures that
+	at least the BFD most recently used by a given thread remains
+	open.
+
+CODE_FRAGMENT
+.
+.struct bfd_thread_info
+.{
+.  {* Return the ID of the current thread.  Should never return NULL.  *}
+.  void *(*self) (void);
+.  {* Create a mutex and return it.  *}
+.  void *(*create_mutex) (void);
+.  {* Lock a mutex.  *}
+.  void (*lock_mutex) (void *);
+.  {* Unlock a mutex.  *}
+.  void (*unlock_mutex) (void *);
+.};
+.
+
+SUBSECTION
+	Thread-awareness functions.
+
+*/
+
+static void *
+dummy_void_star_void (void)
+{
+  return "hi bob";
+}
+
+static void
+dummy_void_void_star (void *ignore ATTRIBUTE_UNUSED)
+{
+}
+
+static struct bfd_thread_info dummy_thread_vector =
+{
+  dummy_void_star_void,
+  dummy_void_star_void,
+  dummy_void_void_star,
+  dummy_void_void_star
+};
+
+/*
+FUNCTION
+	bfd_init_threads
+
+SYNOPSIS
+	void bfd_init_threads (const struct bfd_thread_info *info);
+
+DESCRIPTION
+	Initialize BFD thread-awareness.  @var{info} is used by BFD
+	to perform the minimal synchronization that it needs.
+*/
+void
+bfd_init_threads (const struct bfd_thread_info *info)
+{
+  BFD_ASSERT (thread_vector == &dummy_thread_vector);
+
+  thread_vector = info;
+  cache_lock = thread_vector->create_mutex ();
+}
+
+/*
+FUNCTION
+	bfd_thread_exit
+
+SYNOPSIS
+	void bfd_thread_exit (void);
+
+DESCRIPTION
+	When a thread using BFD exits, it should call this function.
+	This lets BFD clean up any cached state associated with this
+	thread.  If threading is not enabled, or if the thread never
+	used BFD, then this call is not needed.
+*/
+void
+bfd_thread_exit (void)
+{
+  struct thread_map_entry **iter;
+
+  for (iter = &thread_map; *iter; iter = &(*iter)->next)
+    {
+      if (*iter == &self_map_entry)
+	{
+	  *iter = self_map_entry.next;
+	  break;
+	}
+    }
 }

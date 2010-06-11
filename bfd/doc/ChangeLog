@@ -1,3 +1,10 @@
+2010-06-14  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.am (PROTOS): Add cache.p.
+	(SRCPROT): Add cache.c.
+	(BFD_H_DEP): Likewise.
+	* Makefile.in: Rebuild.
+
 2010-05-07  Tristan Gingold  <gingold@adacore.com>
 
 	* Makefile.in: Regenerate with automake 1.11.1.
