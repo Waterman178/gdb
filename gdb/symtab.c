@@ -507,7 +507,7 @@ symbol_find_demangled_name (struct general_symbol_info *gsymbol,
 void
 symbol_set_names (struct general_symbol_info *gsymbol,
 		  const char *linkage_name, int len, int copy_name,
-		  struct objfile *objfile)
+		  struct objfile *objfile, struct obstack *obstack)
 {
   struct demangled_name_entry **slot;
   /* A 0-terminated copy of the linkage name.  */
@@ -533,7 +533,7 @@ symbol_set_names (struct general_symbol_info *gsymbol,
 	gsymbol->name = (char *) linkage_name;
       else
 	{
-	  gsymbol->name = obstack_alloc (&objfile->objfile_obstack, len + 1);
+	  gsymbol->name = obstack_alloc (obstack, len + 1);
 	  memcpy (gsymbol->name, linkage_name, len);
 	  gsymbol->name[len] = '\0';
 	}
@@ -603,7 +603,7 @@ symbol_set_names (struct general_symbol_info *gsymbol,
 	 us better bcache hit rates for partial symbols.  */
       if (!copy_name && lookup_name == linkage_name)
 	{
-	  *slot = obstack_alloc (&objfile->objfile_obstack,
+	  *slot = obstack_alloc (obstack,
 				 offsetof (struct demangled_name_entry,
 					   demangled)
 				 + demangled_len + 1);
@@ -614,7 +614,7 @@ symbol_set_names (struct general_symbol_info *gsymbol,
 	  /* If we must copy the mangled name, put it directly after
 	     the demangled name so we can have a single
 	     allocation.  */
-	  *slot = obstack_alloc (&objfile->objfile_obstack,
+	  *slot = obstack_alloc (obstack,
 				 offsetof (struct demangled_name_entry,
 					   demangled)
 				 + lookup_len + demangled_len + 2);
@@ -1593,13 +1593,21 @@ char *
 find_main_filename (void)
 {
   struct objfile *objfile;
-  char *result, *name = main_name ();
+  char *result = NULL, *name = main_name ();
 
   ALL_OBJFILES (objfile)
   {
-    if (!objfile->sf)
+    if ((objfile->flags & OBJF_MAIN) == 0 || !objfile->sf)
       continue;
     result = objfile->sf->qf->find_symbol_file (objfile, name);
+    if (result)
+      return result;
+  }
+
+  ALL_OBJFILES (objfile)
+  {
+    if (objfile->sf)
+      result = objfile->sf->qf->find_symbol_file (objfile, name);
     if (result)
       return result;
   }

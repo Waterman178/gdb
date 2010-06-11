@@ -1429,11 +1429,6 @@ dwarf2_get_section_info (struct objfile *objfile, const char *section_name,
 void
 dwarf2_build_psymtabs (struct objfile *objfile)
 {
-  if (objfile->global_psymbols.size == 0 && objfile->static_psymbols.size == 0)
-    {
-      init_psymbol_list (objfile, 1024);
-    }
-
   dwarf2_build_psymtabs_hard (objfile);
 }
 
@@ -1544,7 +1539,9 @@ static void
 dwarf2_create_include_psymtab (char *name, struct partial_symtab *pst,
                                struct objfile *objfile)
 {
-  struct partial_symtab *subpst = allocate_psymtab (name, objfile);
+  struct partial_symtab *subpst;
+
+  subpst = allocate_psymtab_full (objfile->psyms, name, objfile);
 
   subpst->section_offsets = pst->section_offsets;
   subpst->textlow = 0;
@@ -1869,16 +1866,11 @@ process_psymtab_comp_unit (struct objfile *objfile,
 
   /* Allocate a new partial symbol table structure.  */
   attr = dwarf2_attr (comp_unit_die, DW_AT_name, &cu);
-  pst = start_psymtab_common (objfile, objfile->section_offsets,
-			      (attr != NULL) ? DW_STRING (attr) : "",
-			      /* TEXTLOW and TEXTHIGH are set below.  */
-			      0,
-			      objfile->global_psymbols.next,
-			      objfile->static_psymbols.next);
-
-  attr = dwarf2_attr (comp_unit_die, DW_AT_comp_dir, &cu);
-  if (attr != NULL)
-    pst->dirname = DW_STRING (attr);
+  pst = start_psymtab_common_full (objfile->psyms,
+				   objfile, objfile->section_offsets,
+				   (attr != NULL) ? DW_STRING (attr) : "",
+				   /* TEXTLOW and TEXTHIGH are set below.  */
+				   0);
 
   pst->read_symtab_private = this_cu;
 
@@ -1898,7 +1890,7 @@ process_psymtab_comp_unit (struct objfile *objfile,
   if (has_pc_info == 1 && best_lowpc < best_highpc)
     /* Store the contiguous range if it is not empty; it can be empty for
        CUs with no code.  */
-    addrmap_set_empty (objfile->psymtabs_addrmap,
+    addrmap_set_empty (objfile->psyms->psymtabs_addrmap,
 		       best_lowpc + baseaddr,
 		       best_highpc + baseaddr - 1, pst);
 
@@ -1934,11 +1926,8 @@ process_psymtab_comp_unit (struct objfile *objfile,
   pst->textlow = best_lowpc + baseaddr;
   pst->texthigh = best_highpc + baseaddr;
 
-  pst->n_global_syms = objfile->global_psymbols.next -
-    (objfile->global_psymbols.list + pst->globals_offset);
-  pst->n_static_syms = objfile->static_psymbols.next -
-    (objfile->static_psymbols.list + pst->statics_offset);
-  sort_pst_symbols (pst);
+  finalize_psymtab (objfile->psyms, pst);
+  sort_pst_symbols (objfile->psyms, pst);
 
   info_ptr = (beg_of_comp_unit + cu.header.length
 	      + cu.header.initial_length_size);
@@ -2015,7 +2004,7 @@ dwarf2_build_psymtabs_hard (struct objfile *objfile)
 
   create_all_comp_units (objfile);
 
-  objfile->psymtabs_addrmap =
+  objfile->psyms->psymtabs_addrmap =
     addrmap_create_mutable (&objfile->objfile_obstack);
 
   /* Since the objects we're extracting from .debug_info vary in
@@ -2046,8 +2035,9 @@ dwarf2_build_psymtabs_hard (struct objfile *objfile)
 					    dwarf2_per_objfile->info.size);
     }
 
-  objfile->psymtabs_addrmap = addrmap_create_fixed (objfile->psymtabs_addrmap,
-						    &objfile->objfile_obstack);
+  objfile->psyms->psymtabs_addrmap
+    = addrmap_create_fixed (objfile->psyms->psymtabs_addrmap,
+			    &objfile->objfile_obstack);
 
   do_cleanups (back_to);
 }
@@ -2395,23 +2385,23 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
              in the global scope.  */
 	  /*prim_record_minimal_symbol (actual_name, pdi->lowpc + baseaddr,
 	     mst_text, objfile); */
-	  psym = add_psymbol_to_list (actual_name, strlen (actual_name),
-				      built_actual_name,
-				      VAR_DOMAIN, LOC_BLOCK,
-				      &objfile->global_psymbols,
-				      0, pdi->lowpc + baseaddr,
-				      cu->language, objfile);
+	  psym = add_psymbol_to_list_full (objfile->psyms,
+					   actual_name, strlen (actual_name),
+					   built_actual_name,
+					   VAR_DOMAIN, LOC_BLOCK,
+					   0, pdi->lowpc + baseaddr,
+					   cu->language, objfile, 1);
 	}
       else
 	{
 	  /*prim_record_minimal_symbol (actual_name, pdi->lowpc + baseaddr,
 	     mst_file_text, objfile); */
-	  psym = add_psymbol_to_list (actual_name, strlen (actual_name),
-				      built_actual_name,
-				      VAR_DOMAIN, LOC_BLOCK,
-				      &objfile->static_psymbols,
-				      0, pdi->lowpc + baseaddr,
-				      cu->language, objfile);
+	  psym = add_psymbol_to_list_full (objfile->psyms,
+					   actual_name, strlen (actual_name),
+					   built_actual_name,
+					   VAR_DOMAIN, LOC_BLOCK,
+					   0, pdi->lowpc + baseaddr,
+					   cu->language, objfile, 0);
 	}
       break;
     case DW_TAG_variable:
@@ -2433,12 +2423,12 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 	  if (pdi->locdesc)
 	    addr = decode_locdesc (pdi->locdesc, cu);
 	  if (pdi->locdesc || pdi->has_type)
-	    psym = add_psymbol_to_list (actual_name, strlen (actual_name),
-					built_actual_name,
-					VAR_DOMAIN, LOC_STATIC,
-					&objfile->global_psymbols,
-					0, addr + baseaddr,
-					cu->language, objfile);
+	    psym = add_psymbol_to_list_full (objfile->psyms,
+					     actual_name, strlen (actual_name),
+					     built_actual_name,
+					     VAR_DOMAIN, LOC_STATIC,
+					     0, addr + baseaddr,
+					     cu->language, objfile, 1);
 	}
       else
 	{
@@ -2452,29 +2442,29 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 	  addr = decode_locdesc (pdi->locdesc, cu);
 	  /*prim_record_minimal_symbol (actual_name, addr + baseaddr,
 	     mst_file_data, objfile); */
-	  psym = add_psymbol_to_list (actual_name, strlen (actual_name),
-				      built_actual_name,
-				      VAR_DOMAIN, LOC_STATIC,
-				      &objfile->static_psymbols,
-				      0, addr + baseaddr,
-				      cu->language, objfile);
+	  psym = add_psymbol_to_list_full (objfile->psyms,
+					   actual_name, strlen (actual_name),
+					   built_actual_name,
+					   VAR_DOMAIN, LOC_STATIC,
+					   0, addr + baseaddr,
+					   cu->language, objfile, 0);
 	}
       break;
     case DW_TAG_typedef:
     case DW_TAG_base_type:
     case DW_TAG_subrange_type:
-      add_psymbol_to_list (actual_name, strlen (actual_name),
-			   built_actual_name,
-			   VAR_DOMAIN, LOC_TYPEDEF,
-			   &objfile->static_psymbols,
-			   0, (CORE_ADDR) 0, cu->language, objfile);
+      add_psymbol_to_list_full (objfile->psyms,
+				actual_name, strlen (actual_name),
+				built_actual_name,
+				VAR_DOMAIN, LOC_TYPEDEF,
+				0, (CORE_ADDR) 0, cu->language, objfile, 0);
       break;
     case DW_TAG_namespace:
-      add_psymbol_to_list (actual_name, strlen (actual_name),
-			   built_actual_name,
-			   VAR_DOMAIN, LOC_TYPEDEF,
-			   &objfile->global_psymbols,
-			   0, (CORE_ADDR) 0, cu->language, objfile);
+      add_psymbol_to_list_full (objfile->psyms,
+				actual_name, strlen (actual_name),
+				built_actual_name,
+				VAR_DOMAIN, LOC_TYPEDEF,
+				0, (CORE_ADDR) 0, cu->language, objfile, 1);
       break;
     case DW_TAG_class_type:
     case DW_TAG_interface_type:
@@ -2495,25 +2485,23 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 
       /* NOTE: carlton/2003-10-07: See comment in new_symbol about
 	 static vs. global.  */
-      add_psymbol_to_list (actual_name, strlen (actual_name),
-			   built_actual_name,
-			   STRUCT_DOMAIN, LOC_TYPEDEF,
-			   (cu->language == language_cplus
-			    || cu->language == language_java)
-			   ? &objfile->global_psymbols
-			   : &objfile->static_psymbols,
-			   0, (CORE_ADDR) 0, cu->language, objfile);
+      add_psymbol_to_list_full (objfile->psyms,
+				actual_name, strlen (actual_name),
+				built_actual_name,
+				STRUCT_DOMAIN, LOC_TYPEDEF,
+				0, (CORE_ADDR) 0, cu->language, objfile,
+				(cu->language == language_cplus
+				 || cu->language == language_java));
 
       break;
     case DW_TAG_enumerator:
-      add_psymbol_to_list (actual_name, strlen (actual_name),
-			   built_actual_name,
-			   VAR_DOMAIN, LOC_CONST,
-			   (cu->language == language_cplus
-			    || cu->language == language_java)
-			   ? &objfile->global_psymbols
-			   : &objfile->static_psymbols,
-			   0, (CORE_ADDR) 0, cu->language, objfile);
+      add_psymbol_to_list_full (objfile->psyms,
+				actual_name, strlen (actual_name),
+				built_actual_name,
+				VAR_DOMAIN, LOC_CONST,
+				0, (CORE_ADDR) 0, cu->language, objfile,
+				(cu->language == language_cplus
+				 || cu->language == language_java));
       break;
     default:
       break;
@@ -2584,7 +2572,7 @@ add_partial_subprogram (struct partial_die_info *pdi,
 
 	      baseaddr = ANOFFSET (objfile->section_offsets,
 				   SECT_OFF_TEXT (objfile));
-	      addrmap_set_empty (objfile->psymtabs_addrmap,
+	      addrmap_set_empty (objfile->psyms->psymtabs_addrmap,
 				 pdi->lowpc + baseaddr,
 				 pdi->highpc - 1 + baseaddr,
 				 cu->per_cu->psymtab);
@@ -4164,7 +4152,7 @@ dwarf2_ranges_read (unsigned offset, CORE_ADDR *low_return,
       range_end += base;
 
       if (ranges_pst != NULL && range_beginning < range_end)
-	addrmap_set_empty (objfile->psymtabs_addrmap,
+	addrmap_set_empty (objfile->psyms->psymtabs_addrmap,
 			   range_beginning + baseaddr, range_end - 1 + baseaddr,
 			   ranges_pst);
 
@@ -6825,10 +6813,11 @@ load_partial_dies (bfd *abfd, gdb_byte *buffer, gdb_byte *info_ptr,
 	      || part_die->tag == DW_TAG_subrange_type))
 	{
 	  if (building_psymtab && part_die->name != NULL)
-	    add_psymbol_to_list (part_die->name, strlen (part_die->name), 0,
-				 VAR_DOMAIN, LOC_TYPEDEF,
-				 &cu->objfile->static_psymbols,
-				 0, (CORE_ADDR) 0, cu->language, cu->objfile);
+	    add_psymbol_to_list_full (cu->objfile->psyms,
+				      part_die->name, strlen (part_die->name),
+				      0, VAR_DOMAIN, LOC_TYPEDEF,
+				      0, (CORE_ADDR) 0, cu->language,
+				      cu->objfile, 1);
 	  info_ptr = locate_pdi_sibling (part_die, buffer, info_ptr, abfd, cu);
 	  continue;
 	}
@@ -6846,13 +6835,14 @@ load_partial_dies (bfd *abfd, gdb_byte *buffer, gdb_byte *info_ptr,
 	  if (part_die->name == NULL)
 	    complaint (&symfile_complaints, _("malformed enumerator DIE ignored"));
 	  else if (building_psymtab)
-	    add_psymbol_to_list (part_die->name, strlen (part_die->name), 0,
-				 VAR_DOMAIN, LOC_CONST,
-				 (cu->language == language_cplus
-				  || cu->language == language_java)
-				 ? &cu->objfile->global_psymbols
-				 : &cu->objfile->static_psymbols,
-				 0, (CORE_ADDR) 0, cu->language, cu->objfile);
+	    add_psymbol_to_list_full (cu->objfile->psyms,
+				      part_die->name, strlen (part_die->name),
+				      0,
+				      VAR_DOMAIN, LOC_CONST,
+				      0, (CORE_ADDR) 0, cu->language,
+				      cu->objfile,
+				      (cu->language == language_cplus
+				       || cu->language == language_java));
 
 	  info_ptr = locate_pdi_sibling (part_die, buffer, info_ptr, abfd, cu);
 	  continue;

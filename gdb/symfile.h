@@ -32,37 +32,6 @@ struct obj_section;
 struct obstack;
 struct block;
 
-/* Partial symbols are stored in the psymbol_cache and pointers to
-   them are kept in a dynamically grown array that is obtained from
-   malloc and grown as necessary via realloc.  Each objfile typically
-   has two of these, one for global symbols and one for static
-   symbols.  Although this adds a level of indirection for storing or
-   accessing the partial symbols, it allows us to throw away duplicate
-   psymbols and set all pointers to the single saved instance.  */
-
-struct psymbol_allocation_list
-{
-
-  /* Pointer to beginning of dynamically allocated array of pointers
-     to partial symbols.  The array is dynamically expanded as
-     necessary to accommodate more pointers.  */
-
-  struct partial_symbol **list;
-
-  /* Pointer to next available slot in which to store a pointer to a
-     partial symbol.  */
-
-  struct partial_symbol **next;
-
-  /* Number of allocated pointer slots in current dynamic array (not
-     the number of bytes of storage).  The "next" pointer will always
-     point somewhere between list[0] and list[size], and when at
-     list[size] the array will be expanded on the next attempt to
-     store a pointer.  */
-
-  int size;
-};
-
 /* Define an array of addresses to accommodate non-contiguous dynamic
    loading of modules.  This is for use when entering commands, so we
    can keep track of the section names until we read the file and can
@@ -131,9 +100,11 @@ struct symfile_segment_data
 
 struct quick_symbol_functions
 {
-  /* Return true if this objfile has any "partial" symbols
-     available.  */
-  int (*has_symbols) (struct objfile *objfile);
+  /* Return true if this objfile has any "partial" symbols available.
+     If TRY_READ is zero, do not do any extra work, just return the
+     answer.  If TRY_READ is nonzero, try to read partial symbols
+     first, if appropriate.  */
+  int (*has_symbols) (struct objfile *objfile, int try_read);
 
   /* Return the symbol table for the "last" file appearing in
      OBJFILE.  */
@@ -300,6 +271,12 @@ struct sym_fns
 
   void (*sym_read) (struct objfile *, int);
 
+  /* Read the partial symbols for an objfile.  This may be NULL, in
+     which case gdb assumes that sym_read already read the partial
+     symbols.  */
+
+  void (*sym_read_psymbols) (struct objfile *);
+
   /* Called when we are finished with an objfile.  Should do all
      cleanup that is specific to the object file format for the
      particular objfile.  */
@@ -373,22 +350,6 @@ extern struct symfile_segment_data *default_symfile_segments (bfd *abfd);
 extern bfd_byte *default_symfile_relocate (struct objfile *objfile,
                                            asection *sectp, bfd_byte *buf);
 
-extern void extend_psymbol_list (struct psymbol_allocation_list *,
-				 struct objfile *);
-
-/* Add any kind of symbol to a psymbol_allocation_list.  */
-
-/* #include "demangle.h" */
-
-extern const
-struct partial_symbol *add_psymbol_to_list (char *, int, int, domain_enum,
-					    enum address_class,
-					    struct psymbol_allocation_list *,
-					    long, CORE_ADDR,
-					    enum language, struct objfile *);
-
-extern void init_psymbol_list (struct objfile *, int);
-
 extern struct symtab *allocate_symtab (char *, struct objfile *);
 
 extern void add_symtab_fns (struct sym_fns *);
@@ -446,12 +407,6 @@ extern struct section_addr_info
 extern void free_section_addr_info (struct section_addr_info *);
 
 
-extern struct partial_symtab *start_psymtab_common (struct objfile *,
-						    struct section_offsets *,
-						    const char *, CORE_ADDR,
-						    struct partial_symbol **,
-						    struct partial_symbol **);
-
 /* Make a copy of the string at PTR with SIZE characters in the symbol
    obstack (and add a null character at the end in the copy).  Returns
    the address of the copy.  */
@@ -490,11 +445,6 @@ extern int auto_solib_limit;
 /* From symfile.c */
 
 extern void set_initial_language (void);
-
-extern struct partial_symtab *allocate_psymtab (const char *,
-						struct objfile *);
-
-extern void discard_psymtab (struct partial_symtab *);
 
 extern void find_lowest_section (bfd *, asection *, void *);
 

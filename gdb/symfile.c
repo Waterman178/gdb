@@ -1030,6 +1030,22 @@ new_symfile_objfile (struct objfile *objfile, int add_flags)
   clear_complaints (&symfile_complaints, 0, add_flags & SYMFILE_VERBOSE);
 }
 
+/* A helper function which returns true if OBJFILE has any debug
+   symbols, and false otherwise.  */
+static int
+has_any_debug_symbols (struct objfile *objfile)
+{
+  /* This is ordered according to the cost of calling each
+     function.  */
+  return
+    (objfile_has_full_symbols (objfile)
+     || (objfile->separate_debug_objfile
+	 && objfile_has_full_symbols (objfile->separate_debug_objfile))
+     || objfile_has_partial_symbols (objfile)
+     || (objfile->separate_debug_objfile
+	 && objfile_has_partial_symbols (objfile->separate_debug_objfile)));
+}
+
 /* Process a symbol file, as either the main file or as a dynamically
    loaded file.
 
@@ -1064,13 +1080,16 @@ symbol_file_add_with_addrs_or_offsets (bfd *abfd,
   /* Give user a chance to burp if we'd be
      interactively wiping out any existing symbols.  */
 
-  if ((have_full_symbols () || have_partial_symbols ())
-      && (add_flags & SYMFILE_MAINLINE)
+  if ((add_flags & SYMFILE_MAINLINE)
+      && (have_full_symbols () || have_partial_symbols ())
       && from_tty
+      && (have_full_symbols () || have_partial_symbols ())
       && !query (_("Load new symbol table from \"%s\"? "), name))
     error (_("Not confirmed."));
 
   objfile = allocate_objfile (abfd, flags);
+  if (add_flags & SYMFILE_MAINLINE)
+    objfile->flags |= OBJF_MAIN;
   discard_cleanups (my_cleanups);
 
   /* We either created a new mapped symbol table, mapped an existing
@@ -1108,8 +1127,10 @@ symbol_file_add_with_addrs_or_offsets (bfd *abfd,
 	objfile->sf->qf->expand_all_symtabs (objfile);
     }
 
+  /* has_any_debug_symbols is not fully compatible with the former calls which
+     would just be needlessly expensive here.  */
   if ((from_tty || info_verbose)
-      && !objfile_has_symbols (objfile))
+      && !has_any_debug_symbols (objfile))
     {
       wrap_here ("");
       printf_unfiltered (_("(no debugging symbols found)..."));
@@ -2389,20 +2410,9 @@ reread_symbols (void)
 	     automatically recreated by sym_read.  */
           free_objfile_separate_debug (objfile);
 
-	  /* FIXME: Do we have to free a whole linked list, or is this
-	     enough?  */
-	  if (objfile->global_psymbols.list)
-	    xfree (objfile->global_psymbols.list);
-	  memset (&objfile->global_psymbols, 0,
-		  sizeof (objfile->global_psymbols));
-	  if (objfile->static_psymbols.list)
-	    xfree (objfile->static_psymbols.list);
-	  memset (&objfile->static_psymbols, 0,
-		  sizeof (objfile->static_psymbols));
+	  destroy_psymtab_state (objfile->psyms);
 
 	  /* Free the obstacks for non-reusable objfiles */
-	  bcache_xfree (objfile->psymbol_cache);
-	  objfile->psymbol_cache = bcache_xmalloc ();
 	  bcache_xfree (objfile->macro_cache);
 	  objfile->macro_cache = bcache_xmalloc ();
 	  bcache_xfree (objfile->filename_cache);
@@ -2415,9 +2425,6 @@ reread_symbols (void)
 	  obstack_free (&objfile->objfile_obstack, 0);
 	  objfile->sections = NULL;
 	  objfile->symtabs = NULL;
-	  objfile->psymtabs = NULL;
-	  objfile->psymtabs_addrmap = NULL;
-	  objfile->free_psymtabs = NULL;
 	  objfile->cp_namespace_symtab = NULL;
 	  objfile->msymbols = NULL;
 	  objfile->deprecated_sym_private = NULL;
@@ -2427,7 +2434,6 @@ reread_symbols (void)
 	  memset (&objfile->msymbol_demangled_hash, 0,
 		  sizeof (objfile->msymbol_demangled_hash));
 
-	  objfile->psymbol_cache = bcache_xmalloc ();
 	  objfile->macro_cache = bcache_xmalloc ();
 	  objfile->filename_cache = bcache_xmalloc ();
 	  /* obstack_init also initializes the obstack so it is
@@ -2441,6 +2447,9 @@ reread_symbols (void)
 		     objfile->name, bfd_errmsg (bfd_get_error ()));
 	    }
 	  terminate_minimal_symbol_table (objfile);
+
+	  objfile->psyms
+	    = allocate_psymtab_state (&objfile->objfile_obstack);
 
 	  /* We use the same section offsets as from last time.  I'm not
 	     sure whether that is always correct for shared libraries.  */
@@ -2458,6 +2467,8 @@ reread_symbols (void)
 	    {
 	      (*objfile->sf->sym_new_init) (objfile);
 	    }
+
+	  objfile->flags &= ~OBJF_SYMTABS_READ;
 
 	  (*objfile->sf->sym_init) (objfile);
 	  clear_complaints (&symfile_complaints, 1, 1);

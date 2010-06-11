@@ -53,6 +53,7 @@
 #include "observer.h"
 #include "complaints.h"
 #include "psymtab.h"
+#include "psympriv.h"		/* FIXME */
 #include "solist.h"
 
 /* Prototypes for local functions */
@@ -199,12 +200,12 @@ allocate_objfile (bfd *abfd, int flags)
   struct objfile *objfile;
 
   objfile = (struct objfile *) xzalloc (sizeof (struct objfile));
-  objfile->psymbol_cache = bcache_xmalloc ();
   objfile->macro_cache = bcache_xmalloc ();
   objfile->filename_cache = bcache_xmalloc ();
   /* We could use obstack_specify_allocation here instead, but
      gdb_obstack.h specifies the alloc/dealloc functions.  */
   obstack_init (&objfile->objfile_obstack);
+  objfile->psyms = allocate_psymtab_state (&objfile->objfile_obstack);
   terminate_minimal_symbol_table (objfile);
 
   objfile_alloc_data (objfile);
@@ -653,12 +654,8 @@ free_objfile (struct objfile *objfile)
     {
       xfree (objfile->name);
     }
-  if (objfile->global_psymbols.list)
-    xfree (objfile->global_psymbols.list);
-  if (objfile->static_psymbols.list)
-    xfree (objfile->static_psymbols.list);
+  destroy_psymtab_state (objfile->psyms);
   /* Free the obstacks for non-reusable objfiles */
-  bcache_xfree (objfile->psymbol_cache);
   bcache_xfree (objfile->macro_cache);
   bcache_xfree (objfile->filename_cache);
   if (objfile->demangled_names_hash)
@@ -785,8 +782,8 @@ objfile_relocate1 (struct objfile *objfile,
     }
   }
 
-  if (objfile->psymtabs_addrmap)
-    addrmap_relocate (objfile->psymtabs_addrmap,
+  if (objfile->psyms->psymtabs_addrmap)
+    addrmap_relocate (objfile->psyms->psymtabs_addrmap,
 		      ANOFFSET (delta, SECT_OFF_TEXT (objfile)));
 
   if (objfile->sf)
@@ -895,7 +892,11 @@ objfile_relocate (struct objfile *objfile, struct section_offsets *new_offsets)
 int
 objfile_has_partial_symbols (struct objfile *objfile)
 {
-  return objfile->sf ? objfile->sf->qf->has_symbols (objfile) : 0;
+  /* It is cheaper to try the non-reading form first.  */
+  if (!objfile->sf)
+    return 0;
+  return (objfile->sf->qf->has_symbols (objfile, 0)
+	  || objfile->sf->qf->has_symbols (objfile, 1));
 }
 
 /* Return non-zero if OBJFILE has full symbols.  */
@@ -932,9 +933,20 @@ have_partial_symbols (void)
 
   ALL_OBJFILES (ofp)
   {
-    if (objfile_has_partial_symbols (ofp))
+    if (ofp->sf->qf->has_symbols (ofp, 0))
       return 1;
   }
+
+  /* Try again, after reading partial symbols.  We do this in two
+     passes because objfiles are always added to the head of the list,
+     and there might be a later objfile for which we've already read
+     partial symbols.  */
+  ALL_OBJFILES (ofp)
+  {
+    if (ofp->sf->qf->has_symbols (ofp, 1))
+      return 1;
+  }
+
   return 0;
 }
 

@@ -29,6 +29,7 @@ struct bcache;
 struct htab;
 struct symtab;
 struct objfile_data;
+struct psymtab_state;
 
 /* This structure maintains information on a per-objfile basis about the
    "entry point" of the objfile, and the scope within which the entry point
@@ -207,22 +208,9 @@ struct objfile
 
     struct symtab *symtabs;
 
-    /* Each objfile points to a linked list of partial symtabs derived from
-       this file, one partial symtab structure for each compilation unit
-       (source file). */
+    /* All the state for partial symbol tables.  */
 
-    struct partial_symtab *psymtabs;
-
-    /* Map addresses to the entries of PSYMTABS.  It would be more efficient to
-       have a map per the whole process but ADDRMAP cannot selectively remove
-       its items during FREE_OBJFILE.  This mapping is already present even for
-       PARTIAL_SYMTABs which still have no corresponding full SYMTABs read.  */
-
-    struct addrmap *psymtabs_addrmap;
-
-    /* List of freed partial symtabs, available for re-use */
-
-    struct partial_symtab *free_psymtabs;
+    struct psymtab_state *psyms;
 
     /* The object file's BFD.  Can be null if the objfile contains only
        minimal symbols, e.g. the run time common symbols for SunOS4.  */
@@ -249,7 +237,6 @@ struct objfile
     /* A byte cache where we can stash arbitrary "chunks" of bytes that
        will not change. */
 
-    struct bcache *psymbol_cache;	/* Byte cache for partial syms */
     struct bcache *macro_cache;          /* Byte cache for macros */
     struct bcache *filename_cache;	 /* Byte cache for file names.  */
 
@@ -259,12 +246,6 @@ struct objfile
        name, and the second is the demangled name or just a zero byte
        if the name doesn't demangle.  */
     struct htab *demangled_names_hash;
-
-    /* Vectors of all partial symbols read in from file.  The actual data
-       is stored in the objfile_obstack. */
-
-    struct psymbol_allocation_list global_psymbols;
-    struct psymbol_allocation_list static_psymbols;
 
     /* Each file contains a pointer to an array of minimal symbols for all
        global symbols that are defined within the file.  The array is terminated
@@ -425,6 +406,15 @@ struct objfile
    command. */
 
 #define OBJF_USERLOADED	(1 << 3)	/* User loaded */
+
+/* Set if we have tried to read partial symtabs for this objfile.
+   This is used to allow lazy reading of partial symtabs.  */
+
+#define OBJF_SYMTABS_READ (1 << 4)
+
+/* This flag is set for the main objfile.  */
+
+#define OBJF_MAIN (1 << 5)
 
 /* The object file that contains the runtime common minimal symbols
    for SunOS4. Note that this objfile has no associated BFD.  */

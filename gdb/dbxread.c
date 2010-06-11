@@ -290,9 +290,7 @@ static void add_old_header_file (char *, int);
 static void add_this_object_header_file (int);
 
 static struct partial_symtab *start_psymtab (struct objfile *, char *,
-					     CORE_ADDR, int,
-					     struct partial_symbol **,
-					     struct partial_symbol **);
+					     CORE_ADDR, int);
 
 /* Free up old header file tables */
 
@@ -554,10 +552,6 @@ dbx_symfile_read (struct objfile *objfile, int symfile_flags)
   val = bfd_seek (sym_bfd, DBX_SYMTAB_OFFSET (objfile), SEEK_SET);
   if (val < 0)
     perror_with_name (objfile->name);
-
-  /* Size the symbol table.  */
-  if (objfile->global_psymbols.size == 0 && objfile->static_psymbols.size == 0)
-    init_psymbol_list (objfile, DBX_SYMCOUNT (objfile));
 
   symbol_size = DBX_SYMBOL_SIZE (objfile);
   symbol_table_offset = DBX_SYMTAB_OFFSET (objfile);
@@ -1545,9 +1539,7 @@ read_dbx_symtab (struct objfile *objfile)
 	      {
 		pst = start_psymtab (objfile,
 				     namestring, valu,
-				     first_so_symnum * symbol_size,
-				     objfile->global_psymbols.next,
-				     objfile->static_psymbols.next);
+				     first_so_symnum * symbol_size);
 		pst->dirname = dirname_nso;
 		dirname_nso = NULL;
 	      }
@@ -1731,7 +1723,7 @@ pos %d"),
 
 	      add_psymbol_to_list (sym_name, sym_len, 1,
 				   VAR_DOMAIN, LOC_STATIC,
-				   &objfile->static_psymbols,
+				   0,
 				   0, nlist.n_value,
 				   psymtab_language, objfile);
 	      continue;
@@ -1743,7 +1735,7 @@ pos %d"),
 		 wrong.  See the code that reads 'G's for symtabs. */
 	      add_psymbol_to_list (sym_name, sym_len, 1,
 				   VAR_DOMAIN, LOC_STATIC,
-				   &objfile->global_psymbols,
+				   1,
 				   0, nlist.n_value,
 				   psymtab_language, objfile);
 	      continue;
@@ -1761,7 +1753,7 @@ pos %d"),
 		{
 		  add_psymbol_to_list (sym_name, sym_len, 1,
 				       STRUCT_DOMAIN, LOC_TYPEDEF,
-				       &objfile->static_psymbols,
+				       0,
 				       nlist.n_value, 0,
 				       psymtab_language, objfile);
 		  if (p[2] == 't')
@@ -1769,7 +1761,7 @@ pos %d"),
 		      /* Also a typedef with the same name.  */
 		      add_psymbol_to_list (sym_name, sym_len, 1,
 					   VAR_DOMAIN, LOC_TYPEDEF,
-					   &objfile->static_psymbols,
+					   0,
 					   nlist.n_value, 0,
 					   psymtab_language, objfile);
 		      p += 1;
@@ -1782,7 +1774,7 @@ pos %d"),
 		{
 		  add_psymbol_to_list (sym_name, sym_len, 1,
 				       VAR_DOMAIN, LOC_TYPEDEF,
-				       &objfile->static_psymbols,
+				       0,
 				       nlist.n_value, 0,
 				       psymtab_language, objfile);
 		}
@@ -1844,7 +1836,7 @@ pos %d"),
 			 enum constants in psymtabs, just in symtabs.  */
 		      add_psymbol_to_list (p, q - p, 1,
 					   VAR_DOMAIN, LOC_CONST,
-					   &objfile->static_psymbols, 0,
+					   0, 0,
 					   0, psymtab_language, objfile);
 		      /* Point past the name.  */
 		      p = q;
@@ -1862,7 +1854,7 @@ pos %d"),
 	      /* Constant, e.g. from "const" in Pascal.  */
 	      add_psymbol_to_list (sym_name, sym_len, 1,
 				   VAR_DOMAIN, LOC_CONST,
-				   &objfile->static_psymbols, nlist.n_value,
+				   0, nlist.n_value,
 				   0, psymtab_language, objfile);
 	      continue;
 
@@ -1928,7 +1920,7 @@ pos %d"),
 		}
 	      add_psymbol_to_list (sym_name, sym_len, 1,
 				   VAR_DOMAIN, LOC_BLOCK,
-				   &objfile->static_psymbols,
+				   0,
 				   0, nlist.n_value,
 				   psymtab_language, objfile);
 	      continue;
@@ -1998,7 +1990,7 @@ pos %d"),
 		}
 	      add_psymbol_to_list (sym_name, sym_len, 1,
 				   VAR_DOMAIN, LOC_BLOCK,
-				   &objfile->global_psymbols,
+				   1,
 				   0, nlist.n_value,
 				   psymtab_language, objfile);
 	      continue;
@@ -2193,12 +2185,11 @@ pos %d"),
 
 static struct partial_symtab *
 start_psymtab (struct objfile *objfile, char *filename, CORE_ADDR textlow,
-	       int ldsymoff, struct partial_symbol **global_syms,
-	       struct partial_symbol **static_syms)
+	       int ldsymoff)
 {
   struct partial_symtab *result =
     start_psymtab_common (objfile, objfile->section_offsets,
-			  filename, textlow, global_syms, static_syms);
+			  filename, textlow);
 
   result->read_symtab_private = obstack_alloc (&objfile->objfile_obstack,
 					       sizeof (struct symloc));
@@ -2318,12 +2309,7 @@ end_psymtab (struct partial_symtab *pst, char **include_list, int num_includes,
 
   /* End of kludge for patching Solaris textlow and texthigh.  */
 
-  pst->n_global_syms =
-    objfile->global_psymbols.next - (objfile->global_psymbols.list
-				     + pst->globals_offset);
-  pst->n_static_syms =
-    objfile->static_psymbols.next - (objfile->static_psymbols.list
-				     + pst->statics_offset);
+  finalize_psymtab (objfile->psyms, pst);
 
   pst->number_of_dependencies = number_dependencies;
   if (number_dependencies)
@@ -2369,7 +2355,7 @@ end_psymtab (struct partial_symtab *pst, char **include_list, int num_includes,
       subpst->read_symtab = pst->read_symtab;
     }
 
-  sort_pst_symbols (pst);
+  sort_pst_symbols (objfile->psyms, pst);
 
   if (num_includes == 0
       && number_dependencies == 0
@@ -2385,7 +2371,7 @@ end_psymtab (struct partial_symtab *pst, char **include_list, int num_includes,
          is not empty, but we don't realize that.  Fixing that without slowing
          things down might be tricky.  */
 
-      discard_psymtab (pst);
+      discard_psymtab (pst->objfile->psyms, pst);
 
       /* Indicate that psymtab was thrown away.  */
       pst = (struct partial_symtab *) NULL;
@@ -3579,6 +3565,7 @@ static struct sym_fns aout_sym_fns =
   dbx_new_init,		/* sym_new_init: init anything gbl to entire symtab */
   dbx_symfile_init,	/* sym_init: read initial info, setup for sym_read() */
   dbx_symfile_read,		/* sym_read: read a symbol file into symtab */
+  NULL,				/* sym_read_psymbols */
   dbx_symfile_finish,		/* sym_finish: finished with file, cleanup */
   default_symfile_offsets, /* sym_offsets: parse user's offsets to
 			      internal form */
