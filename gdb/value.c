@@ -1100,7 +1100,7 @@ value_bits_synthetic_pointer (const struct value *value,
 }
 
 int
-value_embedded_offset (struct value *value)
+value_embedded_offset (const struct value *value)
 {
   return value->embedded_offset;
 }

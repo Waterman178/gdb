@@ -154,7 +154,7 @@ extern struct type *value_actual_type (struct value *value,
 
 extern int value_pointed_to_offset (struct value *value);
 extern void set_value_pointed_to_offset (struct value *value, int val);
-extern int value_embedded_offset (struct value *value);
+extern int value_embedded_offset (const struct value *value);
 extern void set_value_embedded_offset (struct value *value, int val);
 
 /* For lval_computed values, this structure holds functions used to
