@@ -198,8 +198,10 @@ value_subscripted_rvalue (struct value *array, LONGEST index, int lowerbound)
   unsigned int elt_offs = elt_size * longest_to_int (index - lowerbound);
   struct value *v;
 
-  if (index < lowerbound || (!TYPE_ARRAY_UPPER_BOUND_IS_UNDEFINED (array_type)
-			     && elt_offs >= TYPE_LENGTH (array_type)))
+  if (index < lowerbound
+      || (TYPE_CODE (array_type) != TYPE_CODE_COMPLEX
+	  && !TYPE_ARRAY_UPPER_BOUND_IS_UNDEFINED (array_type)
+	  && elt_offs >= TYPE_LENGTH (array_type)))
     error (_("no such vector element"));
 
   if (VALUE_LVAL (array) == lval_memory && value_lazy (array))
@@ -217,6 +219,28 @@ value_subscripted_rvalue (struct value *array, LONGEST index, int lowerbound)
   VALUE_FRAME_ID (v) = VALUE_FRAME_ID (array);
   set_value_offset (v, value_offset (array) + elt_offs);
   return v;
+}
+
+/* Return the real part of a complex value.  */
+
+struct value *
+value_real_part (struct value *value)
+{
+  struct type *type = check_typedef (value_type (value));
+
+  gdb_assert (TYPE_CODE (type) == TYPE_CODE_COMPLEX);
+  return value_subscripted_rvalue (value, 0, 0);
+}
+
+/* Return the imaginary part of a complex value.  */
+
+struct value *
+value_imaginary_part (struct value *value)
+{
+  struct type *type = check_typedef (value_type (value));
+
+  gdb_assert (TYPE_CODE (type) == TYPE_CODE_COMPLEX);
+  return value_subscripted_rvalue (value, 1, 0);
 }
 
 
