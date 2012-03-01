@@ -331,11 +331,7 @@ print_formatted (struct value *val, int size,
   else
     /* User specified format, so don't look to the type to tell us
        what to do.  */
-    val_print_scalar_formatted (type,
-				value_contents_for_printing (val),
-				value_embedded_offset (val),
-				val,
-				options, size, stream);
+    val_print_scalar_formatted (val, options, size, stream);
 }
 
 /* Return builtin floating point type of same length as TYPE.

@@ -33,9 +33,8 @@ extern void m2_print_typedef (struct type *, struct symbol *,
 extern int m2_is_long_set (struct type *type);
 extern int m2_is_unbounded_array (struct type *type);
 
-extern void m2_val_print (struct type *, const gdb_byte *, int, CORE_ADDR,
+extern void m2_val_print (struct value *,
 			  struct ui_file *, int,
-			  const struct value *,
 			  const struct value_print_options *);
 
 extern int get_long_set_bounds (struct type *type, LONGEST *low,

@@ -72,10 +72,8 @@ extern void c_print_typedef (struct type *,
 			     struct symbol *,
 			     struct ui_file *);
 
-extern void c_val_print (struct type *, const gdb_byte *,
-			 int, CORE_ADDR,
+extern void c_val_print (struct value *,
 			 struct ui_file *, int,
-			 const struct value *,
 			 const struct value_print_options *);
 
 extern void c_value_print (struct value *, struct ui_file *,
@@ -118,17 +116,13 @@ extern void c_type_print_base (struct type *, struct ui_file *,
 extern void cp_print_class_member (const gdb_byte *, struct type *,
 				   struct ui_file *, char *);
 
-extern void cp_print_value_fields (struct type *, struct type *,
-				   const gdb_byte *, int, CORE_ADDR,
+extern void cp_print_value_fields (struct value *,
 				   struct ui_file *, int,
-				   const struct value *,
 				   const struct value_print_options *,
 				   struct type **, int);
 
-extern void cp_print_value_fields_rtti (struct type *,
-					const gdb_byte *, int, CORE_ADDR,
+extern void cp_print_value_fields_rtti (struct value *,
 					struct ui_file *, int,
-					const struct value *,
 					const struct value_print_options *,
 					struct type **, int);
 

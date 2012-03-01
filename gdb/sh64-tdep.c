@@ -2038,6 +2038,7 @@ sh64_do_register (struct gdbarch *gdbarch, struct ui_file *file,
 {
   unsigned char raw_buffer[MAX_REGISTER_SIZE];
   struct value_print_options opts;
+  struct value *val;
 
   fputs_filtered (gdbarch_register_name (gdbarch, regnum), file);
   print_spaces_filtered (15 - strlen (gdbarch_register_name
@@ -2047,15 +2048,15 @@ sh64_do_register (struct gdbarch *gdbarch, struct ui_file *file,
   if (!deprecated_frame_register_read (frame, regnum, raw_buffer))
     fprintf_filtered (file, "*value not available*\n");
 
+  val = value_from_contents (register_type (gdbarch, regnum), raw_buffer);
+
   get_formatted_print_options (&opts, 'x');
   opts.deref_ref = 1;
-  val_print (register_type (gdbarch, regnum), raw_buffer, 0, 0,
-	     file, 0, NULL, &opts, current_language);
+  val_print (val, file, 0, &opts, current_language);
   fprintf_filtered (file, "\t");
   get_formatted_print_options (&opts, 0);
   opts.deref_ref = 1;
-  val_print (register_type (gdbarch, regnum), raw_buffer, 0, 0,
-	     file, 0, NULL, &opts, current_language);
+  val_print (val, file, 0, &opts, current_language);
   fprintf_filtered (file, "\n");
 }
 

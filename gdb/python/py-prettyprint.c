@@ -688,41 +688,26 @@ print_children (PyObject *printer, const char *hint,
 }
 
 int
-apply_val_pretty_printer (struct type *type, const gdb_byte *valaddr,
-			  int embedded_offset, CORE_ADDR address,
+apply_val_pretty_printer (struct value *value,
 			  struct ui_file *stream, int recurse,
-			  const struct value *val,
 			  const struct value_print_options *options,
 			  const struct language_defn *language)
 {
+  struct type *type = check_typedef (value_type (value));
   struct gdbarch *gdbarch = get_type_arch (type);
   PyObject *printer = NULL;
   PyObject *val_obj = NULL;
-  struct value *value;
   char *hint = NULL;
   struct cleanup *cleanups;
   int result = 0;
   enum string_repr_result print_result;
 
   /* No pretty-printer support for unavailable values.  */
-  if (!value_bytes_available (val, embedded_offset, TYPE_LENGTH (type)))
+  if (!value_bytes_available (value, value_embedded_offset (value),
+			      TYPE_LENGTH (type)))
     return 0;
 
   cleanups = ensure_python_env (gdbarch, language);
-
-  /* Instantiate the printer.  */
-  if (valaddr)
-    valaddr += embedded_offset;
-  value = value_from_contents_and_address (type, valaddr,
-					   address + embedded_offset);
-
-  set_value_component_location (value, val);
-  /* set_value_component_location resets the address, so we may
-     need to set it again.  */
-  if (VALUE_LVAL (value) != lval_internalvar
-      && VALUE_LVAL (value) != lval_internalvar_component
-      && VALUE_LVAL (value) != lval_computed)
-    set_value_address (value, address + embedded_offset);
 
   val_obj = value_to_value_object (value);
   if (! val_obj)
@@ -836,10 +821,8 @@ gdbpy_default_visualizer (PyObject *self, PyObject *args)
 #else /* HAVE_PYTHON */
 
 int
-apply_val_pretty_printer (struct type *type, const gdb_byte *valaddr,
-			  int embedded_offset, CORE_ADDR address,
+apply_val_pretty_printer (struct value *value,
 			  struct ui_file *stream, int recurse,
-			  const struct value *val,
 			  const struct value_print_options *options,
 			  const struct language_defn *language)
 {

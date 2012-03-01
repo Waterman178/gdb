@@ -191,11 +191,12 @@ f77_print_array_1 (int nss, int ndimensions, struct type *type,
       for (i = 0; i < F77_DIM_SIZE (nss) && (*elts) < options->print_max;
 	   i++, (*elts)++)
 	{
-	  val_print (TYPE_TARGET_TYPE (type),
-		     valaddr,
-		     embedded_offset + i * F77_DIM_OFFSET (ndimensions),
-		     address, stream, recurse,
-		     val, options, current_language);
+	  struct value *element;
+
+	  element = FIXME;
+	  /* embedded_offset + i * F77_DIM_OFFSET (ndimensions), */
+
+	  val_print (element, stream, recurse, options, current_language);
 
 	  if (i != (F77_DIM_SIZE (nss) - 1))
 	    fprintf_filtered (stream, ", ");
@@ -255,11 +256,10 @@ static const struct generic_val_print_decorations f_decorations =
    function; they are identical.  */
 
 void
-f_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
-	     CORE_ADDR address, struct ui_file *stream, int recurse,
-	     const struct value *original_value,
+f_val_print (struct value *value, struct ui_file *stream, int recurse,
 	     const struct value_print_options *options)
 {
+  struct type *type = check_typedef (value_type (value));
   struct gdbarch *gdbarch = get_type_arch (type);
   enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
   unsigned int i = 0;	/* Number of characters printed.  */
@@ -300,8 +300,7 @@ f_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
     case TYPE_CODE_PTR:
       if (options->format && options->format != 's')
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	  break;
 	}
       else
@@ -350,8 +349,7 @@ f_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
 
 	  opts.format = (options->format ? options->format
 			 : options->output_format);
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	}
       else
 	{
@@ -378,12 +376,11 @@ f_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
       fprintf_filtered (stream, "( ");
       for (index = 0; index < TYPE_NFIELDS (type); index++)
         {
-          int offset = TYPE_FIELD_BITPOS (type, index) / 8;
+	  struct value *field_value;
 
-          val_print (TYPE_FIELD_TYPE (type, index), valaddr,
-		     embedded_offset + offset,
-		     address, stream, recurse + 1,
-		     original_value, options, current_language);
+	  field_value = value_field (original_value, index);
+          val_print (field_value, stream, recurse + 1,
+		     options, current_language);
           if (index != TYPE_NFIELDS (type) - 1)
             fputs_filtered (", ", stream);
         }
@@ -402,9 +399,7 @@ f_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
     case TYPE_CODE_BOOL:
     case TYPE_CODE_CHAR:
     default:
-      generic_val_print (type, valaddr, embedded_offset, address,
-			 stream, recurse, original_value, options,
-			 &f_decorations);
+      generic_val_print (value, stream, recurse, options, &f_decorations);
       break;
     }
   gdb_flush (stream);

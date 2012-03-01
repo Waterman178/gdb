@@ -362,13 +362,12 @@ val_print_invalid_address (struct ui_file *stream)
    output in some small, language-specific ways.  */
 
 void
-generic_val_print (struct type *type, const gdb_byte *valaddr,
-		   int embedded_offset, CORE_ADDR address,
+generic_val_print (struct value *value,
 		   struct ui_file *stream, int recurse,
-		   const struct value *original_value,
 		   const struct value_print_options *options,
 		   const struct generic_val_print_decorations *decorations)
 {
+  struct type *type = value_type (value);
   struct gdbarch *gdbarch = get_type_arch (type);
   unsigned int i = 0;	/* Number of characters printed.  */
   unsigned len;
@@ -396,34 +395,29 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 	    }
 
 	  fprintf_filtered (stream, "{");
-	  val_print_array_elements (type, valaddr, embedded_offset,
-				    address, stream,
-				    recurse, original_value, options, 0);
+	  val_print_array_elements (value, stream, recurse, options, 0);
 	  fprintf_filtered (stream, "}");
 	  break;
 	}
       /* Array of unspecified length: treat like pointer to first
 	 elt.  */
-      addr = address + embedded_offset;
       goto print_unpacked_pointer;
 
     case TYPE_CODE_MEMBERPTR:
-      val_print_scalar_formatted (type, valaddr, embedded_offset,
-				  original_value, options, 0, stream);
+      val_print_scalar_formatted (value, options, 0, stream);
       break;
 
     case TYPE_CODE_PTR:
       if (options->format && options->format != 's')
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	  break;
 	}
       unresolved_elttype = TYPE_TARGET_TYPE (type);
       elttype = check_typedef (unresolved_elttype);
 	{
-	  addr = unpack_pointer (type, valaddr + embedded_offset);
 	print_unpacked_pointer:
+	  addr = value_as_address (value);
 
 	  if (TYPE_CODE (elttype) == TYPE_CODE_FUNC)
 	    {
@@ -443,8 +437,7 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
       elttype = check_typedef (TYPE_TARGET_TYPE (type));
       if (options->addressprint)
 	{
-	  CORE_ADDR addr
-	    = extract_typed_address (valaddr + embedded_offset, type);
+	  CORE_ADDR addr = value_as_address (value);
 
 	  fprintf_filtered (stream, "@");
 	  fputs_filtered (paddress (gdbarch, addr), stream);
@@ -458,17 +451,14 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 	    {
 	      struct value *deref_val;
 
-	      deref_val = coerce_ref_if_computed (original_value);
+	      deref_val = coerce_ref_if_computed (value);
 	      if (deref_val != NULL)
 		{
 		  /* More complicated computed references are not supported.  */
-		  gdb_assert (embedded_offset == 0);
+		  gdb_assert (value_embedded_offset (value) == 0);
 		}
 	      else
-		deref_val = value_at (TYPE_TARGET_TYPE (type),
-				      unpack_pointer (type,
-						      (valaddr
-						       + embedded_offset)));
+		deref_val = coerce_ref (value);
 
 	      common_val_print (deref_val, stream, recurse, options,
 				current_language);
@@ -481,12 +471,11 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
     case TYPE_CODE_ENUM:
       if (options->format)
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	  break;
 	}
       len = TYPE_NFIELDS (type);
-      val = unpack_long (type, valaddr + embedded_offset);
+      val = value_as_long (value);
       for (i = 0; i < len; i++)
 	{
 	  QUIT;
@@ -538,10 +527,11 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 
     case TYPE_CODE_FLAGS:
       if (options->format)
-	val_print_scalar_formatted (type, valaddr, embedded_offset,
-				    original_value, options, 0, stream);
+	val_print_scalar_formatted (value, options, 0, stream);
       else
-	val_print_type_code_flags (type, valaddr + embedded_offset,
+	val_print_type_code_flags (type,
+				   value_contents_for_printing (value)
+				   + value_embedded_offset (value),
 				   stream);
       break;
 
@@ -549,8 +539,7 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
     case TYPE_CODE_METHOD:
       if (options->format)
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	  break;
 	}
       /* FIXME, we should consider, at least for ANSI C language,
@@ -560,7 +549,8 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
       type_print (type, "", stream, -1);
       fprintf_filtered (stream, "} ");
       /* Try to print what function it points to, and its address.  */
-      print_address_demangle (options, gdbarch, address, stream, demangle);
+      print_address_demangle (options, gdbarch, value_address (value),
+			      stream, demangle);
       break;
 
     case TYPE_CODE_BOOL:
@@ -569,12 +559,13 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 	  struct value_print_options opts = *options;
 	  opts.format = (options->format ? options->format
 			 : options->output_format);
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, &opts, 0, stream);
+	  val_print_scalar_formatted (value, &opts, 0, stream);
 	}
       else
 	{
-	  val = unpack_long (type, valaddr + embedded_offset);
+	  val = unpack_long (type,
+			     value_contents_for_printing (value)
+			     + value_embedded_offset (value));
 	  if (val == 0)
 	    fputs_filtered (decorations->false_name, stream);
 	  else if (val == 1)
@@ -602,11 +593,12 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 
 	  opts.format = (options->format ? options->format
 			 : options->output_format);
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, &opts, 0, stream);
+	  val_print_scalar_formatted (value, &opts, 0, stream);
 	}
       else
-	val_print_type_code_int (type, valaddr + embedded_offset, stream);
+	val_print_type_code_int (type,
+				 value_contents_for_printing (value)
+				 + value_embedded_offset (value), stream);
       break;
 
     case TYPE_CODE_CHAR:
@@ -616,12 +608,13 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
 
 	  opts.format = (options->format ? options->format
 			 : options->output_format);
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, &opts, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	}
       else
 	{
-	  val = unpack_long (type, valaddr + embedded_offset);
+	  val = unpack_long (type,
+			     value_contents_for_printing (value)
+			     + value_embedded_offset (value));
 	  if (TYPE_UNSIGNED (type))
 	    fprintf_filtered (stream, "%u", (unsigned int) val);
 	  else
@@ -634,21 +627,21 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
     case TYPE_CODE_FLT:
       if (options->format)
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	}
       else
 	{
-	  print_floating (valaddr + embedded_offset, type, stream);
+	  print_floating (value_contents_for_printing (value)
+			  + value_embedded_offset (value), type, stream);
 	}
       break;
 
     case TYPE_CODE_DECFLOAT:
       if (options->format)
-	val_print_scalar_formatted (type, valaddr, embedded_offset,
-				    original_value, options, 0, stream);
+	val_print_scalar_formatted (value, options, 0, stream);
       else
-	print_decimal_floating (valaddr + embedded_offset,
+	print_decimal_floating (value_contents_for_printing (value)
+				+ value_embedded_offset (value),
 				type, stream);
       break;
 
@@ -671,24 +664,18 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
     case TYPE_CODE_COMPLEX:
       fprintf_filtered (stream, "%s", decorations->complex_prefix);
       if (options->format)
-	val_print_scalar_formatted (TYPE_TARGET_TYPE (type),
-				    valaddr, embedded_offset,
-				    original_value, options, 0, stream);
+	val_print_scalar_formatted (value_real_part (value),
+				    options, 0, stream);
       else
-	print_floating (valaddr + embedded_offset,
+	print_floating (value_contents_for_printing (value_real_part (value)),
 			TYPE_TARGET_TYPE (type),
 			stream);
       fprintf_filtered (stream, "%s", decorations->complex_infix);
       if (options->format)
-	val_print_scalar_formatted (TYPE_TARGET_TYPE (type),
-				    valaddr,
-				    embedded_offset
-				    + TYPE_LENGTH (TYPE_TARGET_TYPE (type)),
-				    original_value,
+	val_print_scalar_formatted (value_imaginary_part (value),
 				    options, 0, stream);
       else
-	print_floating (valaddr + embedded_offset
-			+ TYPE_LENGTH (TYPE_TARGET_TYPE (type)),
+	print_floating (value_contents_for_printing (value_imaginary_part (value)),
 			TYPE_TARGET_TYPE (type),
 			stream);
       fprintf_filtered (stream, "%s", decorations->complex_suffix);
@@ -704,37 +691,23 @@ generic_val_print (struct type *type, const gdb_byte *valaddr,
   gdb_flush (stream);
 }
 
-/* Print using the given LANGUAGE the data of type TYPE located at
-   VALADDR + EMBEDDED_OFFSET (within GDB), which came from the
-   inferior at address ADDRESS + EMBEDDED_OFFSET, onto stdio stream
-   STREAM according to OPTIONS.  VAL is the whole object that came
-   from ADDRESS.  VALADDR must point to the head of VAL's contents
-   buffer.
-
-   The language printers will pass down an adjusted EMBEDDED_OFFSET to
-   further helper subroutines as subfields of TYPE are printed.  In
-   such cases, VALADDR is passed down unadjusted, as well as VAL, so
-   that VAL can be queried for metadata about the contents data being
-   printed, using EMBEDDED_OFFSET as an offset into VAL's contents
-   buffer.  For example: "has this field been optimized out", or "I'm
-   printing an object while inspecting a traceframe; has this
-   particular piece of data been collected?".
+/* Print VAL to STREAM using the given LANGUAGE.  OPTIONS control the
+   printing style.
 
    RECURSE indicates the amount of indentation to supply before
    continuation lines; this amount is roughly twice the value of
    RECURSE.  */
 
 void
-val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
-	   CORE_ADDR address, struct ui_file *stream, int recurse,
-	   const struct value *val,
+val_print (struct value *val,
+	   struct ui_file *stream, int recurse,
 	   const struct value_print_options *options,
 	   const struct language_defn *language)
 {
   volatile struct gdb_exception except;
   int ret = 0;
   struct value_print_options local_opts = *options;
-  struct type *real_type = check_typedef (type);
+  struct type *real_type = check_typedef (value_type (val));
 
   if (local_opts.pretty == Val_pretty_default)
     local_opts.pretty = (local_opts.prettyprint_structs
@@ -753,21 +726,20 @@ val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
       return;
     }
 
-  if (!valprint_check_validity (stream, real_type, embedded_offset, val))
+  if (!valprint_check_validity (stream, real_type,
+				value_embedded_offset (val), val))
     return;
 
   if (!options->raw)
     {
-      ret = apply_val_pretty_printer (type, valaddr, embedded_offset,
-				      address, stream, recurse,
-				      val, options, language);
+      ret = apply_val_pretty_printer (val, stream, recurse, options, language);
       if (ret)
 	return;
     }
 
   /* Handle summary mode.  If the value is a scalar, print it;
      otherwise, print an ellipsis.  */
-  if (options->summary && !scalar_type_p (type))
+  if (options->summary && !scalar_type_p (real_type))
     {
       fprintf_filtered (stream, "...");
       return;
@@ -775,9 +747,7 @@ val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
 
   TRY_CATCH (except, RETURN_MASK_ERROR)
     {
-      language->la_val_print (type, valaddr, embedded_offset, address,
-			      stream, recurse, val,
-			      &local_opts);
+      language->la_val_print (val, stream, recurse, &local_opts);
     }
   if (except.reason < 0)
     fprintf_filtered (stream, _("<error reading variable>"));
@@ -837,10 +807,7 @@ common_val_print (struct value *val, struct ui_file *stream, int recurse,
        get a fixed representation of our value.  */
     val = ada_to_fixed_value (val);
 
-  val_print (value_type (val), value_contents_for_printing (val),
-	     value_embedded_offset (val), value_address (val),
-	     stream, recurse,
-	     val, options, language);
+  val_print (val, stream, recurse, options, language);
 }
 
 /* Print on stream STREAM the value VAL according to OPTIONS.  The value
@@ -855,12 +822,8 @@ value_print (struct value *val, struct ui_file *stream,
 
   if (!options->raw)
     {
-      int r = apply_val_pretty_printer (value_type (val),
-					value_contents_for_printing (val),
-					value_embedded_offset (val),
-					value_address (val),
-					stream, 0,
-					val, options, current_language);
+      int r = apply_val_pretty_printer (val, stream, 0,
+					options, current_language);
 
       if (r)
 	return;
@@ -936,15 +899,15 @@ val_print_type_code_flags (struct type *type, const gdb_byte *valaddr,
    with a format.  */
 
 void
-val_print_scalar_formatted (struct type *type,
-			    const gdb_byte *valaddr, int embedded_offset,
-			    const struct value *val,
+val_print_scalar_formatted (struct value *val,
 			    const struct value_print_options *options,
 			    int size,
 			    struct ui_file *stream)
 {
+  int embedded_offset;
+  struct type *type;
+
   gdb_assert (val != NULL);
-  gdb_assert (valaddr == value_contents_for_printing_const (val));
 
   /* If we get here with a string format, try again without it.  Go
      all the way back to the language printers, which may call us
@@ -954,21 +917,24 @@ val_print_scalar_formatted (struct type *type,
       struct value_print_options opts = *options;
       opts.format = 0;
       opts.deref_ref = 0;
-      val_print (type, valaddr, embedded_offset, 0, stream, 0, val, &opts,
-		 current_language);
+      val_print (val, stream, 0, &opts, /* FIXME?? */ current_language);
       return;
     }
+
+  embedded_offset = value_embedded_offset (val);
+  type = check_typedef (value_type (val));
 
   /* A scalar object that does not have all bits available can't be
      printed, because all bits contribute to its representation.  */
   if (!value_bits_valid (val, TARGET_CHAR_BIT * embedded_offset,
-			      TARGET_CHAR_BIT * TYPE_LENGTH (type)))
+			 TARGET_CHAR_BIT * TYPE_LENGTH (type)))
     val_print_optimized_out (stream);
   else if (!value_bytes_available (val, embedded_offset, TYPE_LENGTH (type)))
     val_print_unavailable (stream);
   else
-    print_scalar_formatted (valaddr + embedded_offset, type,
-			    options, size, stream);
+    print_scalar_formatted ((value_contents_for_printing (val)
+			     + embedded_offset),
+			    type, options, size, stream);
 }
 
 /* Print a number according to FORMAT which is one of d,u,x,o,b,h,w,g.
@@ -1594,11 +1560,8 @@ maybe_print_array_index (struct type *index_type, LONGEST index,
    perhaps we should try to use that notation when appropriate.  */
 
 void
-val_print_array_elements (struct type *type,
-			  const gdb_byte *valaddr, int embedded_offset,
-			  CORE_ADDR address, struct ui_file *stream,
-			  int recurse,
-			  const struct value *val,
+val_print_array_elements (struct value *val,
+			  struct ui_file *stream, int recurse,
 			  const struct value_print_options *options,
 			  unsigned int i)
 {
@@ -1612,6 +1575,7 @@ val_print_array_elements (struct type *type,
   /* Number of repetitions we have detected so far.  */
   unsigned int reps;
   LONGEST low_bound, high_bound;
+  struct type *type = check_typedef (value_type (val));
 
   elttype = TYPE_TARGET_TYPE (type);
   eltlen = TYPE_LENGTH (check_typedef (elttype));
@@ -1640,6 +1604,8 @@ val_print_array_elements (struct type *type,
 
   for (; i < len && things_printed < options->print_max; i++)
     {
+      struct value *element;
+
       if (i != 0)
 	{
 	  if (options->prettyprint_arrays)
@@ -1663,11 +1629,8 @@ val_print_array_elements (struct type *type,
       if (options->repeat_count_threshold < UINT_MAX)
 	{
 	  while (rep1 < len
-		 && value_available_contents_eq (val,
-						 embedded_offset + i * eltlen,
-						 val,
-						 (embedded_offset
-						  + rep1 * eltlen),
+		 && value_available_contents_eq (val, i * eltlen,
+						 val, rep1 * eltlen,
 						 eltlen))
 	    {
 	      ++reps;
@@ -1675,11 +1638,13 @@ val_print_array_elements (struct type *type,
 	    }
 	}
 
+      element = value_subscript (val, i);
+      val_print (element, stream, recurse + 1, options,
+		 /* FIXME */ current_language);
+      /* FIXME: value releasing */
+
       if (reps > options->repeat_count_threshold)
 	{
-	  val_print (elttype, valaddr, embedded_offset + i * eltlen,
-		     address, stream, recurse + 1, val, options,
-		     current_language);
 	  annotate_elt_rep (reps);
 	  fprintf_filtered (stream, " <repeats %u times>", reps);
 	  annotate_elt_rep_end ();
@@ -1689,9 +1654,6 @@ val_print_array_elements (struct type *type,
 	}
       else
 	{
-	  val_print (elttype, valaddr, embedded_offset + i * eltlen,
-		     address,
-		     stream, recurse + 1, val, options, current_language);
 	  annotate_elt ();
 	  things_printed++;
 	}

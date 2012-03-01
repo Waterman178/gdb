@@ -308,18 +308,16 @@ static const struct generic_val_print_decorations m2_decorations =
    function; they are identical.  */
 
 void
-m2_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
-	      CORE_ADDR address, struct ui_file *stream, int recurse,
-	      const struct value *original_value,
+m2_val_print (struct value *value, struct ui_file *stream, int recurse,
 	      const struct value_print_options *options)
 {
+  struct type *type = check_typedef (value_type (value));
   struct gdbarch *gdbarch = get_type_arch (type);
   unsigned int i = 0;	/* Number of characters printed.  */
   unsigned len;
   struct type *elttype;
   CORE_ADDR addr;
 
-  CHECK_TYPEDEF (type);
   switch (TYPE_CODE (type))
     {
     case TYPE_CODE_ARRAY:

@@ -131,12 +131,11 @@ static const struct generic_val_print_decorations c_decorations =
    function; they are identical.  */
 
 void
-c_val_print (struct type *type, const gdb_byte *valaddr,
-	     int embedded_offset, CORE_ADDR address,
+c_val_print (struct value *value,
 	     struct ui_file *stream, int recurse,
-	     const struct value *original_value,
 	     const struct value_print_options *options)
 {
+  struct type *type = value_type (value);
   struct gdbarch *gdbarch = get_type_arch (type);
   enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
   unsigned int i = 0;	/* Number of characters printed.  */
@@ -170,13 +169,16 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
 	     long as the entire array is valid.  */
           if (c_textual_element_type (unresolved_elttype,
 				      options->format)
-	      && value_bytes_available (original_value, embedded_offset,
+	      && value_bytes_available (value, value_embedded_offset (value),
 					TYPE_LENGTH (type))
-	      && value_bits_valid (original_value,
-				   TARGET_CHAR_BIT * embedded_offset,
+	      && value_bits_valid (value,
+				   (TARGET_CHAR_BIT
+				    * value_embedded_offset (value)),
 				   TARGET_CHAR_BIT * TYPE_LENGTH (type)))
 	    {
 	      int force_ellipses = 0;
+	      const gdb_byte *valaddr = value_contents_for_printing (value);
+	      int embedded_offset = value_embedded_offset (value);
 
 	      /* If requested, look for the first null char and only
 	         print elements up to it.  */
@@ -230,9 +232,7 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
 		{
 		  i = 0;
 		}
-	      val_print_array_elements (type, valaddr, embedded_offset,
-					address, stream,
-					recurse, original_value, options, i);
+	      val_print_array_elements (value, stream, recurse, options, i);
 	      fprintf_filtered (stream, "}");
 	    }
 	  break;
@@ -243,14 +243,14 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
       goto print_unpacked_pointer;
 
     case TYPE_CODE_METHODPTR:
-      cplus_print_method_ptr (valaddr + embedded_offset, type, stream);
+      cplus_print_method_ptr (value_contents_for_printing (value)
+			      + value_embedded_offset (value), type, stream);
       break;
 
     case TYPE_CODE_PTR:
       if (options->format && options->format != 's')
 	{
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, options, 0, stream);
+	  val_print_scalar_formatted (value, options, 0, stream);
 	  break;
 	}
       if (options->vtblprint && cp_is_vtbl_ptr_type (type))
@@ -390,11 +390,7 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
 	  print_function_pointer_address (options, gdbarch, addr, stream);
 	}
       else
-	cp_print_value_fields_rtti (type, valaddr,
-				    embedded_offset, address,
-				    stream, recurse,
-				    original_value, options,
-				    NULL, 0);
+	cp_print_value_fields_rtti (value, stream, recurse, options, NULL, 0);
       break;
 
     case TYPE_CODE_INT:
@@ -404,8 +400,7 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
 
 	  opts.format = (options->format ? options->format
 			 : options->output_format);
-	  val_print_scalar_formatted (type, valaddr, embedded_offset,
-				      original_value, &opts, 0, stream);
+	  val_print_scalar_formatted (value, &opts, 0, stream);
 	}
       else
 	{
@@ -447,9 +442,7 @@ c_val_print (struct type *type, const gdb_byte *valaddr,
     case TYPE_CODE_COMPLEX:
     case TYPE_CODE_CHAR:
     default:
-      generic_val_print (type, valaddr, embedded_offset, address,
-			 stream, recurse, original_value, options,
-			 &c_decorations);
+      generic_val_print (value, stream, recurse, options, &c_decorations);
       break;
     }
   gdb_flush (stream);
@@ -559,10 +552,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 			    full ? "" : _(" [incomplete object]"));
 	  /* Print out object: enclosing type is same as real_type if
 	     full.  */
-	  val_print (value_enclosing_type (val),
-		     value_contents_for_printing (val), 0,
-		     value_address (val), stream, 0,
-		     val, &opts, current_language);
+	  val_print (val, stream, 0, &opts, current_language);
 	  return;
           /* Note: When we look up RTTI entries, we don't get any
              information on const or volatile attributes.  */
@@ -572,18 +562,11 @@ c_value_print (struct value *val, struct ui_file *stream,
 	  /* No RTTI information, so let's do our best.  */
 	  fprintf_filtered (stream, "(%s ?) ",
 			    TYPE_NAME (value_enclosing_type (val)));
-	  val_print (value_enclosing_type (val),
-		     value_contents_for_printing (val), 0,
-		     value_address (val), stream, 0,
-		     val, &opts, current_language);
+	  val_print (val, stream, 0, &opts, current_language);
 	  return;
 	}
       /* Otherwise, we end up at the return outside this "if".  */
     }
 
-  val_print (val_type, value_contents_for_printing (val),
-	     value_embedded_offset (val),
-	     value_address (val),
-	     stream, 0,
-	     val, &opts, current_language);
+  val_print (val, stream, 0, &opts, current_language);
 }

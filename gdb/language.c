@@ -739,10 +739,7 @@ unk_lang_print_type (struct type *type, const char *varstring,
 }
 
 static void
-unk_lang_val_print (struct type *type, const gdb_byte *valaddr,
-		    int embedded_offset, CORE_ADDR address,
-		    struct ui_file *stream, int recurse,
-		    const struct value *val,
+unk_lang_val_print (struct value *val, struct ui_file *stream, int recurse,
 		    const struct value_print_options *options)
 {
   error (_("internal error - unimplemented "

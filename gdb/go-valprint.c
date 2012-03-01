@@ -86,12 +86,10 @@ print_go_string (struct type *type, const gdb_byte *valaddr,
 /* Implements the la_val_print routine for language Go.  */
 
 void
-go_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
-	      CORE_ADDR address, struct ui_file *stream, int recurse,
-	      const struct value *val,
+go_val_print (struct value *val, struct ui_file *stream, int recurse,
 	      const struct value_print_options *options)
 {
-  CHECK_TYPEDEF (type);
+  struct type *type = check_typedef (value_type (val));
 
   switch (TYPE_CODE (type))
     {
@@ -104,7 +102,10 @@ go_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
 	    case GO_TYPE_STRING:
 	      if (! options->raw)
 		{
-		  print_go_string (type, valaddr, embedded_offset, address,
+		  print_go_string (type,
+				   value_contents_for_printing (val),
+				   value_embedded_offset (val),
+				   value_address (val),
 				   stream, recurse, val, options);
 		  return;
 		}
@@ -116,8 +117,7 @@ go_val_print (struct type *type, const gdb_byte *valaddr, int embedded_offset,
 	/* Fall through.  */
 
       default:
-	c_val_print (type, valaddr, embedded_offset, address, stream,
-		     recurse, val, options);
+	c_val_print (val, stream, recurse, options);
 	break;
     }
 }

@@ -77,14 +77,11 @@ static struct obstack dont_print_stat_array_obstack;
 
 extern void _initialize_cp_valprint (void);
 
-static void cp_print_static_field (struct type *, struct value *,
+static void cp_print_static_field (struct value *,
 				   struct ui_file *, int,
 				   const struct value_print_options *);
 
-static void cp_print_value (struct type *, struct type *,
-			    const gdb_byte *, int,
-			    CORE_ADDR, struct ui_file *,
-			    int, const struct value *,
+static void cp_print_value (struct value *, struct ui_file *, int,
 			    const struct value_print_options *,
 			    struct type **);
 
@@ -155,16 +152,14 @@ cp_is_vtbl_member (struct type *type)
    or zero if called from top level.  */
 
 void
-cp_print_value_fields (struct type *type, struct type *real_type,
-		       const gdb_byte *valaddr, int offset,
-		       CORE_ADDR address, struct ui_file *stream,
-		       int recurse, const struct value *val,
+cp_print_value_fields (struct value *val, struct ui_file *stream, int recurse,
 		       const struct value_print_options *options,
 		       struct type **dont_print_vb,
 		       int dont_print_statmem)
 {
   int i, len, n_baseclasses;
   int fields_seen = 0;
+  struct type *type = value_type (val);
   static int last_set_recurse = -1;
 
   CHECK_TYPEDEF (type);
@@ -196,10 +191,7 @@ cp_print_value_fields (struct type *type, struct type *real_type,
      duplicates of virtual baseclasses.  */
 
   if (n_baseclasses > 0)
-    cp_print_value (type, real_type, valaddr, 
-		    offset, address, stream,
-		    recurse + 1, val, options,
-		    dont_print_vb);
+    cp_print_value (val, stream, recurse + 1, options, dont_print_vb);
 
   /* Second, print out data fields */
 
@@ -306,7 +298,7 @@ cp_print_value_fields (struct type *type, struct type *real_type,
 
 		  opts.deref_ref = 0;
 
-		  v = value_field_bitfield (type, i, valaddr, offset, val);
+		  v = value_field (val, i);
 
 		  common_val_print (v, stream, recurse + 1, &opts,
 				    current_language);
@@ -336,9 +328,7 @@ cp_print_value_fields (struct type *type, struct type *real_type,
 		  else if (v == NULL)
 		    val_print_optimized_out (stream);
 		  else
-		    cp_print_static_field (TYPE_FIELD_TYPE (type, i),
-					   v, stream, recurse + 1,
-					   options);
+		    cp_print_static_field (v, stream, recurse + 1, options);
 		}
 	      else if (i == vptr_fieldno && type == vptr_basetype)
 		{
@@ -360,11 +350,7 @@ cp_print_value_fields (struct type *type, struct type *real_type,
 		  struct value_print_options opts = *options;
 
 		  opts.deref_ref = 0;
-		  val_print (TYPE_FIELD_TYPE (type, i),
-			     valaddr, 
-			     offset + TYPE_FIELD_BITPOS (type, i) / 8,
-			     address,
-			     stream, recurse + 1, val, &opts,
+		  val_print (value_field (val, i), stream, recurse + 1, &opts,
 			     current_language);
 		}
 	    }
@@ -424,16 +410,14 @@ cp_print_value_fields (struct type *type, struct type *real_type,
    the enclosing type.  */
 
 void
-cp_print_value_fields_rtti (struct type *type,
-			    const gdb_byte *valaddr, int offset,
-			    CORE_ADDR address,
+cp_print_value_fields_rtti (struct value *val,
 			    struct ui_file *stream, int recurse,
-			    const struct value *val,
 			    const struct value_print_options *options,
 			    struct type **dont_print_vb, 
 			    int dont_print_statmem)
 {
   struct type *real_type = NULL;
+  struct type *type = value_type (val);
 
   /* We require all bits to be valid in order to attempt a
      conversion.  */
@@ -464,10 +448,7 @@ cp_print_value_fields_rtti (struct type *type,
    virtual baseclasses.  */
 
 static void
-cp_print_value (struct type *type, struct type *real_type,
-		const gdb_byte *valaddr, int offset,
-		CORE_ADDR address, struct ui_file *stream,
-		int recurse, const struct value *val,
+cp_print_value (struct value *val, struct ui_file *stream, int recurse,
 		const struct value_print_options *options,
 		struct type **dont_print_vb)
 {
@@ -633,8 +614,7 @@ cp_print_value (struct type *type, struct type *real_type,
    have the same meanings as in c_val_print.  */
 
 static void
-cp_print_static_field (struct type *type,
-		       struct value *val,
+cp_print_static_field (struct value *val,
 		       struct ui_file *stream,
 		       int recurse,
 		       const struct value_print_options *options)
@@ -704,11 +684,7 @@ cp_print_static_field (struct type *type,
 
   opts = *options;
   opts.deref_ref = 0;
-  val_print (type, value_contents_for_printing (val), 
-	     value_embedded_offset (val),
-	     value_address (val),
-	     stream, recurse, val,
-	     &opts, current_language);
+  val_print (val, stream, recurse, &opts, current_language);
 }
 
 

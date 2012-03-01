@@ -196,17 +196,7 @@ struct language_defn
 
     /* Print a value using syntax appropriate for this language.
        
-       TYPE is the type of the sub-object to be printed.
-
-       CONTENTS holds the bits of the value.  This holds the entire
-       enclosing object.
-
-       EMBEDDED_OFFSET is the offset into the outermost object of the
-       sub-object represented by TYPE.  This is the object which this
-       call should print.  Note that the enclosing type is not
-       available.
-
-       ADDRESS is the address in the inferior of the enclosing object.
+       VALUE is the object to be printed.
 
        STREAM is the stream on which the value is to be printed.
 
@@ -215,11 +205,8 @@ struct language_defn
        OPTIONS are the formatting options to be used when
        printing.  */
 
-    void (*la_val_print) (struct type *type,
-			  const gdb_byte *contents,
-			  int embedded_offset, CORE_ADDR address,
+    void (*la_val_print) (struct value *val,
 			  struct ui_file *stream, int recurse,
-			  const struct value *val,
 			  const struct value_print_options *options);
 
     /* Print a top-level value using syntax appropriate for this language.  */
@@ -426,9 +413,8 @@ extern enum language set_language (enum language);
 #define LA_PRINT_TYPEDEF(type,new_symbol,stream) \
   (current_language->la_print_typedef(type,new_symbol,stream))
 
-#define LA_VAL_PRINT(type,valaddr,offset,addr,stream,val,recurse,options) \
-  (current_language->la_val_print(type,valaddr,offset,addr,stream, \
-				  val,recurse,options))
+#define LA_VAL_PRINT(val,stream,recurse,options) \
+  (current_language->la_val_print(val, stream, val, recurse, options))
 #define LA_VALUE_PRINT(val,stream,options) \
   (current_language->la_value_print(val,stream,options))
 

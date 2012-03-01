@@ -708,6 +708,7 @@ mt_registers_info (struct gdbarch *gdbarch,
 	  /* Special output handling for the 'coprocessor' register.  */
 	  gdb_byte *buf;
 	  struct value_print_options opts;
+	  struct value *val;
 
 	  buf = alloca (register_size (gdbarch, MT_COPRO_REGNUM));
 	  deprecated_frame_register_read (frame, MT_COPRO_REGNUM, buf);
@@ -720,9 +721,8 @@ mt_registers_info (struct gdbarch *gdbarch,
 				 file);
 	  get_raw_print_options (&opts);
 	  opts.deref_ref = 1;
-	  val_print (register_type (gdbarch, regnum), buf,
-		     0, 0, file, 0, NULL,
-		     &opts, current_language);
+	  val = value_from_contents (register_type (gdbarch, regnum), buf);
+	  val_print (val, file, 0, &opts, current_language);
 	  fputs_filtered ("\n", file);
 	}
       else if (regnum == MT_MAC_REGNUM || regnum == MT_MAC_PSEUDOREG_REGNUM)
