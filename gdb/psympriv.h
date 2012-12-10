@@ -159,13 +159,8 @@ struct partial_symtab
   int globals_offset;
   int n_global_syms;
 
-  /* Static symbol list.  This list will *not* be sorted after readin;
-     to find a symbol in it, exhaustive search must be used.  This is
-     reasonable because searches through this list will eventually
-     lead to either the read in of a files symbols for real (assumed
-     to take a *lot* of time; check) or an error (and we don't care
-     how long errors take).  This is an offset and size within
-     static_psymbols[].  */
+  /* Static symbol list.  This list will be sorted after readin.  This
+     is an offset and size within static_psymbols[].  */
 
   int statics_offset;
   int n_static_syms;

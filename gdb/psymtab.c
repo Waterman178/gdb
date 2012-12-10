@@ -564,7 +564,7 @@ match_partial_symbol (struct objfile *objfile,
 	   objfile->global_psymbols.list + pst->globals_offset :
 	   objfile->static_psymbols.list + pst->statics_offset);
 
-  if (global && ordered_compare)  /* Can use a binary search.  */
+  if (ordered_compare)  /* Can use a binary search.  */
     {
       do_linear_search = 0;
 
@@ -1461,10 +1461,11 @@ compare_psymbols (const void *s1p, const void *s2p)
 void
 sort_pst_symbols (struct objfile *objfile, struct partial_symtab *pst)
 {
-  /* Sort the global list; don't sort the static list.  */
-
   qsort (objfile->global_psymbols.list + pst->globals_offset,
 	 pst->n_global_syms, sizeof (struct partial_symbol *),
+	 compare_psymbols);
+  qsort (objfile->static_psymbols.list + pst->statics_offset,
+	 pst->n_static_syms, sizeof (struct partial_symbol *),
 	 compare_psymbols);
 }
 
