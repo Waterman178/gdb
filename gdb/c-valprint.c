@@ -239,7 +239,7 @@ c_val_print (struct value *value,
 	}
       /* Array of unspecified length: treat like pointer to first
 	 elt.  */
-      addr = address + embedded_offset;
+      addr = value_address (value) + value_embedded_offset (value);
       goto print_unpacked_pointer;
 
     case TYPE_CODE_METHODPTR:
@@ -260,7 +260,8 @@ c_val_print (struct value *value,
 	     -fvtable_thunks.  (Otherwise, look under
 	     TYPE_CODE_STRUCT.)  */
 	  CORE_ADDR addr
-	    = extract_typed_address (valaddr + embedded_offset, type);
+	    = extract_typed_address (value_contents_for_printing (value)
+				     + value_embedded_offset (value), type);
 
 	  print_function_pointer_address (options, gdbarch, addr, stream);
 	  break;
@@ -270,7 +271,9 @@ c_val_print (struct value *value,
 	{
 	  int want_space;
 
-	  addr = unpack_pointer (type, valaddr + embedded_offset);
+	  addr = unpack_pointer (type,
+				 value_contents_for_printing (value)
+				 + value_embedded_offset (value));
 	print_unpacked_pointer:
 
 	  want_space = 0;
@@ -307,9 +310,10 @@ c_val_print (struct value *value,
 	  else if (cp_is_vtbl_member (type))
 	    {
 	      /* Print vtbl's nicely.  */
-	      CORE_ADDR vt_address = unpack_pointer (type,
-						     valaddr
-						     + embedded_offset);
+	      CORE_ADDR vt_address
+		= unpack_pointer (type,
+				  value_contents_for_printing (value)
+				  + value_embedded_offset (value));
 	      struct bound_minimal_symbol msymbol =
 		lookup_minimal_symbol_by_pc (vt_address);
 
@@ -379,13 +383,14 @@ c_val_print (struct value *value,
 	  /* Print vtable entry - we only get here if NOT using
 	     -fvtable_thunks.  (Otherwise, look under
 	     TYPE_CODE_PTR.)  */
-	  int offset = (embedded_offset
+	  int offset = (value_embedded_offset (value)
 			+ TYPE_FIELD_BITPOS (type,
 					     VTBL_FNADDR_OFFSET) / 8);
 	  struct type *field_type = TYPE_FIELD_TYPE (type,
 						     VTBL_FNADDR_OFFSET);
 	  CORE_ADDR addr
-	    = extract_typed_address (valaddr + offset, field_type);
+	    = extract_typed_address (value_contents_for_printing (value)
+				     + value_offset (value), field_type);
 
 	  print_function_pointer_address (options, gdbarch, addr, stream);
 	}
@@ -404,7 +409,9 @@ c_val_print (struct value *value,
 	}
       else
 	{
-	  val_print_type_code_int (type, valaddr + embedded_offset,
+	  val_print_type_code_int (type,
+				   value_contents_for_printing (value)
+				   + value_embedded_offset (value),
 				   stream);
 	  /* C and C++ has no single byte int type, char is used
 	     instead.  Since we don't know whether the value is really
@@ -413,7 +420,9 @@ c_val_print (struct value *value,
 	  if (c_textual_element_type (unresolved_type, options->format))
 	    {
 	      fputs_filtered (" ", stream);
-	      LA_PRINT_CHAR (unpack_long (type, valaddr + embedded_offset),
+	      LA_PRINT_CHAR (unpack_long (type,
+					  value_contents_for_printing (value)
+					  + value_embedded_offset (value)),
 			     unresolved_type, stream);
 	    }
 	}
@@ -422,7 +431,9 @@ c_val_print (struct value *value,
     case TYPE_CODE_MEMBERPTR:
       if (!options->format)
 	{
-	  cp_print_class_member (valaddr + embedded_offset, type, stream, "&");
+	  cp_print_class_member (value_contents_for_printing (value)
+				 + value_embedded_offset (value),
+				 type, stream, "&");
 	  break;
 	}
       /* FALLTHROUGH */
