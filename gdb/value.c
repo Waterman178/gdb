@@ -2837,7 +2837,7 @@ value_fn_field (struct value **arg1p, struct fn_field *f,
 
       set_value_address (v,
 	gdbarch_convert_from_func_ptr_addr
-	   (gdbarch, SYMBOL_VALUE_ADDRESS (msym.minsym), &current_target));
+	   (gdbarch, SYMBOL_VALUE_ADDRESS (msym.minsym), current_target));
     }
 
   if (arg1p)
