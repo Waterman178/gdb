@@ -1,5 +1,31 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* remote.c (remote_ops, extended_remote_ops): Move earlier.
+	(struct remote_ops_with_data): New.
+	(remote_state): Remove.
+	(REMOTE_TARGET_STRATUM): New define.
+	(get_remote_state_raw): Redefine.
+	(new_remote_state): Return void and take a remote_state as a
+	parameter.  Update.
+	(destroy_remote_state): New function.
+	(get_remote_state): Return NULL if get_remote_state_raw does.
+	(init_remote_state, get_remote_packet_size, remote_threads_info)
+	(remote_threads_extra_info): Check for rs==NULL.
+	(remote_xclose): Rename from remote_close.  Call
+	destroy_remote_state.  Free "self".
+	(remote_unpush_target): Use REMOTE_TARGET_STRATUM.
+	(remote_open_1): Check for rs==NULL.  Use TARGET_NEW.
+	(discard_pending_stop_replies): Check for rs==NULL.
+	(remote_mourn_1): Update comment.
+	(packet_command, remote_file_put, remote_file_get)
+	(remote_file_delete): Check for rs==NULL.
+	(init_remote_ops): Set to_xclose, not to_close.  Use
+	REMOTE_TARGET_STRATUM.
+	(remote_new_objfile, set_range_stepping): Check for rs==NULL.
+	(_initialize_remote): Don't call new_remote_state.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* linux-thread-db.c (thread_db_xclose): New function.
 	(init_thread_db_ops): Set to_xclose.
 	(try_thread_db_load_1): Push a new instance of the target.
