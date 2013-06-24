@@ -153,9 +153,27 @@ static VEC (target_ops_ptr) *target_structs;
 
 static struct target_ops dummy_target;
 
+/* The type of the target stack.  */
+
+struct target_stack
+{
+  /* The targets making up the current stack.  They are indexed by
+     stratum.  An entry may be NULL if there is no entry at that
+     stratum.  */
+
+  struct target_ops *ops[MAX_TARGET_STRATUM + 1];
+};
+
 /* Top of target stack.  */
 
-static struct target_ops *target_stack;
+static struct target_stack *target_stack;
+
+/* Iterate over all targets currently in the stack.  */
+
+#define FOREACH_TARGET(T) \
+  for ((T) = find_target_beneath (current_target); \
+       (T) != NULL;				   \
+       (T) = find_target_beneath (T))
 
 /* The target structure we are currently using to talk to a process
    or file or whatever "inferior" we have.  */
@@ -312,7 +330,7 @@ target_has_all_memory_1 (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_has_all_memory (t))
       return 1;
 
@@ -324,7 +342,7 @@ target_has_memory_1 (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_has_memory (t))
       return 1;
 
@@ -336,7 +354,7 @@ target_has_stack_1 (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_has_stack (t))
       return 1;
 
@@ -348,7 +366,7 @@ target_has_registers_1 (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_has_registers (t))
       return 1;
 
@@ -360,7 +378,7 @@ target_has_execution_1 (ptid_t the_ptid)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_has_execution (t, the_ptid))
       return 1;
 
@@ -462,7 +480,7 @@ target_kill (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_kill != NULL)
       {
 	if (targetdebug)
@@ -488,7 +506,7 @@ target_create_inferior (char *exec_file, char *args,
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_create_inferior != NULL)	
 	{
@@ -587,6 +605,7 @@ static void
 update_current_target (void)
 {
   struct target_ops *t;
+  int i;
 
   /* First, reset current's contents.  */
   memset (current_target, 0, sizeof (*current_target));
@@ -595,8 +614,12 @@ update_current_target (void)
       if (!current_target->FIELD) \
 	current_target->FIELD = (TARGET)->FIELD
 
-  for (t = target_stack; t; t = t->beneath)
+  for (i = MAX_TARGET_STRATUM; i >= 0; --i)
     {
+      t = target_stack->ops[i];
+      if (t == NULL)
+	continue;
+
       INHERIT (to_shortname, t);
       INHERIT (to_longname, t);
       INHERIT (to_doc, t);
@@ -970,11 +993,6 @@ update_current_target (void)
 
 #undef de_fault
 
-  /* Finally, position the target-stack beneath the squashed
-     "current_target".  That way code looking for a non-inherited
-     target method can quickly and simply find it.  */
-  current_target->beneath = target_stack;
-
   if (targetdebug)
     setup_target_debug ();
 }
@@ -989,8 +1007,6 @@ update_current_target (void)
 void
 push_target (struct target_ops *t)
 {
-  struct target_ops **cur;
-
   /* Check magic number.  If wrong, it probably means someone changed
      the struct definition, but not all the places that initialize one.  */
   if (t->to_magic != OPS_MAGIC)
@@ -1002,30 +1018,14 @@ push_target (struct target_ops *t)
 		      _("failed internal consistency check"));
     }
 
-  /* Find the proper stratum to install this target in.  */
-  for (cur = &target_stack; (*cur) != NULL; cur = &(*cur)->beneath)
-    {
-      if ((int) (t->to_stratum) >= (int) (*cur)->to_stratum)
-	break;
-    }
-
-  /* If there's already targets at this stratum, remove them.  */
+  /* If there's already a target at this stratum, remove them.  */
   /* FIXME: cagney/2003-10-15: I think this should be popping all
      targets to CUR, and not just those at this stratum level.  */
-  while ((*cur) != NULL && t->to_stratum == (*cur)->to_stratum)
-    {
-      /* There's already something at this stratum level.  Close it,
-         and un-hook it from the stack.  */
-      struct target_ops *tmp = (*cur);
-
-      (*cur) = (*cur)->beneath;
-      tmp->beneath = NULL;
-      target_close (tmp);
-    }
+  if (target_stack->ops[t->to_stratum] != NULL)
+    target_close (target_stack->ops[t->to_stratum]);
 
   /* We have removed all targets in our stratum, now add the new one.  */
-  t->beneath = (*cur);
-  (*cur) = t;
+  target_stack->ops[t->to_stratum] = t;
 
   update_current_target ();
 }
@@ -1036,31 +1036,17 @@ push_target (struct target_ops *t)
 int
 unpush_target (struct target_ops *t)
 {
-  struct target_ops **cur;
-  struct target_ops *tmp;
-
   if (t->to_stratum == dummy_stratum)
     internal_error (__FILE__, __LINE__,
 		    _("Attempt to unpush the dummy target"));
 
-  /* Look for the specified target.  Note that we assume that a target
-     can only occur once in the target stack.  */
+  /* Look for the specified target.  If we don't find it, quit.  Only
+     open targets should be closed.  */
 
-  for (cur = &target_stack; (*cur) != NULL; cur = &(*cur)->beneath)
-    {
-      if ((*cur) == t)
-	break;
-    }
+  if (target_stack->ops[t->to_stratum] != t)
+    return 0;
 
-  /* If we don't find target_ops, quit.  Only open targets should be
-     closed.  */
-  if ((*cur) == NULL)
-    return 0;			
-
-  /* Unchain the target.  */
-  tmp = (*cur);
-  (*cur) = (*cur)->beneath;
-  tmp->beneath = NULL;
+  target_stack->ops[t->to_stratum] = NULL;
 
   update_current_target ();
 
@@ -1077,11 +1063,13 @@ pop_all_targets_above (enum strata above_stratum)
 {
   while ((int) (current_target->to_stratum) > (int) above_stratum)
     {
-      if (!unpush_target (target_stack))
+      struct target_ops *targ = find_target_beneath (current_target);
+
+      if (!unpush_target (targ))
 	{
 	  fprintf_unfiltered (gdb_stderr,
 			      "pop_all_targets couldn't find target %s\n",
-			      target_stack->to_shortname);
+			      targ->to_shortname);
 	  internal_error (__FILE__, __LINE__,
 			  _("failed internal consistency check"));
 	  break;
@@ -1100,8 +1088,6 @@ pop_all_targets (void)
 int
 target_is_pushed (struct target_ops *t)
 {
-  struct target_ops **cur;
-
   /* Check magic number.  If wrong, it probably means someone changed
      the struct definition, but not all the places that initialize one.  */
   if (t->to_magic != OPS_MAGIC)
@@ -1113,11 +1099,7 @@ target_is_pushed (struct target_ops *t)
 		      _("failed internal consistency check"));
     }
 
-  for (cur = &target_stack; (*cur) != NULL; cur = &(*cur)->beneath)
-    if (*cur == t)
-      return 1;
-
-  return 0;
+  return target_stack->ops[t->to_stratum] == t;
 }
 
 /* Using the objfile specified in OBJFILE, find the address for the
@@ -1128,9 +1110,7 @@ target_translate_tls_address (struct objfile *objfile, CORE_ADDR offset)
   volatile CORE_ADDR addr = 0;
   struct target_ops *target;
 
-  for (target = current_target->beneath;
-       target != NULL;
-       target = target->beneath)
+  FOREACH_TARGET (target)
     {
       if (target->to_get_thread_local_address != NULL)
 	break;
@@ -1316,7 +1296,7 @@ target_get_section_table (struct target_ops *target)
   if (targetdebug)
     fprintf_unfiltered (gdb_stdlog, "target_get_section_table ()\n");
 
-  for (t = target; t != NULL; t = t->beneath)
+  for (t = target; t != NULL; t = find_target_beneath (t))
     if (t->to_get_section_table != NULL)
       return (*t->to_get_section_table) (t);
 
@@ -1359,7 +1339,7 @@ target_read_live_memory (enum target_object object,
   cleanup = make_cleanup_restore_traceframe_number ();
   set_traceframe_number (-1);
 
-  ret = target_read (current_target->beneath, object, NULL,
+  ret = target_read (find_target_beneath (current_target), object, NULL,
 		     myaddr, memaddr, len);
 
   do_cleanups (cleanup);
@@ -1611,7 +1591,7 @@ memory_xfer_partial_1 (struct target_ops *ops, enum target_object object,
       if (ops->to_has_all_memory (ops))
 	break;
 
-      ops = ops->beneath;
+      ops = find_target_beneath (ops);
     }
   while (ops != NULL);
 
@@ -1789,7 +1769,8 @@ target_read_memory (CORE_ADDR memaddr, gdb_byte *myaddr, ssize_t len)
   /* Dispatch to the topmost target, not the flattened current_target->
      Memory accesses check target->to_has_(all_)memory, and the
      flattened target doesn't inherit those.  */
-  if (target_read (current_target->beneath, TARGET_OBJECT_MEMORY, NULL,
+  if (target_read (find_target_beneath (current_target),
+		   TARGET_OBJECT_MEMORY, NULL,
 		   myaddr, memaddr, len) == len)
     return 0;
   else
@@ -1806,7 +1787,8 @@ target_read_stack (CORE_ADDR memaddr, gdb_byte *myaddr, ssize_t len)
      Memory accesses check target->to_has_(all_)memory, and the
      flattened target doesn't inherit those.  */
 
-  if (target_read (current_target->beneath, TARGET_OBJECT_STACK_MEMORY, NULL,
+  if (target_read (find_target_beneath (current_target),
+		   TARGET_OBJECT_STACK_MEMORY, NULL,
 		   myaddr, memaddr, len) == len)
     return 0;
   else
@@ -1825,7 +1807,8 @@ target_write_memory (CORE_ADDR memaddr, const gdb_byte *myaddr, ssize_t len)
   /* Dispatch to the topmost target, not the flattened current_target->
      Memory accesses check target->to_has_(all_)memory, and the
      flattened target doesn't inherit those.  */
-  if (target_write (current_target->beneath, TARGET_OBJECT_MEMORY, NULL,
+  if (target_write (find_target_beneath (current_target),
+		    TARGET_OBJECT_MEMORY, NULL,
 		    myaddr, memaddr, len) == len)
     return 0;
   else
@@ -1844,7 +1827,8 @@ target_write_raw_memory (CORE_ADDR memaddr, const gdb_byte *myaddr, ssize_t len)
   /* Dispatch to the topmost target, not the flattened current_target->
      Memory accesses check target->to_has_(all_)memory, and the
      flattened target doesn't inherit those.  */
-  if (target_write (current_target->beneath, TARGET_OBJECT_RAW_MEMORY, NULL,
+  if (target_write (find_target_beneath (current_target),
+		    TARGET_OBJECT_RAW_MEMORY, NULL,
 		    myaddr, memaddr, len) == len)
     return 0;
   else
@@ -1864,7 +1848,7 @@ target_memory_map (void)
   if (targetdebug)
     fprintf_unfiltered (gdb_stdlog, "target_memory_map ()\n");
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_memory_map != NULL)
       break;
 
@@ -1904,7 +1888,7 @@ target_flash_erase (ULONGEST address, LONGEST length)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_flash_erase != NULL)
       {
 	if (targetdebug)
@@ -1922,7 +1906,7 @@ target_flash_done (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_flash_done != NULL)
       {
 	if (targetdebug)
@@ -1980,11 +1964,16 @@ default_xfer_partial (struct target_ops *ops, enum target_object object,
       else
 	return -1;
     }
-  else if (ops->beneath != NULL)
-    return ops->beneath->to_xfer_partial (ops->beneath, object, annex,
-					  readbuf, writebuf, offset, len);
   else
-    return -1;
+    {
+      struct target_ops *beneath = find_target_beneath (ops);
+
+      if (beneath == NULL)
+	return -1;
+      else
+	return beneath->to_xfer_partial (beneath, object, annex,
+					 readbuf, writebuf, offset, len);
+    }
 }
 
 /* The xfer_partial handler for the topmost target.  Unlike the default,
@@ -1996,9 +1985,11 @@ current_xfer_partial (struct target_ops *ops, enum target_object object,
 		      const char *annex, gdb_byte *readbuf,
 		      const gdb_byte *writebuf, ULONGEST offset, LONGEST len)
 {
-  if (ops->beneath != NULL)
-    return ops->beneath->to_xfer_partial (ops->beneath, object, annex,
-					  readbuf, writebuf, offset, len);
+  struct target_ops *beneath = find_target_beneath (ops);
+
+  if (beneath != NULL)
+    return beneath->to_xfer_partial (beneath, object, annex,
+				     readbuf, writebuf, offset, len);
   else
     return -1;
 }
@@ -2480,11 +2471,12 @@ target_info (char *args, int from_tty)
     printf_unfiltered (_("Symbols from \"%s\".\n"),
 		       objfile_name (symfile_objfile));
 
-  for (t = target_stack; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (!(*t->to_has_memory) (t))
 	continue;
 
+      /* FIXME: can this ever trigger?  */
       if ((int) (t->to_stratum) <= (int) dummy_stratum)
 	continue;
       if (has_all_mem)
@@ -2605,7 +2597,7 @@ target_detach (char *args, int from_tty)
 
   prepare_for_detach ();
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_detach != NULL)
 	{
@@ -2630,7 +2622,7 @@ target_disconnect (char *args, int from_tty)
      disconnecting.  */
   remove_breakpoints ();
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_disconnect != NULL)
 	{
 	  if (targetdebug)
@@ -2648,7 +2640,7 @@ target_wait (ptid_t ptid, struct target_waitstatus *status, int options)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_wait != NULL)
 	{
@@ -2682,7 +2674,7 @@ target_pid_to_str (ptid_t ptid)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_pid_to_str != NULL)
 	return (*t->to_pid_to_str) (t, ptid);
@@ -2696,7 +2688,7 @@ target_thread_name (struct thread_info *info)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_thread_name != NULL)
 	return (*t->to_thread_name) (info);
@@ -2712,7 +2704,7 @@ target_resume (ptid_t ptid, int step, enum gdb_signal signal)
 
   target_dcache_invalidate ();
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_resume != NULL)
 	{
@@ -2739,7 +2731,7 @@ target_pass_signals (int numsigs, unsigned char *pass_signals)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_pass_signals != NULL)
 	{
@@ -2769,7 +2761,7 @@ target_program_signals (int numsigs, unsigned char *program_signals)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_program_signals != NULL)
 	{
@@ -2802,7 +2794,7 @@ target_follow_fork (int follow_child, int detach_fork)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_follow_fork != NULL)
 	{
@@ -2826,7 +2818,7 @@ target_mourn_inferior (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_mourn_inferior != NULL)	
 	{
@@ -2855,7 +2847,7 @@ target_read_description (struct target_ops *target)
 {
   struct target_ops *t;
 
-  for (t = target; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_read_description != NULL)
       {
 	const struct target_desc *tdesc;
@@ -2999,7 +2991,7 @@ target_search_memory (CORE_ADDR start_addr, ULONGEST search_space_len,
     fprintf_unfiltered (gdb_stdlog, "target_search_memory (%s, ...)\n",
 			hex_string (start_addr));
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_search_memory != NULL)
       break;
 
@@ -3012,7 +3004,7 @@ target_search_memory (CORE_ADDR start_addr, ULONGEST search_space_len,
     {
       /* If a special version of to_search_memory isn't available, use the
 	 simple version.  */
-      found = simple_search_memory (current_target->beneath,
+      found = simple_search_memory (find_target_beneath (current_target),
 				    start_addr, search_space_len,
 				    pattern, pattern_len, found_addrp);
     }
@@ -3032,7 +3024,7 @@ target_require_runnable (void)
 {
   struct target_ops *t;
 
-  for (t = target_stack; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       /* If this target knows how to create a new program, then
 	 assume we will still be able to after killing the current
@@ -3163,7 +3155,7 @@ target_supports_non_stop (void)
 {
   struct target_ops *t;
 
-  for (t = current_target; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_supports_non_stop)
       return t->to_supports_non_stop ();
 
@@ -3181,11 +3173,11 @@ target_info_proc (char *args, enum info_proc_what what)
      related data, use it.  Otherwise, try using the native
      target.  */
   if (current_target->to_stratum >= process_stratum)
-    t = current_target->beneath;
+    t = find_target_beneath (current_target);
   else
     t = find_default_run_target (NULL);
 
-  for (; t != NULL; t = t->beneath)
+  for (; t != NULL; t = find_target_beneath (t))
     {
       if (t->to_info_proc != NULL)
 	{
@@ -3218,7 +3210,7 @@ target_supports_disable_randomization (void)
 {
   struct target_ops *t;
 
-  for (t = current_target; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_supports_disable_randomization)
       return t->to_supports_disable_randomization ();
 
@@ -3234,7 +3226,7 @@ target_get_osdata (const char *type)
      related data, use it.  Otherwise, try using the native
      target.  */
   if (current_target->to_stratum >= process_stratum)
-    t = current_target->beneath;
+    t = find_target_beneath (current_target);
   else
     t = find_default_run_target ("get OS data");
 
@@ -3253,7 +3245,7 @@ target_thread_address_space (ptid_t ptid)
   struct inferior *inf;
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_thread_address_space != NULL)
 	{
@@ -3290,7 +3282,7 @@ default_fileio_target (void)
   /* If we're already connected to something that can perform
      file I/O, use it. Otherwise, try using the native target.  */
   if (current_target->to_stratum >= process_stratum)
-    return current_target->beneath;
+    return find_target_beneath (current_target);
   else
     return find_default_run_target ("file I/O");
 }
@@ -3304,7 +3296,7 @@ target_fileio_open (const char *filename, int flags, int mode,
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_open != NULL)
 	{
@@ -3332,7 +3324,7 @@ target_fileio_pwrite (int fd, const gdb_byte *write_buf, int len,
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_pwrite != NULL)
 	{
@@ -3362,7 +3354,7 @@ target_fileio_pread (int fd, gdb_byte *read_buf, int len,
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_pread != NULL)
 	{
@@ -3390,7 +3382,7 @@ target_fileio_close (int fd, int *target_errno)
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_close != NULL)
 	{
@@ -3415,7 +3407,7 @@ target_fileio_unlink (const char *filename, int *target_errno)
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_unlink != NULL)
 	{
@@ -3441,7 +3433,7 @@ target_fileio_readlink (const char *filename, int *target_errno)
 {
   struct target_ops *t;
 
-  for (t = default_fileio_target (); t != NULL; t = t->beneath)
+  for (t = default_fileio_target (); t != NULL; t = find_target_beneath (t))
     {
       if (t->to_fileio_readlink != NULL)
 	{
@@ -3626,7 +3618,19 @@ return_minus_one (void)
 struct target_ops *
 find_target_beneath (struct target_ops *t)
 {
-  return t->beneath;
+  int i;
+
+  if (t == current_target)
+    {
+      gdb_assert (target_stack->ops[t->to_stratum] != NULL);
+      return target_stack->ops[t->to_stratum];
+    }
+
+  for (i = t->to_stratum - 1; i >= 0; --i)
+    if (target_stack->ops[i] != NULL)
+      return target_stack->ops[i];
+
+  return NULL;
 }
 
 
@@ -3778,7 +3782,7 @@ target_attach (char *args, int from_tty)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_attach != NULL)	
 	{
@@ -3799,7 +3803,7 @@ target_thread_alive (ptid_t ptid)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_thread_alive != NULL)
 	{
@@ -3822,7 +3826,7 @@ target_find_new_threads (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_find_new_threads != NULL)
 	{
@@ -3945,7 +3949,7 @@ target_fetch_registers (struct regcache *regcache, int regno)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_fetch_registers != NULL)
 	{
@@ -3965,7 +3969,7 @@ target_store_registers (struct regcache *regcache, int regno)
   if (!may_write_registers)
     error (_("Writing to registers is not allowed (regno %d)"), regno);
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_store_registers != NULL)
 	{
@@ -3986,7 +3990,7 @@ target_core_of_thread (ptid_t ptid)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_core_of_thread != NULL)
 	{
@@ -4008,7 +4012,7 @@ target_verify_memory (const gdb_byte *data, CORE_ADDR memaddr, ULONGEST size)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       if (t->to_verify_memory != NULL)
 	{
@@ -4035,7 +4039,7 @@ target_insert_mask_watchpoint (CORE_ADDR addr, CORE_ADDR mask, int rw)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_insert_mask_watchpoint != NULL)
       {
 	int ret;
@@ -4062,7 +4066,7 @@ target_remove_mask_watchpoint (CORE_ADDR addr, CORE_ADDR mask, int rw)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_remove_mask_watchpoint != NULL)
       {
 	int ret;
@@ -4089,7 +4093,7 @@ target_masked_watch_num_registers (CORE_ADDR addr, CORE_ADDR mask)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_masked_watch_num_registers != NULL)
       return t->to_masked_watch_num_registers (t, addr, mask);
 
@@ -4104,7 +4108,7 @@ target_ranged_break_num_registers (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_ranged_break_num_registers != NULL)
       return t->to_ranged_break_num_registers (t);
 
@@ -4118,7 +4122,7 @@ target_supports_btrace (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_supports_btrace != NULL)
       return t->to_supports_btrace ();
 
@@ -4132,7 +4136,7 @@ target_enable_btrace (ptid_t ptid)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_enable_btrace != NULL)
       return t->to_enable_btrace (ptid);
 
@@ -4147,7 +4151,7 @@ target_disable_btrace (struct btrace_target_info *btinfo)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_disable_btrace != NULL)
       {
 	t->to_disable_btrace (btinfo);
@@ -4164,7 +4168,7 @@ target_teardown_btrace (struct btrace_target_info *btinfo)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_teardown_btrace != NULL)
       {
 	t->to_teardown_btrace (btinfo);
@@ -4182,7 +4186,7 @@ target_read_btrace (struct btrace_target_info *btinfo,
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_read_btrace != NULL)
       return t->to_read_btrace (btinfo, type);
 
@@ -4197,7 +4201,7 @@ target_stop_recording (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_stop_recording != NULL)
       {
 	t->to_stop_recording ();
@@ -4214,7 +4218,7 @@ target_info_record (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_info_record != NULL)
       {
 	t->to_info_record ();
@@ -4231,7 +4235,7 @@ target_save_record (const char *filename)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_save_record != NULL)
       {
 	t->to_save_record (filename);
@@ -4248,7 +4252,7 @@ target_supports_delete_record (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_delete_record != NULL)
       return 1;
 
@@ -4262,7 +4266,7 @@ target_delete_record (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_delete_record != NULL)
       {
 	t->to_delete_record ();
@@ -4279,7 +4283,7 @@ target_record_is_replaying (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_record_is_replaying != NULL)
 	return t->to_record_is_replaying ();
 
@@ -4293,7 +4297,7 @@ target_goto_record_begin (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_goto_record_begin != NULL)
       {
 	t->to_goto_record_begin ();
@@ -4310,7 +4314,7 @@ target_goto_record_end (void)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_goto_record_end != NULL)
       {
 	t->to_goto_record_end ();
@@ -4327,7 +4331,7 @@ target_goto_record (ULONGEST insn)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_goto_record != NULL)
       {
 	t->to_goto_record (insn);
@@ -4344,7 +4348,7 @@ target_insn_history (int size, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_insn_history != NULL)
       {
 	t->to_insn_history (size, flags);
@@ -4361,7 +4365,7 @@ target_insn_history_from (ULONGEST from, int size, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_insn_history_from != NULL)
       {
 	t->to_insn_history_from (from, size, flags);
@@ -4378,7 +4382,7 @@ target_insn_history_range (ULONGEST begin, ULONGEST end, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_insn_history_range != NULL)
       {
 	t->to_insn_history_range (begin, end, flags);
@@ -4395,7 +4399,7 @@ target_call_history (int size, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_call_history != NULL)
       {
 	t->to_call_history (size, flags);
@@ -4412,7 +4416,7 @@ target_call_history_from (ULONGEST begin, int size, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_call_history_from != NULL)
       {
 	t->to_call_history_from (begin, size, flags);
@@ -4429,7 +4433,7 @@ target_call_history_range (ULONGEST begin, ULONGEST end, int flags)
 {
   struct target_ops *t;
 
-  for (t = current_target->beneath; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     if (t->to_call_history_range != NULL)
       {
 	t->to_call_history_range (begin, end, flags);
@@ -4967,7 +4971,7 @@ maintenance_print_target_stack (char *cmd, int from_tty)
 
   printf_filtered (_("The current target stack is:\n"));
 
-  for (t = target_stack; t != NULL; t = t->beneath)
+  FOREACH_TARGET (t)
     {
       printf_filtered ("  - %s (%s)\n", t->to_shortname, t->to_longname);
     }
@@ -5063,6 +5067,7 @@ void
 initialize_targets (void)
 {
   current_target = XCNEW (struct target_ops);
+  target_stack = XCNEW (struct target_stack);
 
   init_dummy_target ();
   push_target (&dummy_target);
