@@ -18,10 +18,10 @@ tdefault_post_attach (struct target_ops *self, int arg1)
 static void
 debug_post_attach (struct target_ops *self, int arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_post_attach (...)\n", debug_target.to_shortname);
-  debug_target.to_post_attach (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_post_attach (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_post_attach (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_post_attach (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_post_attach (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -42,10 +42,10 @@ tdefault_detach (struct target_ops *self, const char *arg1, int arg2)
 static void
 debug_detach (struct target_ops *self, const char *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_detach (...)\n", debug_target.to_shortname);
-  debug_target.to_detach (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_detach (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_detach (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_detach (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_detach (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -69,10 +69,10 @@ tdefault_disconnect (struct target_ops *self, const char *arg1, int arg2)
 static void
 debug_disconnect (struct target_ops *self, const char *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disconnect (...)\n", debug_target.to_shortname);
-  debug_target.to_disconnect (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disconnect (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disconnect (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_disconnect (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disconnect (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -96,10 +96,10 @@ tdefault_resume (struct target_ops *self, ptid_t arg1, int arg2, enum gdb_signal
 static void
 debug_resume (struct target_ops *self, ptid_t arg1, int arg2, enum gdb_signal arg3)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_resume (...)\n", debug_target.to_shortname);
-  debug_target.to_resume (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_resume (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_resume (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_resume (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_resume (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -126,10 +126,10 @@ static ptid_t
 debug_wait (struct target_ops *self, ptid_t arg1, struct target_waitstatus *arg2, int arg3)
 {
   ptid_t result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_wait (...)\n", debug_target.to_shortname);
-  result = debug_target.to_wait (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_wait (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_wait (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_wait (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_wait (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -157,10 +157,10 @@ tdefault_fetch_registers (struct target_ops *self, struct regcache *arg1, int ar
 static void
 debug_fetch_registers (struct target_ops *self, struct regcache *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_fetch_registers (...)\n", debug_target.to_shortname);
-  debug_target.to_fetch_registers (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_fetch_registers (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_fetch_registers (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_fetch_registers (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_fetch_registers (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_regcache_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -184,10 +184,10 @@ tdefault_store_registers (struct target_ops *self, struct regcache *arg1, int ar
 static void
 debug_store_registers (struct target_ops *self, struct regcache *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_store_registers (...)\n", debug_target.to_shortname);
-  debug_target.to_store_registers (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_store_registers (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_store_registers (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_store_registers (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_store_registers (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_regcache_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -211,10 +211,10 @@ tdefault_prepare_to_store (struct target_ops *self, struct regcache *arg1)
 static void
 debug_prepare_to_store (struct target_ops *self, struct regcache *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_prepare_to_store (...)\n", debug_target.to_shortname);
-  debug_target.to_prepare_to_store (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_prepare_to_store (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_prepare_to_store (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_prepare_to_store (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_prepare_to_store (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_regcache_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -235,10 +235,10 @@ tdefault_files_info (struct target_ops *self)
 static void
 debug_files_info (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_files_info (...)\n", debug_target.to_shortname);
-  debug_target.to_files_info (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_files_info (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_files_info (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_files_info (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_files_info (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -253,10 +253,10 @@ static int
 debug_insert_breakpoint (struct target_ops *self, struct gdbarch *arg1, struct bp_target_info *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_breakpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_breakpoint (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_breakpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_breakpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_breakpoint (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_breakpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_gdbarch_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -278,10 +278,10 @@ static int
 debug_remove_breakpoint (struct target_ops *self, struct gdbarch *arg1, struct bp_target_info *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_breakpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_breakpoint (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_breakpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_breakpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_breakpoint (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_breakpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_gdbarch_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -309,10 +309,10 @@ static int
 debug_can_use_hw_breakpoint (struct target_ops *self, int arg1, int arg2, int arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_use_hw_breakpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_use_hw_breakpoint (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_use_hw_breakpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_use_hw_breakpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_use_hw_breakpoint (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_use_hw_breakpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -342,10 +342,10 @@ static int
 debug_ranged_break_num_registers (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_ranged_break_num_registers (...)\n", debug_target.to_shortname);
-  result = debug_target.to_ranged_break_num_registers (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_ranged_break_num_registers (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_ranged_break_num_registers (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_ranged_break_num_registers (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_ranged_break_num_registers (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -369,10 +369,10 @@ static int
 debug_insert_hw_breakpoint (struct target_ops *self, struct gdbarch *arg1, struct bp_target_info *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_hw_breakpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_hw_breakpoint (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_hw_breakpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_hw_breakpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_hw_breakpoint (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_hw_breakpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_gdbarch_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -400,10 +400,10 @@ static int
 debug_remove_hw_breakpoint (struct target_ops *self, struct gdbarch *arg1, struct bp_target_info *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_hw_breakpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_hw_breakpoint (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_hw_breakpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_hw_breakpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_hw_breakpoint (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_hw_breakpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_gdbarch_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -431,10 +431,10 @@ static int
 debug_remove_watchpoint (struct target_ops *self, CORE_ADDR arg1, int arg2, int arg3, struct expression *arg4)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_watchpoint (&debug_target, arg1, arg2, arg3, arg4);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_watchpoint (&target_stack->debug_target, arg1, arg2, arg3, arg4);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -466,10 +466,10 @@ static int
 debug_insert_watchpoint (struct target_ops *self, CORE_ADDR arg1, int arg2, int arg3, struct expression *arg4)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_watchpoint (&debug_target, arg1, arg2, arg3, arg4);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_watchpoint (&target_stack->debug_target, arg1, arg2, arg3, arg4);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -501,10 +501,10 @@ static int
 debug_insert_mask_watchpoint (struct target_ops *self, CORE_ADDR arg1, CORE_ADDR arg2, int arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_mask_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_mask_watchpoint (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_mask_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_mask_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_mask_watchpoint (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_mask_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -534,10 +534,10 @@ static int
 debug_remove_mask_watchpoint (struct target_ops *self, CORE_ADDR arg1, CORE_ADDR arg2, int arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_mask_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_mask_watchpoint (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_mask_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_mask_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_mask_watchpoint (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_mask_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -567,10 +567,10 @@ static int
 debug_stopped_by_watchpoint (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stopped_by_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_stopped_by_watchpoint (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stopped_by_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stopped_by_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_stopped_by_watchpoint (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stopped_by_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -594,10 +594,10 @@ static int
 debug_stopped_data_address (struct target_ops *self, CORE_ADDR *arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stopped_data_address (...)\n", debug_target.to_shortname);
-  result = debug_target.to_stopped_data_address (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stopped_data_address (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stopped_data_address (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_stopped_data_address (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stopped_data_address (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -617,10 +617,10 @@ static int
 debug_watchpoint_addr_within_range (struct target_ops *self, CORE_ADDR arg1, CORE_ADDR arg2, int arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_watchpoint_addr_within_range (...)\n", debug_target.to_shortname);
-  result = debug_target.to_watchpoint_addr_within_range (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_watchpoint_addr_within_range (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_watchpoint_addr_within_range (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_watchpoint_addr_within_range (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_watchpoint_addr_within_range (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -644,10 +644,10 @@ static int
 debug_region_ok_for_hw_watchpoint (struct target_ops *self, CORE_ADDR arg1, int arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_region_ok_for_hw_watchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_region_ok_for_hw_watchpoint (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_region_ok_for_hw_watchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_region_ok_for_hw_watchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_region_ok_for_hw_watchpoint (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_region_ok_for_hw_watchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -675,10 +675,10 @@ static int
 debug_can_accel_watchpoint_condition (struct target_ops *self, CORE_ADDR arg1, int arg2, int arg3, struct expression *arg4)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_accel_watchpoint_condition (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_accel_watchpoint_condition (&debug_target, arg1, arg2, arg3, arg4);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_accel_watchpoint_condition (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_accel_watchpoint_condition (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_accel_watchpoint_condition (&target_stack->debug_target, arg1, arg2, arg3, arg4);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_accel_watchpoint_condition (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -710,10 +710,10 @@ static int
 debug_masked_watch_num_registers (struct target_ops *self, CORE_ADDR arg1, CORE_ADDR arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_masked_watch_num_registers (...)\n", debug_target.to_shortname);
-  result = debug_target.to_masked_watch_num_registers (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_masked_watch_num_registers (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_masked_watch_num_registers (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_masked_watch_num_registers (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_masked_watch_num_registers (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -739,10 +739,10 @@ tdefault_terminal_init (struct target_ops *self)
 static void
 debug_terminal_init (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_init (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_init (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_init (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_init (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_init (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_init (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -761,10 +761,10 @@ tdefault_terminal_inferior (struct target_ops *self)
 static void
 debug_terminal_inferior (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_inferior (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_inferior (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_inferior (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_inferior (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_inferior (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_inferior (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -783,10 +783,10 @@ tdefault_terminal_ours_for_output (struct target_ops *self)
 static void
 debug_terminal_ours_for_output (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_ours_for_output (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_ours_for_output (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_ours_for_output (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_ours_for_output (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_ours_for_output (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_ours_for_output (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -805,10 +805,10 @@ tdefault_terminal_ours (struct target_ops *self)
 static void
 debug_terminal_ours (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_ours (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_ours (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_ours (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_ours (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_ours (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_ours (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -827,10 +827,10 @@ tdefault_terminal_save_ours (struct target_ops *self)
 static void
 debug_terminal_save_ours (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_save_ours (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_save_ours (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_save_ours (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_save_ours (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_save_ours (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_save_ours (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -844,10 +844,10 @@ delegate_terminal_info (struct target_ops *self, const char *arg1, int arg2)
 static void
 debug_terminal_info (struct target_ops *self, const char *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_info (...)\n", debug_target.to_shortname);
-  debug_target.to_terminal_info (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_info (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_terminal_info (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_terminal_info (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_terminal_info (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -871,10 +871,10 @@ tdefault_kill (struct target_ops *self)
 static void
 debug_kill (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_kill (...)\n", debug_target.to_shortname);
-  debug_target.to_kill (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_kill (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_kill (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_kill (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_kill (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -894,10 +894,10 @@ tdefault_load (struct target_ops *self, const char *arg1, int arg2)
 static void
 debug_load (struct target_ops *self, const char *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_load (...)\n", debug_target.to_shortname);
-  debug_target.to_load (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_load (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_load (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_load (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_load (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -920,10 +920,10 @@ tdefault_post_startup_inferior (struct target_ops *self, ptid_t arg1)
 static void
 debug_post_startup_inferior (struct target_ops *self, ptid_t arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_post_startup_inferior (...)\n", debug_target.to_shortname);
-  debug_target.to_post_startup_inferior (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_post_startup_inferior (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_post_startup_inferior (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_post_startup_inferior (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_post_startup_inferior (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -946,10 +946,10 @@ static int
 debug_insert_fork_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_fork_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_fork_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_fork_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_fork_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_fork_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_fork_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -975,10 +975,10 @@ static int
 debug_remove_fork_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_fork_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_fork_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_fork_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_fork_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_fork_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_fork_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1004,10 +1004,10 @@ static int
 debug_insert_vfork_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_vfork_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_vfork_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_vfork_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_vfork_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_vfork_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_vfork_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1033,10 +1033,10 @@ static int
 debug_remove_vfork_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_vfork_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_vfork_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_vfork_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_vfork_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_vfork_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_vfork_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1056,10 +1056,10 @@ static int
 debug_follow_fork (struct target_ops *self, int arg1, int arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_follow_fork (...)\n", debug_target.to_shortname);
-  result = debug_target.to_follow_fork (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_follow_fork (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_follow_fork (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_follow_fork (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_follow_fork (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1087,10 +1087,10 @@ static int
 debug_insert_exec_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_exec_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_insert_exec_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_exec_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insert_exec_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_insert_exec_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insert_exec_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1116,10 +1116,10 @@ static int
 debug_remove_exec_catchpoint (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_exec_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_remove_exec_catchpoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_exec_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_remove_exec_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_remove_exec_catchpoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_remove_exec_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1145,10 +1145,10 @@ static int
 debug_set_syscall_catchpoint (struct target_ops *self, int arg1, int arg2, int arg3, int arg4, int *arg5)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_syscall_catchpoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_set_syscall_catchpoint (&debug_target, arg1, arg2, arg3, arg4, arg5);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_syscall_catchpoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_syscall_catchpoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_set_syscall_catchpoint (&target_stack->debug_target, arg1, arg2, arg3, arg4, arg5);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_syscall_catchpoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1182,10 +1182,10 @@ static int
 debug_has_exited (struct target_ops *self, int arg1, int arg2, int *arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_has_exited (...)\n", debug_target.to_shortname);
-  result = debug_target.to_has_exited (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_has_exited (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_has_exited (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_has_exited (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_has_exited (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1208,10 +1208,10 @@ delegate_mourn_inferior (struct target_ops *self)
 static void
 debug_mourn_inferior (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_mourn_inferior (...)\n", debug_target.to_shortname);
-  debug_target.to_mourn_inferior (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_mourn_inferior (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_mourn_inferior (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_mourn_inferior (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_mourn_inferior (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -1232,10 +1232,10 @@ static int
 debug_can_run (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_run (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_run (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_run (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_run (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_run (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_run (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1257,10 +1257,10 @@ tdefault_pass_signals (struct target_ops *self, int arg1, unsigned char * arg2)
 static void
 debug_pass_signals (struct target_ops *self, int arg1, unsigned char * arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pass_signals (...)\n", debug_target.to_shortname);
-  debug_target.to_pass_signals (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pass_signals (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pass_signals (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_pass_signals (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pass_signals (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1283,10 +1283,10 @@ tdefault_program_signals (struct target_ops *self, int arg1, unsigned char * arg
 static void
 debug_program_signals (struct target_ops *self, int arg1, unsigned char * arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_program_signals (...)\n", debug_target.to_shortname);
-  debug_target.to_program_signals (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_program_signals (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_program_signals (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_program_signals (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_program_signals (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1311,10 +1311,10 @@ static int
 debug_thread_alive (struct target_ops *self, ptid_t arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_alive (...)\n", debug_target.to_shortname);
-  result = debug_target.to_thread_alive (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_alive (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_alive (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_thread_alive (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_alive (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1338,10 +1338,10 @@ tdefault_find_new_threads (struct target_ops *self)
 static void
 debug_find_new_threads (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_find_new_threads (...)\n", debug_target.to_shortname);
-  debug_target.to_find_new_threads (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_find_new_threads (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_find_new_threads (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_find_new_threads (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_find_new_threads (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -1356,10 +1356,10 @@ static char *
 debug_pid_to_str (struct target_ops *self, ptid_t arg1)
 {
   char * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pid_to_str (...)\n", debug_target.to_shortname);
-  result = debug_target.to_pid_to_str (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pid_to_str (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pid_to_str (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_pid_to_str (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pid_to_str (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1385,10 +1385,10 @@ static char *
 debug_extra_thread_info (struct target_ops *self, struct thread_info *arg1)
 {
   char * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_extra_thread_info (...)\n", debug_target.to_shortname);
-  result = debug_target.to_extra_thread_info (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_extra_thread_info (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_extra_thread_info (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_extra_thread_info (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_extra_thread_info (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_thread_info_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1414,10 +1414,10 @@ static char *
 debug_thread_name (struct target_ops *self, struct thread_info *arg1)
 {
   char * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_name (...)\n", debug_target.to_shortname);
-  result = debug_target.to_thread_name (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_name (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_name (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_thread_name (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_name (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_thread_info_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1441,10 +1441,10 @@ tdefault_stop (struct target_ops *self, ptid_t arg1)
 static void
 debug_stop (struct target_ops *self, ptid_t arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stop (...)\n", debug_target.to_shortname);
-  debug_target.to_stop (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stop (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stop (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_stop (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stop (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -1460,10 +1460,10 @@ delegate_rcmd (struct target_ops *self, const char *arg1, struct ui_file *arg2)
 static void
 debug_rcmd (struct target_ops *self, const char *arg1, struct ui_file *arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_rcmd (...)\n", debug_target.to_shortname);
-  debug_target.to_rcmd (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_rcmd (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_rcmd (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_rcmd (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_rcmd (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1488,10 +1488,10 @@ static char *
 debug_pid_to_exec_file (struct target_ops *self, int arg1)
 {
   char * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pid_to_exec_file (...)\n", debug_target.to_shortname);
-  result = debug_target.to_pid_to_exec_file (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pid_to_exec_file (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_pid_to_exec_file (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_pid_to_exec_file (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_pid_to_exec_file (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -1515,10 +1515,10 @@ tdefault_log_command (struct target_ops *self, const char *arg1)
 static void
 debug_log_command (struct target_ops *self, const char *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_log_command (...)\n", debug_target.to_shortname);
-  debug_target.to_log_command (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_log_command (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_log_command (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_log_command (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_log_command (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -1541,10 +1541,10 @@ static struct target_section_table *
 debug_get_section_table (struct target_ops *self)
 {
   struct target_section_table * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_section_table (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_section_table (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_section_table (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_section_table (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_section_table (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_section_table (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_struct_target_section_table_p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1568,10 +1568,10 @@ static int
 debug_can_async_p (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_async_p (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_async_p (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_async_p (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_async_p (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_async_p (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_async_p (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1595,10 +1595,10 @@ static int
 debug_is_async_p (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_is_async_p (...)\n", debug_target.to_shortname);
-  result = debug_target.to_is_async_p (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_is_async_p (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_is_async_p (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_is_async_p (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_is_async_p (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1621,10 +1621,10 @@ tdefault_async (struct target_ops *self, async_callback_ftype *arg1, void *arg2)
 static void
 debug_async (struct target_ops *self, async_callback_ftype *arg1, void *arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_async (...)\n", debug_target.to_shortname);
-  debug_target.to_async (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_async (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_async (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_async (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_async (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_async_callback_ftype_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1649,10 +1649,10 @@ static int
 debug_supports_non_stop (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_non_stop (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_non_stop (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_non_stop (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_non_stop (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_non_stop (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_non_stop (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1670,10 +1670,10 @@ static int
 debug_find_memory_regions (struct target_ops *self, find_memory_region_ftype arg1, void *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_find_memory_regions (...)\n", debug_target.to_shortname);
-  result = debug_target.to_find_memory_regions (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_find_memory_regions (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_find_memory_regions (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_find_memory_regions (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_find_memory_regions (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_find_memory_region_ftype (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1695,10 +1695,10 @@ static char *
 debug_make_corefile_notes (struct target_ops *self, bfd *arg1, int *arg2)
 {
   char * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_make_corefile_notes (...)\n", debug_target.to_shortname);
-  result = debug_target.to_make_corefile_notes (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_make_corefile_notes (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_make_corefile_notes (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_make_corefile_notes (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_make_corefile_notes (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_bfd_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1726,10 +1726,10 @@ static gdb_byte *
 debug_get_bookmark (struct target_ops *self, const char *arg1, int arg2)
 {
   gdb_byte * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_bookmark (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_bookmark (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_bookmark (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_bookmark (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_bookmark (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_bookmark (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1756,10 +1756,10 @@ tdefault_goto_bookmark (struct target_ops *self, const gdb_byte *arg1, int arg2)
 static void
 debug_goto_bookmark (struct target_ops *self, const gdb_byte *arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_bookmark (...)\n", debug_target.to_shortname);
-  debug_target.to_goto_bookmark (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_bookmark (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_bookmark (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_goto_bookmark (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_bookmark (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_gdb_byte_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1784,10 +1784,10 @@ static CORE_ADDR
 debug_get_thread_local_address (struct target_ops *self, ptid_t arg1, CORE_ADDR arg2, CORE_ADDR arg3)
 {
   CORE_ADDR result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_thread_local_address (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_thread_local_address (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_thread_local_address (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_thread_local_address (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_thread_local_address (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_thread_local_address (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1817,10 +1817,10 @@ static enum target_xfer_status
 debug_xfer_partial (struct target_ops *self, enum target_object arg1, const char *arg2, gdb_byte *arg3, const gdb_byte *arg4, ULONGEST arg5, ULONGEST arg6, ULONGEST *arg7)
 {
   enum target_xfer_status result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_xfer_partial (...)\n", debug_target.to_shortname);
-  result = debug_target.to_xfer_partial (&debug_target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_xfer_partial (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_xfer_partial (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_xfer_partial (&target_stack->debug_target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_xfer_partial (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_enum_target_object (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1858,10 +1858,10 @@ static VEC(mem_region_s) *
 debug_memory_map (struct target_ops *self)
 {
   VEC(mem_region_s) * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_memory_map (...)\n", debug_target.to_shortname);
-  result = debug_target.to_memory_map (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_memory_map (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_memory_map (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_memory_map (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_memory_map (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_VEC_mem_region_s__p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1884,10 +1884,10 @@ tdefault_flash_erase (struct target_ops *self, ULONGEST arg1, LONGEST arg2)
 static void
 debug_flash_erase (struct target_ops *self, ULONGEST arg1, LONGEST arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_flash_erase (...)\n", debug_target.to_shortname);
-  debug_target.to_flash_erase (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_flash_erase (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_flash_erase (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_flash_erase (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_flash_erase (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1911,10 +1911,10 @@ tdefault_flash_done (struct target_ops *self)
 static void
 debug_flash_done (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_flash_done (...)\n", debug_target.to_shortname);
-  debug_target.to_flash_done (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_flash_done (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_flash_done (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_flash_done (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_flash_done (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -1935,10 +1935,10 @@ static const struct target_desc *
 debug_read_description (struct target_ops *self)
 {
   const struct target_desc * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_read_description (...)\n", debug_target.to_shortname);
-  result = debug_target.to_read_description (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_read_description (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_read_description (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_read_description (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_read_description (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_const_struct_target_desc_p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -1956,10 +1956,10 @@ static ptid_t
 debug_get_ada_task_ptid (struct target_ops *self, long arg1, long arg2)
 {
   ptid_t result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_ada_task_ptid (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_ada_task_ptid (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_ada_task_ptid (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_ada_task_ptid (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_ada_task_ptid (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_ada_task_ptid (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_long (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -1981,10 +1981,10 @@ static int
 debug_auxv_parse (struct target_ops *self, gdb_byte **arg1, gdb_byte *arg2, CORE_ADDR *arg3, CORE_ADDR *arg4)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_auxv_parse (...)\n", debug_target.to_shortname);
-  result = debug_target.to_auxv_parse (&debug_target, arg1, arg2, arg3, arg4);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_auxv_parse (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_auxv_parse (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_auxv_parse (&target_stack->debug_target, arg1, arg2, arg3, arg4);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_auxv_parse (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_gdb_byte_pp (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2010,10 +2010,10 @@ static int
 debug_search_memory (struct target_ops *self, CORE_ADDR arg1, ULONGEST arg2, const gdb_byte *arg3, ULONGEST arg4, CORE_ADDR *arg5)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_search_memory (...)\n", debug_target.to_shortname);
-  result = debug_target.to_search_memory (&debug_target, arg1, arg2, arg3, arg4, arg5);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_search_memory (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_search_memory (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_search_memory (&target_stack->debug_target, arg1, arg2, arg3, arg4, arg5);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_search_memory (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2047,10 +2047,10 @@ static int
 debug_can_execute_reverse (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_execute_reverse (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_execute_reverse (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_execute_reverse (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_execute_reverse (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_execute_reverse (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_execute_reverse (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2068,10 +2068,10 @@ static enum exec_direction_kind
 debug_execution_direction (struct target_ops *self)
 {
   enum exec_direction_kind result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_execution_direction (...)\n", debug_target.to_shortname);
-  result = debug_target.to_execution_direction (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_execution_direction (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_execution_direction (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_execution_direction (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_execution_direction (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_enum_exec_direction_kind (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2095,10 +2095,10 @@ static int
 debug_supports_multi_process (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_multi_process (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_multi_process (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_multi_process (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_multi_process (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_multi_process (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_multi_process (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2122,10 +2122,10 @@ static int
 debug_supports_enable_disable_tracepoint (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_enable_disable_tracepoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_enable_disable_tracepoint (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_enable_disable_tracepoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_enable_disable_tracepoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_enable_disable_tracepoint (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_enable_disable_tracepoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2149,10 +2149,10 @@ static int
 debug_supports_string_tracing (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_string_tracing (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_string_tracing (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_string_tracing (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_string_tracing (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_string_tracing (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_string_tracing (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2176,10 +2176,10 @@ static int
 debug_supports_evaluation_of_breakpoint_conditions (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_evaluation_of_breakpoint_conditions (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_evaluation_of_breakpoint_conditions (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_evaluation_of_breakpoint_conditions (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_evaluation_of_breakpoint_conditions (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_evaluation_of_breakpoint_conditions (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_evaluation_of_breakpoint_conditions (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2203,10 +2203,10 @@ static int
 debug_can_run_breakpoint_commands (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_run_breakpoint_commands (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_run_breakpoint_commands (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_run_breakpoint_commands (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_run_breakpoint_commands (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_run_breakpoint_commands (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_run_breakpoint_commands (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2224,10 +2224,10 @@ static struct gdbarch *
 debug_thread_architecture (struct target_ops *self, ptid_t arg1)
 {
   struct gdbarch * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_architecture (...)\n", debug_target.to_shortname);
-  result = debug_target.to_thread_architecture (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_architecture (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_architecture (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_thread_architecture (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_architecture (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2247,10 +2247,10 @@ static struct address_space *
 debug_thread_address_space (struct target_ops *self, ptid_t arg1)
 {
   struct address_space * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_address_space (...)\n", debug_target.to_shortname);
-  result = debug_target.to_thread_address_space (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_address_space (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_thread_address_space (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_thread_address_space (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_thread_address_space (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2275,10 +2275,10 @@ tdefault_trace_init (struct target_ops *self)
 static void
 debug_trace_init (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_init (...)\n", debug_target.to_shortname);
-  debug_target.to_trace_init (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_init (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_init (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_trace_init (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_init (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -2298,10 +2298,10 @@ tdefault_download_tracepoint (struct target_ops *self, struct bp_location *arg1)
 static void
 debug_download_tracepoint (struct target_ops *self, struct bp_location *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_download_tracepoint (...)\n", debug_target.to_shortname);
-  debug_target.to_download_tracepoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_download_tracepoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_download_tracepoint (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_download_tracepoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_download_tracepoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_bp_location_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2324,10 +2324,10 @@ static int
 debug_can_download_tracepoint (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_download_tracepoint (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_download_tracepoint (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_download_tracepoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_download_tracepoint (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_download_tracepoint (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_download_tracepoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2350,10 +2350,10 @@ tdefault_download_trace_state_variable (struct target_ops *self, struct trace_st
 static void
 debug_download_trace_state_variable (struct target_ops *self, struct trace_state_variable *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_download_trace_state_variable (...)\n", debug_target.to_shortname);
-  debug_target.to_download_trace_state_variable (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_download_trace_state_variable (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_download_trace_state_variable (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_download_trace_state_variable (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_download_trace_state_variable (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_trace_state_variable_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2375,10 +2375,10 @@ tdefault_enable_tracepoint (struct target_ops *self, struct bp_location *arg1)
 static void
 debug_enable_tracepoint (struct target_ops *self, struct bp_location *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_enable_tracepoint (...)\n", debug_target.to_shortname);
-  debug_target.to_enable_tracepoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_enable_tracepoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_enable_tracepoint (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_enable_tracepoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_enable_tracepoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_bp_location_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2400,10 +2400,10 @@ tdefault_disable_tracepoint (struct target_ops *self, struct bp_location *arg1)
 static void
 debug_disable_tracepoint (struct target_ops *self, struct bp_location *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disable_tracepoint (...)\n", debug_target.to_shortname);
-  debug_target.to_disable_tracepoint (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disable_tracepoint (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disable_tracepoint (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_disable_tracepoint (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disable_tracepoint (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_bp_location_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2425,10 +2425,10 @@ tdefault_trace_set_readonly_regions (struct target_ops *self)
 static void
 debug_trace_set_readonly_regions (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_set_readonly_regions (...)\n", debug_target.to_shortname);
-  debug_target.to_trace_set_readonly_regions (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_set_readonly_regions (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_set_readonly_regions (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_trace_set_readonly_regions (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_set_readonly_regions (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -2448,10 +2448,10 @@ tdefault_trace_start (struct target_ops *self)
 static void
 debug_trace_start (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_start (...)\n", debug_target.to_shortname);
-  debug_target.to_trace_start (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_start (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_start (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_trace_start (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_start (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -2472,10 +2472,10 @@ static int
 debug_get_trace_status (struct target_ops *self, struct trace_status *arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_trace_status (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_trace_status (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_trace_status (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_trace_status (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_trace_status (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_trace_status (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_trace_status_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2500,10 +2500,10 @@ tdefault_get_tracepoint_status (struct target_ops *self, struct breakpoint *arg1
 static void
 debug_get_tracepoint_status (struct target_ops *self, struct breakpoint *arg1, struct uploaded_tp *arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tracepoint_status (...)\n", debug_target.to_shortname);
-  debug_target.to_get_tracepoint_status (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tracepoint_status (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tracepoint_status (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_get_tracepoint_status (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tracepoint_status (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_breakpoint_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2527,10 +2527,10 @@ tdefault_trace_stop (struct target_ops *self)
 static void
 debug_trace_stop (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_stop (...)\n", debug_target.to_shortname);
-  debug_target.to_trace_stop (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_stop (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_stop (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_trace_stop (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_stop (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -2551,10 +2551,10 @@ static int
 debug_trace_find (struct target_ops *self, enum trace_find_type arg1, int arg2, CORE_ADDR arg3, CORE_ADDR arg4, int *arg5)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_find (...)\n", debug_target.to_shortname);
-  result = debug_target.to_trace_find (&debug_target, arg1, arg2, arg3, arg4, arg5);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_find (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_trace_find (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_trace_find (&target_stack->debug_target, arg1, arg2, arg3, arg4, arg5);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_trace_find (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_enum_trace_find_type (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2588,10 +2588,10 @@ static int
 debug_get_trace_state_variable_value (struct target_ops *self, int arg1, LONGEST *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_trace_state_variable_value (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_trace_state_variable_value (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_trace_state_variable_value (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_trace_state_variable_value (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_trace_state_variable_value (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_trace_state_variable_value (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2619,10 +2619,10 @@ static int
 debug_save_trace_data (struct target_ops *self, const char *arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_save_trace_data (...)\n", debug_target.to_shortname);
-  result = debug_target.to_save_trace_data (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_save_trace_data (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_save_trace_data (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_save_trace_data (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_save_trace_data (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2648,10 +2648,10 @@ static int
 debug_upload_tracepoints (struct target_ops *self, struct uploaded_tp **arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_upload_tracepoints (...)\n", debug_target.to_shortname);
-  result = debug_target.to_upload_tracepoints (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_upload_tracepoints (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_upload_tracepoints (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_upload_tracepoints (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_upload_tracepoints (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_uploaded_tp_pp (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2677,10 +2677,10 @@ static int
 debug_upload_trace_state_variables (struct target_ops *self, struct uploaded_tsv **arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_upload_trace_state_variables (...)\n", debug_target.to_shortname);
-  result = debug_target.to_upload_trace_state_variables (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_upload_trace_state_variables (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_upload_trace_state_variables (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_upload_trace_state_variables (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_upload_trace_state_variables (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_uploaded_tsv_pp (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2706,10 +2706,10 @@ static LONGEST
 debug_get_raw_trace_data (struct target_ops *self, gdb_byte *arg1, ULONGEST arg2, LONGEST arg3)
 {
   LONGEST result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_raw_trace_data (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_raw_trace_data (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_raw_trace_data (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_raw_trace_data (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_raw_trace_data (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_raw_trace_data (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_gdb_byte_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2739,10 +2739,10 @@ static int
 debug_get_min_fast_tracepoint_insn_len (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_min_fast_tracepoint_insn_len (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_min_fast_tracepoint_insn_len (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_min_fast_tracepoint_insn_len (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_min_fast_tracepoint_insn_len (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_min_fast_tracepoint_insn_len (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_min_fast_tracepoint_insn_len (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -2764,10 +2764,10 @@ tdefault_set_disconnected_tracing (struct target_ops *self, int arg1)
 static void
 debug_set_disconnected_tracing (struct target_ops *self, int arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_disconnected_tracing (...)\n", debug_target.to_shortname);
-  debug_target.to_set_disconnected_tracing (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_disconnected_tracing (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_disconnected_tracing (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_set_disconnected_tracing (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_disconnected_tracing (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2788,10 +2788,10 @@ tdefault_set_circular_trace_buffer (struct target_ops *self, int arg1)
 static void
 debug_set_circular_trace_buffer (struct target_ops *self, int arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_circular_trace_buffer (...)\n", debug_target.to_shortname);
-  debug_target.to_set_circular_trace_buffer (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_circular_trace_buffer (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_circular_trace_buffer (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_set_circular_trace_buffer (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_circular_trace_buffer (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2812,10 +2812,10 @@ tdefault_set_trace_buffer_size (struct target_ops *self, LONGEST arg1)
 static void
 debug_set_trace_buffer_size (struct target_ops *self, LONGEST arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_trace_buffer_size (...)\n", debug_target.to_shortname);
-  debug_target.to_set_trace_buffer_size (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_trace_buffer_size (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_trace_buffer_size (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_set_trace_buffer_size (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_trace_buffer_size (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_LONGEST (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -2838,10 +2838,10 @@ static int
 debug_set_trace_notes (struct target_ops *self, const char *arg1, const char *arg2, const char *arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_trace_notes (...)\n", debug_target.to_shortname);
-  result = debug_target.to_set_trace_notes (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_trace_notes (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_trace_notes (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_set_trace_notes (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_trace_notes (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2871,10 +2871,10 @@ static int
 debug_core_of_thread (struct target_ops *self, ptid_t arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_core_of_thread (...)\n", debug_target.to_shortname);
-  result = debug_target.to_core_of_thread (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_core_of_thread (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_core_of_thread (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_core_of_thread (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_core_of_thread (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -2894,10 +2894,10 @@ static int
 debug_verify_memory (struct target_ops *self, const gdb_byte *arg1, CORE_ADDR arg2, ULONGEST arg3)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_verify_memory (...)\n", debug_target.to_shortname);
-  result = debug_target.to_verify_memory (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_verify_memory (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_verify_memory (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_verify_memory (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_verify_memory (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_gdb_byte_p (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2927,10 +2927,10 @@ static int
 debug_get_tib_address (struct target_ops *self, ptid_t arg1, CORE_ADDR *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tib_address (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_tib_address (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tib_address (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tib_address (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_tib_address (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tib_address (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -2956,10 +2956,10 @@ tdefault_set_permissions (struct target_ops *self)
 static void
 debug_set_permissions (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_permissions (...)\n", debug_target.to_shortname);
-  debug_target.to_set_permissions (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_permissions (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_set_permissions (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_set_permissions (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_set_permissions (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -2980,10 +2980,10 @@ static int
 debug_static_tracepoint_marker_at (struct target_ops *self, CORE_ADDR arg1, struct static_tracepoint_marker *arg2)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_static_tracepoint_marker_at (...)\n", debug_target.to_shortname);
-  result = debug_target.to_static_tracepoint_marker_at (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_static_tracepoint_marker_at (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_static_tracepoint_marker_at (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_static_tracepoint_marker_at (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_static_tracepoint_marker_at (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_CORE_ADDR (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3011,10 +3011,10 @@ static VEC(static_tracepoint_marker_p) *
 debug_static_tracepoint_markers_by_strid (struct target_ops *self, const char *arg1)
 {
   VEC(static_tracepoint_marker_p) * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_static_tracepoint_markers_by_strid (...)\n", debug_target.to_shortname);
-  result = debug_target.to_static_tracepoint_markers_by_strid (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_static_tracepoint_markers_by_strid (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_static_tracepoint_markers_by_strid (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_static_tracepoint_markers_by_strid (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_static_tracepoint_markers_by_strid (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -3040,10 +3040,10 @@ static struct traceframe_info *
 debug_traceframe_info (struct target_ops *self)
 {
   struct traceframe_info * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_traceframe_info (...)\n", debug_target.to_shortname);
-  result = debug_target.to_traceframe_info (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_traceframe_info (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_traceframe_info (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_traceframe_info (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_traceframe_info (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_struct_traceframe_info_p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3067,10 +3067,10 @@ static int
 debug_use_agent (struct target_ops *self, int arg1)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_use_agent (...)\n", debug_target.to_shortname);
-  result = debug_target.to_use_agent (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_use_agent (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_use_agent (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_use_agent (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_use_agent (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -3096,10 +3096,10 @@ static int
 debug_can_use_agent (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_use_agent (...)\n", debug_target.to_shortname);
-  result = debug_target.to_can_use_agent (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_use_agent (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_can_use_agent (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_can_use_agent (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_can_use_agent (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3123,10 +3123,10 @@ static int
 debug_supports_btrace (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_btrace (...)\n", debug_target.to_shortname);
-  result = debug_target.to_supports_btrace (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_btrace (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_supports_btrace (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_supports_btrace (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_supports_btrace (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3150,10 +3150,10 @@ static struct btrace_target_info *
 debug_enable_btrace (struct target_ops *self, ptid_t arg1)
 {
   struct btrace_target_info * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_enable_btrace (...)\n", debug_target.to_shortname);
-  result = debug_target.to_enable_btrace (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_enable_btrace (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_enable_btrace (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_enable_btrace (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_enable_btrace (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ptid_t (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -3178,10 +3178,10 @@ tdefault_disable_btrace (struct target_ops *self, struct btrace_target_info *arg
 static void
 debug_disable_btrace (struct target_ops *self, struct btrace_target_info *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disable_btrace (...)\n", debug_target.to_shortname);
-  debug_target.to_disable_btrace (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disable_btrace (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_disable_btrace (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_disable_btrace (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_disable_btrace (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_btrace_target_info_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -3203,10 +3203,10 @@ tdefault_teardown_btrace (struct target_ops *self, struct btrace_target_info *ar
 static void
 debug_teardown_btrace (struct target_ops *self, struct btrace_target_info *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_teardown_btrace (...)\n", debug_target.to_shortname);
-  debug_target.to_teardown_btrace (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_teardown_btrace (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_teardown_btrace (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_teardown_btrace (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_teardown_btrace (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_btrace_target_info_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -3229,10 +3229,10 @@ static enum btrace_error
 debug_read_btrace (struct target_ops *self, VEC (btrace_block_s) **arg1, struct btrace_target_info *arg2, enum btrace_read_type arg3)
 {
   enum btrace_error result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_read_btrace (...)\n", debug_target.to_shortname);
-  result = debug_target.to_read_btrace (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_read_btrace (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_read_btrace (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_read_btrace (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_read_btrace (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_VEC__btrace_block_s__pp (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3260,10 +3260,10 @@ tdefault_stop_recording (struct target_ops *self)
 static void
 debug_stop_recording (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stop_recording (...)\n", debug_target.to_shortname);
-  debug_target.to_stop_recording (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stop_recording (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_stop_recording (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_stop_recording (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_stop_recording (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3282,10 +3282,10 @@ tdefault_info_record (struct target_ops *self)
 static void
 debug_info_record (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_info_record (...)\n", debug_target.to_shortname);
-  debug_target.to_info_record (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_info_record (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_info_record (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_info_record (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_info_record (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3305,10 +3305,10 @@ tdefault_save_record (struct target_ops *self, const char *arg1)
 static void
 debug_save_record (struct target_ops *self, const char *arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_save_record (...)\n", debug_target.to_shortname);
-  debug_target.to_save_record (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_save_record (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_save_record (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_save_record (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_save_record (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_const_char_p (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -3330,10 +3330,10 @@ tdefault_delete_record (struct target_ops *self)
 static void
 debug_delete_record (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_delete_record (...)\n", debug_target.to_shortname);
-  debug_target.to_delete_record (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_delete_record (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_delete_record (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_delete_record (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_delete_record (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3354,10 +3354,10 @@ static int
 debug_record_is_replaying (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_record_is_replaying (...)\n", debug_target.to_shortname);
-  result = debug_target.to_record_is_replaying (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_record_is_replaying (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_record_is_replaying (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_record_is_replaying (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_record_is_replaying (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3380,10 +3380,10 @@ tdefault_goto_record_begin (struct target_ops *self)
 static void
 debug_goto_record_begin (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record_begin (...)\n", debug_target.to_shortname);
-  debug_target.to_goto_record_begin (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record_begin (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record_begin (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_goto_record_begin (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record_begin (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3403,10 +3403,10 @@ tdefault_goto_record_end (struct target_ops *self)
 static void
 debug_goto_record_end (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record_end (...)\n", debug_target.to_shortname);
-  debug_target.to_goto_record_end (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record_end (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record_end (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_goto_record_end (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record_end (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3426,10 +3426,10 @@ tdefault_goto_record (struct target_ops *self, ULONGEST arg1)
 static void
 debug_goto_record (struct target_ops *self, ULONGEST arg1)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record (...)\n", debug_target.to_shortname);
-  debug_target.to_goto_record (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_goto_record (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_goto_record (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_goto_record (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (")\n", gdb_stdlog);
@@ -3451,10 +3451,10 @@ tdefault_insn_history (struct target_ops *self, int arg1, int arg2)
 static void
 debug_insn_history (struct target_ops *self, int arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history (...)\n", debug_target.to_shortname);
-  debug_target.to_insn_history (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_insn_history (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3478,10 +3478,10 @@ tdefault_insn_history_from (struct target_ops *self, ULONGEST arg1, int arg2, in
 static void
 debug_insn_history_from (struct target_ops *self, ULONGEST arg1, int arg2, int arg3)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history_from (...)\n", debug_target.to_shortname);
-  debug_target.to_insn_history_from (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history_from (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history_from (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_insn_history_from (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history_from (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3507,10 +3507,10 @@ tdefault_insn_history_range (struct target_ops *self, ULONGEST arg1, ULONGEST ar
 static void
 debug_insn_history_range (struct target_ops *self, ULONGEST arg1, ULONGEST arg2, int arg3)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history_range (...)\n", debug_target.to_shortname);
-  debug_target.to_insn_history_range (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history_range (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_insn_history_range (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_insn_history_range (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_insn_history_range (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3536,10 +3536,10 @@ tdefault_call_history (struct target_ops *self, int arg1, int arg2)
 static void
 debug_call_history (struct target_ops *self, int arg1, int arg2)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history (...)\n", debug_target.to_shortname);
-  debug_target.to_call_history (&debug_target, arg1, arg2);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_call_history (&target_stack->debug_target, arg1, arg2);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_int (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3563,10 +3563,10 @@ tdefault_call_history_from (struct target_ops *self, ULONGEST arg1, int arg2, in
 static void
 debug_call_history_from (struct target_ops *self, ULONGEST arg1, int arg2, int arg3)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history_from (...)\n", debug_target.to_shortname);
-  debug_target.to_call_history_from (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history_from (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history_from (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_call_history_from (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history_from (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3592,10 +3592,10 @@ tdefault_call_history_range (struct target_ops *self, ULONGEST arg1, ULONGEST ar
 static void
 debug_call_history_range (struct target_ops *self, ULONGEST arg1, ULONGEST arg2, int arg3)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history_range (...)\n", debug_target.to_shortname);
-  debug_target.to_call_history_range (&debug_target, arg1, arg2, arg3);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history_range (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_call_history_range (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_call_history_range (&target_stack->debug_target, arg1, arg2, arg3);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_call_history_range (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_ULONGEST (arg1);
   fputs_unfiltered (", ", gdb_stdlog);
@@ -3622,10 +3622,10 @@ static int
 debug_augmented_libraries_svr4_read (struct target_ops *self)
 {
   int result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_augmented_libraries_svr4_read (...)\n", debug_target.to_shortname);
-  result = debug_target.to_augmented_libraries_svr4_read (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_augmented_libraries_svr4_read (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_augmented_libraries_svr4_read (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_augmented_libraries_svr4_read (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_augmented_libraries_svr4_read (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_int (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3649,10 +3649,10 @@ static const struct frame_unwind *
 debug_get_unwinder (struct target_ops *self)
 {
   const struct frame_unwind * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_unwinder (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_unwinder (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_unwinder (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_unwinder (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_unwinder (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_unwinder (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_const_struct_frame_unwind_p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3676,10 +3676,10 @@ static const struct frame_unwind *
 debug_get_tailcall_unwinder (struct target_ops *self)
 {
   const struct frame_unwind * result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tailcall_unwinder (...)\n", debug_target.to_shortname);
-  result = debug_target.to_get_tailcall_unwinder (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tailcall_unwinder (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_get_tailcall_unwinder (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_get_tailcall_unwinder (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_get_tailcall_unwinder (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (") = ", gdb_stdlog);
   target_debug_print_const_struct_frame_unwind_p (result);
   fputs_unfiltered ("\n", gdb_stdlog);
@@ -3697,10 +3697,10 @@ static CORE_ADDR
 debug_decr_pc_after_break (struct target_ops *self, struct gdbarch *arg1)
 {
   CORE_ADDR result;
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_decr_pc_after_break (...)\n", debug_target.to_shortname);
-  result = debug_target.to_decr_pc_after_break (&debug_target, arg1);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_decr_pc_after_break (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_decr_pc_after_break (...)\n", target_stack->debug_target.to_shortname);
+  result = target_stack->debug_target.to_decr_pc_after_break (&target_stack->debug_target, arg1);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_decr_pc_after_break (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (", ", gdb_stdlog);
   target_debug_print_struct_gdbarch_p (arg1);
   fputs_unfiltered (") = ", gdb_stdlog);
@@ -3724,10 +3724,10 @@ tdefault_prepare_to_generate_core (struct target_ops *self)
 static void
 debug_prepare_to_generate_core (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_prepare_to_generate_core (...)\n", debug_target.to_shortname);
-  debug_target.to_prepare_to_generate_core (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_prepare_to_generate_core (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_prepare_to_generate_core (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_prepare_to_generate_core (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_prepare_to_generate_core (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 
@@ -3746,10 +3746,10 @@ tdefault_done_generating_core (struct target_ops *self)
 static void
 debug_done_generating_core (struct target_ops *self)
 {
-  fprintf_unfiltered (gdb_stdlog, "-> %s->to_done_generating_core (...)\n", debug_target.to_shortname);
-  debug_target.to_done_generating_core (&debug_target);
-  fprintf_unfiltered (gdb_stdlog, "<- %s->to_done_generating_core (", debug_target.to_shortname);
-  target_debug_print_struct_target_ops_p (&debug_target);
+  fprintf_unfiltered (gdb_stdlog, "-> %s->to_done_generating_core (...)\n", target_stack->debug_target.to_shortname);
+  target_stack->debug_target.to_done_generating_core (&target_stack->debug_target);
+  fprintf_unfiltered (gdb_stdlog, "<- %s->to_done_generating_core (", target_stack->debug_target.to_shortname);
+  target_debug_print_struct_target_ops_p (&target_stack->debug_target);
   fputs_unfiltered (")\n", gdb_stdlog);
 }
 

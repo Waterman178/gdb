@@ -1,5 +1,40 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* target-delegates.c: Rebuild.
+	* make-target-delegates (write_debugmethod): Update for change to
+	debug_target.
+	* progspace.c (add_program_space): Acquire a reference to the
+	target stack.
+	(release_program_space): Release reference to the program space.
+	(set_current_program_space): Set the target stack.
+	* progspace.h (struct program_space) <target_stack>: New field.
+	* target.c (target_ops_ptr): New typedef.
+	(struct target_stack): New.
+	(target_stack): Change type.
+	(current_target): Update comment.
+	(update_current_target): Update.
+	(multi_target_compatible, ensure_multi_target_ok): New functions.
+	(push_target): Update.  Add multi-target check.
+	(unpush_target, pop_all_targets_above, target_is_pushed)
+	(target_info, target_require_runnable): Update.
+	(target_stack_set): New global.
+	(currently_multi_target, target_stack_incref, target_stack_decref)
+	(target_stack_set_current, new_target_stack): New functions.
+	(maintenance_print_target_stack): Update.
+	(initialize_targets): Initialize target_stack_set, target_stack.
+	Update.
+	(target_stack_id): New function.
+	(next_available_target_id): New global.
+	(print_one_target_stack): New function.
+	(maintenance_print_target_stack): Move earlier.  Rewrite.
+	(debug_target): Remove.
+	(debug_to_open, setup_target_debug): Update.
+	* target.h (target_stack_incref, target_stack_decref)
+	(target_stack_set_current, new_target_stack, target_stack_id):
+	Declare.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* target.c (current_target): Now a pointer.
 	(update_current_target): Use size of target_ops, not
 	current_target.
