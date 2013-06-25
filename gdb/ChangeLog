@@ -1,3 +1,9 @@
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
+	* corefile.c (core_bfd): Remove.
+	* gdbcore.h (core_bfd): Now a macro.
+	* progspace.h (struct program_space) <cbfd>: New field.
+
 2014-08-07  Andreas Arnez  <arnez@linux.vnet.ibm.com>
 
 	* ia64-linux-tdep.c: Include "regset.h".
