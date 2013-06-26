@@ -807,7 +807,7 @@ get_remote_packet_size (void)
   struct remote_state *rs = get_remote_state ();
   struct remote_arch_state *rsa = get_remote_arch_state ();
 
-  if (rs->explicit_packet_size)
+  if (rs != NULL && rs->explicit_packet_size)
     return rs->explicit_packet_size;
 
   return rsa->remote_packet_size;
@@ -998,7 +998,8 @@ get_memory_packet_size (struct memory_packet_config *config)
 
       /* Limit it to the size of the targets ``g'' response unless we have
 	 permission from the stub to use a larger packet size.  */
-      if (rs->explicit_packet_size == 0
+      if (rs != NULL
+	  && rs->explicit_packet_size == 0
 	  && rsa->actual_register_packet_size > 0
 	  && what_they_get > rsa->actual_register_packet_size)
 	what_they_get = rsa->actual_register_packet_size;
@@ -1010,7 +1011,7 @@ get_memory_packet_size (struct memory_packet_config *config)
 
   /* Make sure there is room in the global buffer for this packet
      (including its trailing NUL byte).  */
-  if (rs->buf_size < what_they_get + 1)
+  if (rs != NULL && rs->buf_size < what_they_get + 1)
     {
       rs->buf_size = 2 * what_they_get;
       rs->buf = xrealloc (rs->buf, 2 * what_they_get);
