@@ -100,7 +100,7 @@ static int getpkt_or_notif_sane (char **buf, long *sizeof_buf,
 static void async_handle_remote_sigint (int);
 static void async_handle_remote_sigint_twice (int);
 
-static void remote_files_info (struct target_ops *ignore);
+static void remote_files_info (struct gdb_target *ignore);
 
 static void remote_prepare_to_store (struct regcache *regcache);
 
@@ -110,13 +110,13 @@ static void extended_remote_open (char *name, int from_tty);
 
 static void remote_open_1 (char *, int, struct target_ops *, int extended_p);
 
-static void remote_mourn (struct target_ops *ops);
+static void remote_mourn (struct gdb_target *ops);
 
 static void extended_remote_restart (void);
 
-static void extended_remote_mourn (struct target_ops *);
+static void extended_remote_mourn (struct gdb_target *);
 
-static void remote_mourn_1 (struct target_ops *);
+static void remote_mourn_1 (struct gdb_target *);
 
 static void remote_send (char **buf, long *sizeof_buf_p);
 
@@ -124,7 +124,7 @@ static int readchar (int timeout);
 
 static void remote_serial_write (const char *str, int len);
 
-static void remote_kill (struct target_ops *ops);
+static void remote_kill (struct gdb_target *ops);
 
 static int tohex (int nib);
 
@@ -135,7 +135,7 @@ static int remote_is_async_p (void);
 static void remote_async (void (*callback) (enum inferior_event_type event_type,
 					    void *context), void *context);
 
-static void remote_detach (struct target_ops *ops, char *args, int from_tty);
+static void remote_detach (struct gdb_target *ops, char *args, int from_tty);
 
 static void sync_remote_interrupt_twice (int signo);
 
@@ -229,7 +229,7 @@ static void remote_async_inferior_event_handler (gdb_client_data);
 
 static void remote_terminal_ours (void);
 
-static int remote_read_description_p (struct target_ops *target);
+static int remote_read_description_p (struct gdb_target *target);
 
 static void remote_console_output (char *msg);
 
@@ -432,13 +432,13 @@ struct remote_state
   struct remote_notif_state *notif_state;
 };
 
-/* A subclass of target_ops that also holds a struct remote_state.  */
+/* A subclass of gdb_target that also holds a struct remote_state.  */
 
 struct remote_ops_with_data
 {
   /* The base class.  */
 
-  struct target_ops base;
+  struct gdb_target base;
 
   /* The remote state.  */
 
@@ -475,8 +475,8 @@ get_remote_state_raw (void)
     = (struct remote_ops_with_data *) find_target_at (REMOTE_TARGET_STRATUM);
 
   if (self == NULL
-      || (self->base.to_identification != &remote_ops
-	  && self->base.to_identification != &extended_remote_ops))
+      || (self->base.ops != &remote_ops
+	  && self->base.ops != &extended_remote_ops))
     return NULL;
 
   return &self->state;
@@ -1884,7 +1884,7 @@ set_general_process (void)
     system.  */
 
 static int
-remote_thread_alive (struct target_ops *ops, ptid_t ptid)
+remote_thread_alive (struct gdb_target *ops, ptid_t ptid)
 {
   struct remote_state *rs = get_remote_state ();
   char *p, *endp;
@@ -2766,7 +2766,7 @@ clear_threads_parsing_context (void *p)
  */
 
 static void
-remote_threads_info (struct target_ops *ops)
+remote_threads_info (struct gdb_target *ops)
 {
   struct remote_state *rs = get_remote_state ();
   char *bufp;
@@ -3073,7 +3073,7 @@ extended_remote_restart (void)
 /* Clean up connection to a remote debugger.  */
 
 static void
-remote_xclose (struct target_ops *ops)
+remote_xclose (struct gdb_target *ops)
 {
   /* Downcast.  */
   struct remote_ops_with_data *rops
@@ -3402,7 +3402,7 @@ add_current_inferior_and_thread (char *wait_status)
 }
 
 static void
-remote_start_remote (int from_tty, struct target_ops *target, int extended_p)
+remote_start_remote (int from_tty, struct gdb_target *target, int extended_p)
 {
   struct remote_state *rs = get_remote_state ();
   struct packet_config *noack_config;
@@ -4328,7 +4328,7 @@ remote_open_1 (char *name, int from_tty,
   reread_symbols ();
 
   rops = XCNEW (struct remote_ops_with_data);
-  memcpy (&rops->base, target, sizeof (rops->base));
+  rops->base.ops = target;
   new_remote_state (&rops->state);
   /* Paranoia.  */
   target = NULL;
@@ -4364,7 +4364,7 @@ remote_open_1 (char *name, int from_tty,
       puts_filtered (name);
       puts_filtered ("\n");
     }
-  push_target (&rops->base);	/* Switch to using remote target now.  */
+  push_gdb_target (&rops->base); /* Switch to using remote target now.  */
 
   /* Register extra event sources in the event loop.  */
   remote_async_inferior_event_token
@@ -4501,13 +4501,13 @@ remote_detach_1 (char *args, int from_tty, int extended)
 }
 
 static void
-remote_detach (struct target_ops *ops, char *args, int from_tty)
+remote_detach (struct gdb_target *ops, char *args, int from_tty)
 {
   remote_detach_1 (args, from_tty, 0);
 }
 
 static void
-extended_remote_detach (struct target_ops *ops, char *args, int from_tty)
+extended_remote_detach (struct gdb_target *ops, char *args, int from_tty)
 {
   remote_detach_1 (args, from_tty, 1);
 }
@@ -4515,7 +4515,7 @@ extended_remote_detach (struct target_ops *ops, char *args, int from_tty)
 /* Same as remote_detach, but don't send the "D" packet; just disconnect.  */
 
 static void
-remote_disconnect (struct target_ops *target, char *args, int from_tty)
+remote_disconnect (struct gdb_target *target, char *args, int from_tty)
 {
   if (args)
     error (_("Argument given to \"disconnect\" when remotely debugging."));
@@ -4533,7 +4533,7 @@ remote_disconnect (struct target_ops *target, char *args, int from_tty)
    be chatty about it.  */
 
 static void
-extended_remote_attach_1 (struct target_ops *target, char *args, int from_tty)
+extended_remote_attach_1 (struct gdb_target *target, char *args, int from_tty)
 {
   struct remote_state *rs = get_remote_state ();
   int pid;
@@ -4644,7 +4644,7 @@ extended_remote_attach_1 (struct target_ops *target, char *args, int from_tty)
 }
 
 static void
-extended_remote_attach (struct target_ops *ops, char *args, int from_tty)
+extended_remote_attach (struct gdb_target *ops, char *args, int from_tty)
 {
   extended_remote_attach_1 (ops, args, from_tty);
 }
@@ -4951,7 +4951,7 @@ remote_vcont_resume (ptid_t ptid, int step, enum gdb_signal siggnal)
 /* Tell the remote machine to resume.  */
 
 static void
-remote_resume (struct target_ops *ops,
+remote_resume (struct gdb_target *ops,
 	       ptid_t ptid, int step, enum gdb_signal siggnal)
 {
   struct remote_state *rs = get_remote_state ();
@@ -6160,7 +6160,7 @@ remote_wait_as (ptid_t ptid, struct target_waitstatus *status, int options)
    STATUS just as `wait' would.  */
 
 static ptid_t
-remote_wait (struct target_ops *ops,
+remote_wait (struct gdb_target *ops,
 	     ptid_t ptid, struct target_waitstatus *status, int options)
 {
   ptid_t event_ptid;
@@ -6396,7 +6396,7 @@ set_remote_traceframe (void)
 }
 
 static void
-remote_fetch_registers (struct target_ops *ops,
+remote_fetch_registers (struct gdb_target *ops,
 			struct regcache *regcache, int regnum)
 {
   struct remote_arch_state *rsa = get_remote_arch_state ();
@@ -6554,7 +6554,7 @@ store_registers_using_G (const struct regcache *regcache)
    of the register cache buffer.  FIXME: ignores errors.  */
 
 static void
-remote_store_registers (struct target_ops *ops,
+remote_store_registers (struct gdb_target *ops,
 			struct regcache *regcache, int regnum)
 {
   struct remote_arch_state *rsa = get_remote_arch_state ();
@@ -7101,7 +7101,7 @@ restore_remote_timeout (void *p)
 static const int remote_flash_timeout = 1000;
 
 static void
-remote_flash_erase (struct target_ops *ops,
+remote_flash_erase (struct gdb_target *ops,
                     ULONGEST address, LONGEST length)
 {
   int addr_size = gdbarch_addr_bit (target_gdbarch ()) / 8;
@@ -7129,7 +7129,7 @@ remote_flash_erase (struct target_ops *ops,
 }
 
 static LONGEST
-remote_flash_write (struct target_ops *ops,
+remote_flash_write (struct gdb_target *ops,
                     ULONGEST address, LONGEST length,
                     const gdb_byte *data)
 {
@@ -7146,7 +7146,7 @@ remote_flash_write (struct target_ops *ops,
 }
 
 static void
-remote_flash_done (struct target_ops *ops)
+remote_flash_done (struct gdb_target *ops)
 {
   int saved_remote_timeout = remote_timeout;
   int ret;
@@ -7169,7 +7169,7 @@ remote_flash_done (struct target_ops *ops)
 }
 
 static void
-remote_files_info (struct target_ops *ignore)
+remote_files_info (struct gdb_target *ignore)
 {
   puts_filtered ("Debugging a target over a serial line.\n");
 }
@@ -7859,7 +7859,7 @@ putpkt_for_catch_errors (void *arg)
 }
 
 static void
-remote_kill (struct target_ops *ops)
+remote_kill (struct gdb_target *ops)
 {
   /* Use catch_errors so the user can quit from gdb even when we
      aren't on speaking terms with the remote system.  */
@@ -7891,7 +7891,7 @@ remote_vkill (int pid, struct remote_state *rs)
 }
 
 static void
-extended_remote_kill (struct target_ops *ops)
+extended_remote_kill (struct gdb_target *ops)
 {
   int res;
   int pid = ptid_get_pid (inferior_ptid);
@@ -7922,14 +7922,14 @@ extended_remote_kill (struct target_ops *ops)
 }
 
 static void
-remote_mourn (struct target_ops *ops)
+remote_mourn (struct gdb_target *ops)
 {
   remote_mourn_1 (ops);
 }
 
 /* Worker function for remote_mourn.  */
 static void
-remote_mourn_1 (struct target_ops *target)
+remote_mourn_1 (struct gdb_target *target)
 {
   unpush_target (target);
 
@@ -7938,7 +7938,7 @@ remote_mourn_1 (struct target_ops *target)
 }
 
 static void
-extended_remote_mourn_1 (struct target_ops *target)
+extended_remote_mourn_1 (struct gdb_target *target)
 {
   struct remote_state *rs = get_remote_state ();
 
@@ -7999,7 +7999,7 @@ extended_remote_mourn_1 (struct target_ops *target)
 }
 
 static void
-extended_remote_mourn (struct target_ops *ops)
+extended_remote_mourn (struct gdb_target *ops)
 {
   extended_remote_mourn_1 (ops);
 }
@@ -8144,7 +8144,7 @@ extended_remote_create_inferior_1 (char *exec_file, char *args,
 }
 
 static void
-extended_remote_create_inferior (struct target_ops *ops, 
+extended_remote_create_inferior (struct gdb_target *ops, 
 				 char *exec_file, char *args,
 				 char **env, int from_tty)
 {
@@ -8379,7 +8379,7 @@ remote_insert_watchpoint (CORE_ADDR addr, int len, int type,
 }
 
 static int
-remote_watchpoint_addr_within_range (struct target_ops *target, CORE_ADDR addr,
+remote_watchpoint_addr_within_range (struct gdb_target *target, CORE_ADDR addr,
 				     CORE_ADDR start, int length)
 {
   CORE_ADDR diff = remote_address_masked (addr - start);
@@ -8478,7 +8478,7 @@ remote_stopped_by_watchpoint (void)
 }
 
 static int
-remote_stopped_data_address (struct target_ops *target, CORE_ADDR *addr_p)
+remote_stopped_data_address (struct gdb_target *target, CORE_ADDR *addr_p)
 {
   struct remote_state *rs = get_remote_state ();
   int rc = 0;
@@ -8600,7 +8600,7 @@ remote_remove_hw_breakpoint (struct gdbarch *gdbarch,
 /* Verify memory using the "qCRC:" request.  */
 
 static int
-remote_verify_memory (struct target_ops *ops,
+remote_verify_memory (struct gdb_target *ops,
 		      const gdb_byte *data, CORE_ADDR lma, ULONGEST size)
 {
   struct remote_state *rs = get_remote_state ();
@@ -8709,7 +8709,7 @@ the loaded file\n"));
    target is returned, or -1 for error.  */
 
 static LONGEST
-remote_write_qxfer (struct target_ops *ops, const char *object_name,
+remote_write_qxfer (struct gdb_target *ops, const char *object_name,
                     const char *annex, const gdb_byte *writebuf, 
                     ULONGEST offset, LONGEST len, 
                     struct packet_config *packet)
@@ -8750,7 +8750,7 @@ remote_write_qxfer (struct target_ops *ops, const char *object_name,
    target supports this object.  */
 
 static LONGEST
-remote_read_qxfer (struct target_ops *ops, const char *object_name,
+remote_read_qxfer (struct gdb_target *ops, const char *object_name,
 		   const char *annex,
 		   gdb_byte *readbuf, ULONGEST offset, LONGEST len,
 		   struct packet_config *packet)
@@ -8823,7 +8823,7 @@ remote_read_qxfer (struct target_ops *ops, const char *object_name,
 }
 
 static LONGEST
-remote_xfer_partial (struct target_ops *ops, enum target_object object,
+remote_xfer_partial (struct gdb_target *ops, enum target_object object,
 		     const char *annex, gdb_byte *readbuf,
 		     const gdb_byte *writebuf, ULONGEST offset, LONGEST len)
 {
@@ -9024,7 +9024,7 @@ remote_xfer_partial (struct target_ops *ops, enum target_object object,
 }
 
 static int
-remote_search_memory (struct target_ops* ops,
+remote_search_memory (struct gdb_target* ops,
 		      CORE_ADDR start_addr, ULONGEST search_space_len,
 		      const gdb_byte *pattern, ULONGEST pattern_len,
 		      CORE_ADDR *found_addrp)
@@ -9185,7 +9185,7 @@ remote_rcmd (char *command,
 }
 
 static VEC(mem_region_s) *
-remote_memory_map (struct target_ops *ops)
+remote_memory_map (struct gdb_target *ops)
 {
   VEC(mem_region_s) *result = NULL;
   char *text = target_read_stralloc (current_target,
@@ -9376,7 +9376,7 @@ init_remote_threadtests (void)
    buffer.  */
 
 static char *
-remote_pid_to_str (struct target_ops *ops, ptid_t ptid)
+remote_pid_to_str (struct gdb_target *ops, ptid_t ptid)
 {
   static char buf[64];
   struct remote_state *rs = get_remote_state ();
@@ -9422,7 +9422,7 @@ remote_pid_to_str (struct target_ops *ops, ptid_t ptid)
    stored at OFFSET within the thread local storage for thread PTID.  */
 
 static CORE_ADDR
-remote_get_thread_local_address (struct target_ops *ops,
+remote_get_thread_local_address (struct gdb_target *ops,
 				 ptid_t ptid, CORE_ADDR lm, CORE_ADDR offset)
 {
   if (remote_protocol_packets[PACKET_qGetTLSAddr].support != PACKET_DISABLE)
@@ -9563,7 +9563,7 @@ register_remote_g_packet_guess (struct gdbarch *gdbarch, int bytes,
    and architecture, 0 otherwise.  */
 
 static int
-remote_read_description_p (struct target_ops *target)
+remote_read_description_p (struct gdb_target *target)
 {
   struct remote_g_packet_data *data
     = gdbarch_data (target_gdbarch (), remote_g_packet_data_handle);
@@ -9575,7 +9575,7 @@ remote_read_description_p (struct target_ops *target)
 }
 
 static const struct target_desc *
-remote_read_description (struct target_ops *target)
+remote_read_description (struct gdb_target *target)
 {
   struct remote_g_packet_data *data
     = gdbarch_data (target_gdbarch (), remote_g_packet_data_handle);
@@ -11160,7 +11160,7 @@ remote_set_disconnected_tracing (int val)
 }
 
 static int
-remote_core_of_thread (struct target_ops *ops, ptid_t ptid)
+remote_core_of_thread (struct gdb_target *ops, ptid_t ptid)
 {
   struct thread_info *info = find_thread_ptid (ptid);
 

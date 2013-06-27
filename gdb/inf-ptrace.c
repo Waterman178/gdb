@@ -40,7 +40,7 @@
 #ifdef PT_GET_PROCESS_STATE
 
 static int
-inf_ptrace_follow_fork (struct target_ops *ops, int follow_child,
+inf_ptrace_follow_fork (struct gdb_target *ops, int follow_child,
 			int detach_fork)
 {
   pid_t pid, fpid;
@@ -114,7 +114,7 @@ inf_ptrace_me (void)
    chatty about it.  */
 
 static void
-inf_ptrace_create_inferior (struct target_ops *ops,
+inf_ptrace_create_inferior (struct gdb_target *ops,
 			    char *exec_file, char *allargs, char **env,
 			    int from_tty)
 {
@@ -122,13 +122,13 @@ inf_ptrace_create_inferior (struct target_ops *ops,
 
   /* Do not change either targets above or the same target if already present.
      The reason is the target stack is shared across multiple inferiors.  */
-  int ops_already_pushed = target_is_pushed (ops);
+  int ops_already_pushed = target_is_pushed (ops->ops);
   struct cleanup *back_to = make_cleanup (null_cleanup, NULL);
 
   if (! ops_already_pushed)
     {
       /* Clear possible core file with its process_stratum.  */
-      push_target (ops);
+      push_gdb_target (ops);
       make_cleanup_unpush_target (ops);
     }
 
@@ -164,7 +164,7 @@ inf_ptrace_post_startup_inferior (ptid_t pid)
 /* Clean up a rotting corpse of an inferior after it died.  */
 
 static void
-inf_ptrace_mourn_inferior (struct target_ops *ops)
+inf_ptrace_mourn_inferior (struct gdb_target *ops)
 {
   int status;
 
@@ -184,7 +184,7 @@ inf_ptrace_mourn_inferior (struct target_ops *ops)
    be chatty about it.  */
 
 static void
-inf_ptrace_attach (struct target_ops *ops, char *args, int from_tty)
+inf_ptrace_attach (struct gdb_target *ops, char *args, int from_tty)
 {
   char *exec_file;
   pid_t pid;
@@ -192,7 +192,7 @@ inf_ptrace_attach (struct target_ops *ops, char *args, int from_tty)
 
   /* Do not change either targets above or the same target if already present.
      The reason is the target stack is shared across multiple inferiors.  */
-  int ops_already_pushed = target_is_pushed (ops);
+  int ops_already_pushed = target_is_pushed (ops->ops);
   struct cleanup *back_to = make_cleanup (null_cleanup, NULL);
 
   pid = parse_pid_to_attach (args);
@@ -204,7 +204,7 @@ inf_ptrace_attach (struct target_ops *ops, char *args, int from_tty)
     {
       /* target_pid_to_str already uses the target.  Also clear possible core
 	 file with its process_stratum.  */
-      push_target (ops);
+      push_gdb_target (ops);
       make_cleanup_unpush_target (ops);
     }
 
@@ -264,7 +264,7 @@ inf_ptrace_post_attach (int pid)
    specified by ARGS.  If FROM_TTY is non-zero, be chatty about it.  */
 
 static void
-inf_ptrace_detach (struct target_ops *ops, char *args, int from_tty)
+inf_ptrace_detach (struct gdb_target *ops, char *args, int from_tty)
 {
   pid_t pid = ptid_get_pid (inferior_ptid);
   int sig = 0;
@@ -304,7 +304,7 @@ inf_ptrace_detach (struct target_ops *ops, char *args, int from_tty)
 /* Kill the inferior.  */
 
 static void
-inf_ptrace_kill (struct target_ops *ops)
+inf_ptrace_kill (struct gdb_target *ops)
 {
   pid_t pid = ptid_get_pid (inferior_ptid);
   int status;
@@ -336,7 +336,7 @@ inf_ptrace_stop (ptid_t ptid)
    that signal.  */
 
 static void
-inf_ptrace_resume (struct target_ops *ops,
+inf_ptrace_resume (struct gdb_target *ops,
 		   ptid_t ptid, int step, enum gdb_signal signal)
 {
   pid_t pid = ptid_get_pid (ptid);
@@ -376,7 +376,7 @@ inf_ptrace_resume (struct target_ops *ops,
    the status in *OURSTATUS.  */
 
 static ptid_t
-inf_ptrace_wait (struct target_ops *ops,
+inf_ptrace_wait (struct gdb_target *ops,
 		 ptid_t ptid, struct target_waitstatus *ourstatus, int options)
 {
   pid_t pid;
@@ -460,7 +460,7 @@ inf_ptrace_wait (struct target_ops *ops,
    Return the number of bytes actually transferred.  */
 
 static LONGEST
-inf_ptrace_xfer_partial (struct target_ops *ops, enum target_object object,
+inf_ptrace_xfer_partial (struct gdb_target *ops, enum target_object object,
 			 const char *annex, gdb_byte *readbuf,
 			 const gdb_byte *writebuf,
 			 ULONGEST offset, LONGEST len)
@@ -609,7 +609,7 @@ inf_ptrace_xfer_partial (struct target_ops *ops, enum target_object object,
 /* Return non-zero if the thread specified by PTID is alive.  */
 
 static int
-inf_ptrace_thread_alive (struct target_ops *ops, ptid_t ptid)
+inf_ptrace_thread_alive (struct gdb_target *ops, ptid_t ptid)
 {
   /* ??? Is kill the right way to do this?  */
   return (kill (ptid_get_pid (ptid), 0) != -1);
@@ -618,7 +618,7 @@ inf_ptrace_thread_alive (struct target_ops *ops, ptid_t ptid)
 /* Print status information about what we're accessing.  */
 
 static void
-inf_ptrace_files_info (struct target_ops *ignore)
+inf_ptrace_files_info (struct gdb_target *ignore)
 {
   struct inferior *inf = current_inferior ();
 
@@ -628,7 +628,7 @@ inf_ptrace_files_info (struct target_ops *ignore)
 }
 
 static char *
-inf_ptrace_pid_to_str (struct target_ops *ops, ptid_t ptid)
+inf_ptrace_pid_to_str (struct gdb_target *ops, ptid_t ptid)
 {
   return normal_pid_to_str (ptid);
 }
@@ -641,7 +641,7 @@ inf_ptrace_pid_to_str (struct target_ops *ops, ptid_t ptid)
    Return 1 if an entry was read into *TYPEP and *VALP.  */
 
 static int
-inf_ptrace_auxv_parse (struct target_ops *ops, gdb_byte **readptr,
+inf_ptrace_auxv_parse (struct gdb_target *ops, gdb_byte **readptr,
 		       gdb_byte *endptr, CORE_ADDR *typep, CORE_ADDR *valp)
 {
   struct type *int_type = builtin_type (target_gdbarch ())->builtin_int;
@@ -754,7 +754,7 @@ inf_ptrace_fetch_register (struct regcache *regcache, int regnum)
    for all registers.  */
 
 static void
-inf_ptrace_fetch_registers (struct target_ops *ops,
+inf_ptrace_fetch_registers (struct gdb_target *ops,
 			    struct regcache *regcache, int regnum)
 {
   if (regnum == -1)
@@ -812,7 +812,7 @@ inf_ptrace_store_register (const struct regcache *regcache, int regnum)
    this for all registers.  */
 
 static void
-inf_ptrace_store_registers (struct target_ops *ops,
+inf_ptrace_store_registers (struct gdb_target *ops,
 			    struct regcache *regcache, int regnum)
 {
   if (regnum == -1)

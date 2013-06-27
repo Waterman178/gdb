@@ -58,9 +58,9 @@ static int maint_show_dr;
 /* Saved function pointers to fetch and store a single register using
    PTRACE_PEEKUSER and PTRACE_POKEUSER.  */
 
-static void (*super_fetch_registers) (struct target_ops *,
+static void (*super_fetch_registers) (struct gdb_target *,
 				      struct regcache *, int);
-static void (*super_store_registers) (struct target_ops *,
+static void (*super_store_registers) (struct gdb_target *,
 				      struct regcache *, int);
 
 static void (*super_close) (void);
@@ -218,7 +218,7 @@ fill_fpregset (const struct regcache *regcache,
    using PTRACE_GETREGS et al.  */
 
 static void
-mips64_linux_regsets_fetch_registers (struct target_ops *ops,
+mips64_linux_regsets_fetch_registers (struct gdb_target *ops,
 				      struct regcache *regcache, int regno)
 {
   struct gdbarch *gdbarch = get_regcache_arch (regcache);
@@ -306,7 +306,7 @@ mips64_linux_regsets_fetch_registers (struct target_ops *ops,
    using PTRACE_SETREGS et al.  */
 
 static void
-mips64_linux_regsets_store_registers (struct target_ops *ops,
+mips64_linux_regsets_store_registers (struct gdb_target *ops,
 				      struct regcache *regcache, int regno)
 {
   struct gdbarch *gdbarch = get_regcache_arch (regcache);
@@ -385,7 +385,7 @@ mips64_linux_regsets_store_registers (struct target_ops *ops,
    using any working method.  */
 
 static void
-mips64_linux_fetch_registers (struct target_ops *ops,
+mips64_linux_fetch_registers (struct gdb_target *ops,
 			      struct regcache *regcache, int regnum)
 {
   /* Unless we already know that PTRACE_GETREGS does not work, try it.  */
@@ -402,7 +402,7 @@ mips64_linux_fetch_registers (struct target_ops *ops,
    using any working method.  */
 
 static void
-mips64_linux_store_registers (struct target_ops *ops,
+mips64_linux_store_registers (struct gdb_target *ops,
 			      struct regcache *regcache, int regnum)
 {
   /* Unless we already know that PTRACE_GETREGS does not work, try it.  */
@@ -428,7 +428,7 @@ mips_linux_register_u_offset (struct gdbarch *gdbarch, int regno, int store_p)
 }
 
 static const struct target_desc *
-mips_linux_read_description (struct target_ops *ops)
+mips_linux_read_description (struct gdb_target *ops)
 {
   static int have_dsp = -1;
 
@@ -577,7 +577,7 @@ mips_linux_stopped_by_watchpoint (void)
    known.  */
 
 static int
-mips_linux_stopped_data_address (struct target_ops *t, CORE_ADDR *paddr)
+mips_linux_stopped_data_address (struct gdb_target *t, CORE_ADDR *paddr)
 {
   /* On mips we don't know the low order 3 bits of the data address,
      so we must return false.  */

@@ -232,7 +232,7 @@ extern void clear_exit_convenience_vars (void);
 
 /* From infcmd.c */
 
-extern void post_create_inferior (struct target_ops *, int);
+extern void post_create_inferior (struct gdb_target *, int);
 
 extern void attach_command (char *, int);
 
