@@ -5034,6 +5034,7 @@ target_stack_decref (struct target_stack *tstack)
 	  current_target = NULL;
 	}
 
+      xfree (tstack->smashed->ops);
       xfree (tstack->smashed);
       xfree (tstack);
     }
