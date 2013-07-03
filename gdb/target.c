@@ -171,7 +171,7 @@ struct target_stack
 
   /* The "smashed" gdb_target.  */
 
-  struct gdb_target *smashed;
+  struct gdb_target smashed;
 };
 
 /* Top of target stack.  */
@@ -5025,7 +5025,7 @@ target_stack_decref (struct target_stack *tstack)
 	 has the dummy target.  If any other target has been pushed,
 	 then the target stack being deleted must be the current
 	 target stack.  */
-      if (tstack->smashed->ops->to_stratum != dummy_stratum)
+      if (tstack->smashed.ops->to_stratum != dummy_stratum)
 	{
 	  gdb_assert (tstack == target_stack);
 
@@ -5034,8 +5034,7 @@ target_stack_decref (struct target_stack *tstack)
 	  current_target = NULL;
 	}
 
-      xfree (tstack->smashed->ops);
-      xfree (tstack->smashed);
+      xfree (tstack->smashed.ops);
       xfree (tstack);
     }
 }
@@ -5044,7 +5043,7 @@ void
 target_stack_set_current (struct target_stack *tstack)
 {
   target_stack = tstack;
-  current_target = tstack->smashed;
+  current_target = &tstack->smashed;
 }
 
 struct target_stack *
@@ -5054,11 +5053,10 @@ new_target_stack (void)
   struct target_stack *result;
 
   /* Overwrite the globals so that push_target can work.  */
-  current_target = XCNEW (struct gdb_target);
-  current_target->ops = XCNEW (struct target_ops);
   target_stack = XCNEW (struct target_stack);
   target_stack->refc = 1;
-  target_stack->smashed = current_target;
+  target_stack->smashed.ops = XCNEW (struct target_ops);
+  current_target = &target_stack->smashed;
 
   push_target (&dummy_target);
 
@@ -5067,7 +5065,7 @@ new_target_stack (void)
   if (target_stack == NULL)
     current_target = NULL;
   else
-    current_target = save->smashed;
+    current_target = &save->smashed;
 
   return result;
 }
@@ -5200,7 +5198,7 @@ initialize_targets (void)
   init_dummy_target ();
 
   target_stack = new_target_stack ();
-  current_target = target_stack->smashed;
+  current_target = &target_stack->smashed;
 
   add_info ("target", target_info, targ_desc);
   add_info ("files", target_info, targ_desc);
