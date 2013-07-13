@@ -430,6 +430,9 @@ struct remote_state
 
   /* The state of remote notification.  */
   struct remote_notif_state *notif_state;
+
+  /* Name of the remote.  */
+  char *name;
 };
 
 /* A subclass of gdb_target that also holds a struct remote_state.  */
@@ -503,6 +506,7 @@ destroy_remote_state (struct remote_state *state)
 {
   xfree (state->last_pass_packet);
   xfree (state->last_program_signals_packet);
+  xfree (state->name);
   /* FIXME */
 }
 
@@ -3112,6 +3116,15 @@ remote_xclose (struct gdb_target *ops)
   xfree (ops);
 }
 
+static char *
+remote_full_name (struct gdb_target *targ)
+{
+  struct remote_ops_with_data *self = (struct remote_ops_with_data *) targ;
+
+  return concat (targ->ops->to_shortname, " ", self->state.name,
+		 (char *) NULL);
+}
+
 /* Query the remote side for the text, data and bss offsets.  */
 
 static void
@@ -4327,6 +4340,7 @@ remote_open_1 (char *name, int from_tty,
   reopen_exec_file ();
   reread_symbols ();
 
+  /* FIXME cleanup */
   rops = XCNEW (struct remote_ops_with_data);
   rops->base.ops = target;
   new_remote_state (&rops->state);
@@ -4337,6 +4351,7 @@ remote_open_1 (char *name, int from_tty,
   rs->remote_desc = remote_serial_open (name);
   if (!rs->remote_desc)
     perror_with_name (name);
+  rs->name = xstrdup (name);
 
   if (baud_rate != -1)
     {
@@ -11512,6 +11527,7 @@ Specify the serial device it is connected to\n\
 (e.g. /dev/ttyS0, /dev/ttya, COM1, etc.).";
   remote_ops.to_open = remote_open;
   remote_ops.to_xclose = remote_xclose;
+  remote_ops.to_full_name = remote_full_name;
   remote_ops.to_detach = remote_detach;
   remote_ops.to_disconnect = remote_disconnect;
   remote_ops.to_resume = remote_resume;
