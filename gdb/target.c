@@ -3575,6 +3575,14 @@ target_stack_decref (struct target_stack *tstack)
 /* See target.h.  */
 
 void
+target_stack_decref_cleanup (void *arg)
+{
+  target_stack_decref (arg);
+}
+
+/* See target.h.  */
+
+void
 target_stack_set_current (struct target_stack *tstack)
 {
   target_stack = tstack;

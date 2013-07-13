@@ -1,5 +1,11 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* target.h (target_stack_decref_cleanup): Declare.
+	* exec.c (exec_xclose_1): Skip program spaces from other targets.
+	* target.c (target_stack_decref_cleanup): New function.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* target-delegates.c: Rebuild.
 	* make-target-delegates (write_debugmethod): Update for change to
 	debug_target.
