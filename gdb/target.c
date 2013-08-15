@@ -5284,9 +5284,9 @@ new_target_stack (void)
 }
 
 int
-target_stack_id (const struct target_stack *ts)
+target_stack_id (void)
 {
-  return ts->id;
+  return target_stack->id;
 }
 
 /* Print a single target stack.  */
