@@ -1634,7 +1634,7 @@ remote_notice_new_inferior (ptid_t currthread, int running)
 	     stub doesn't support qC.  This is the first stop reported
 	     after an attach, so this is the main thread.  Update the
 	     ptid in the thread list.  */
-	  if (in_thread_list (pid_to_ptid (pid)))
+	  if (in_thread_list (pid_to_ptid_target (pid, target_stack_id ())))
 	    thread_change_ptid (inferior_ptid, currthread);
 	  else
 	    {
@@ -2071,7 +2071,7 @@ read_ptid (char *buf, char **obuf)
       pp = unpack_varlen_hex (p + 1, &tid);
       if (obuf)
 	*obuf = pp;
-      return ptid_build (pid, 0, tid);
+      return ptid_build_target (pid, 0, tid, target_stack_id ());
     }
 
   /* No multi-process.  Just a tid.  */
@@ -2088,7 +2088,7 @@ read_ptid (char *buf, char **obuf)
 
   if (obuf)
     *obuf = pp;
-  return ptid_build (pid, 0, tid);
+  return ptid_build_target (pid, 0, tid, target_stack_id ());
 }
 
 /* Encode 64 bits in 16 chars of hex.  */
@@ -2638,7 +2638,8 @@ static int
 remote_newthread_step (threadref *ref, void *context)
 {
   int pid = ptid_get_pid (inferior_ptid);
-  ptid_t ptid = ptid_build (pid, 0, threadref_to_int (ref));
+  ptid_t ptid = ptid_build_target (pid, 0, threadref_to_int (ref),
+				   target_stack_id ());
 
   if (!in_thread_list (ptid))
     add_thread (ptid);
@@ -3055,7 +3056,8 @@ remote_static_tracepoint_markers_by_strid (const char *strid)
 static ptid_t
 remote_get_ada_task_ptid (long lwp, long thread)
 {
-  return ptid_build (ptid_get_pid (inferior_ptid), 0, lwp);
+  return ptid_build_target (ptid_get_pid (inferior_ptid), 0, lwp,
+			    target_stack_id ());
 }
 
 
@@ -4602,7 +4604,7 @@ extended_remote_attach_1 (struct gdb_target *target, char *args, int from_tty)
 
   set_current_inferior (remote_add_inferior (0, pid, 1));
 
-  inferior_ptid = pid_to_ptid (pid);
+  inferior_ptid = pid_to_ptid_target (pid, target_stack_id ());
 
   if (non_stop)
     {
@@ -4615,7 +4617,7 @@ extended_remote_attach_1 (struct gdb_target *target, char *args, int from_tty)
       if (thread)
 	inferior_ptid = thread->ptid;
       else
-	inferior_ptid = pid_to_ptid (pid);
+	inferior_ptid = pid_to_ptid_target (pid, target_stack_id ());
 
       /* Invalidate our notion of the remote current thread.  */
       record_currthread (rs, minus_one_ptid);
@@ -4846,7 +4848,8 @@ append_resumption (char *p, char *endp,
       ptid_t nptid;
 
       /* All (-1) threads of process.  */
-      nptid = ptid_build (ptid_get_pid (ptid), 0, -1);
+      nptid = ptid_build_target (ptid_get_pid (ptid), 0, -1,
+				 target_stack_id ());
 
       p += xsnprintf (p, endp - p, ":");
       p = write_ptid (p, endp, nptid);
@@ -5161,7 +5164,8 @@ remote_stop_ns (ptid_t ptid)
 
       if (ptid_is_pid (ptid))
 	  /* All (-1) threads of process.  */
-	nptid = ptid_build (ptid_get_pid (ptid), 0, -1);
+	nptid = ptid_build_target (ptid_get_pid (ptid), 0, -1,
+				   target_stack_id ());
       else
 	{
 	  /* Small optimization: if we already have a stop reply for
@@ -5830,7 +5834,7 @@ Packet: '%s'\n"),
 	  }
 	else
 	  error (_("unknown stop reply packet: %s"), buf);
-	event->ptid = pid_to_ptid (pid);
+	event->ptid = pid_to_ptid_target (pid, target_stack_id ());
       }
       break;
     }
@@ -9277,7 +9281,7 @@ threadalive_test (char *cmd, int tty)
 {
   int sample_thread = SAMPLE_THREAD;
   int pid = ptid_get_pid (inferior_ptid);
-  ptid_t ptid = ptid_build (pid, 0, sample_thread);
+  ptid_t ptid = ptid_build (pid, 0, sample_thread, target_stack_id ());
 
   if (remote_thread_alive (ptid))
     printf_filtered ("PASS: Thread alive test\n");
