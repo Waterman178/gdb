@@ -77,6 +77,9 @@ long ptid_get_lwp (ptid_t ptid);
 /* Fetch the tid (thread id) component from a ptid.  */
 long ptid_get_tid (ptid_t ptid);
 
+/* Fetch the target component from a ptid.  */
+int ptid_get_target (ptid_t ptid);
+
 /* Compare two ptids to see if they are equal.  */
 int ptid_equal (ptid_t ptid1, ptid_t ptid2);
 

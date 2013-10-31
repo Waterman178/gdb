@@ -73,6 +73,14 @@ ptid_get_tid (ptid_t ptid)
 /* See ptid.h.  */
 
 int
+ptid_get_target (ptid_t ptid)
+{
+  return ptid.target;
+}
+
+/* See ptid.h.  */
+
+int
 ptid_equal (ptid_t ptid1, ptid_t ptid2)
 {
   return (ptid1.pid == ptid2.pid
