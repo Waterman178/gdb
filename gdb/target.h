@@ -320,7 +320,7 @@ extern char *target_read_stralloc (struct gdb_target *ops,
 
 /* See target_ops->to_xfer_partial.  */
 
-extern LONGEST target_xfer_partial (struct target_ops *ops,
+extern LONGEST target_xfer_partial (struct gdb_target *ops,
 				    enum target_object object,
 				    const char *annex,
 				    void *readbuf, const void *writebuf,
