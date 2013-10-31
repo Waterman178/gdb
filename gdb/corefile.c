@@ -247,7 +247,7 @@ read_memory (CORE_ADDR memaddr, gdb_byte *myaddr, ssize_t len)
 
   while (xfered < len)
     {
-      LONGEST xfer = target_xfer_partial (current_target.beneath,
+      LONGEST xfer = target_xfer_partial (find_target_beneath (current_target),
 					  TARGET_OBJECT_MEMORY, NULL,
 					  myaddr + xfered, NULL,
 					  memaddr + xfered, len - xfered);
