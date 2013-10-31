@@ -2044,7 +2044,7 @@ monitor_xfer_memory (gdb_byte *readbuf, const gdb_byte *writebuf,
 /* Target to_xfer_partial implementation.  */
 
 static LONGEST
-monitor_xfer_partial (struct target_ops *ops, enum target_object object,
+monitor_xfer_partial (struct gdb_target *ops, enum target_object object,
 		      const char *annex, gdb_byte *readbuf,
 		      const gdb_byte *writebuf, ULONGEST offset, LONGEST len)
 {
