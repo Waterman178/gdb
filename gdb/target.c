@@ -75,8 +75,6 @@ static LONGEST default_xfer_partial (struct gdb_target *ops,
 				     const gdb_byte *writebuf,
 				     ULONGEST offset, LONGEST len);
 
-static struct gdbarch *default_thread_architecture (struct target_ops *ops,
-
 static struct gdbarch *default_thread_architecture (struct gdb_target *ops,
 						    ptid_t ptid);
 
