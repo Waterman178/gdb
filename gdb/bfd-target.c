@@ -113,7 +113,7 @@ target_bfd_reopen (struct bfd *abfd)
 
   t = XZALLOC (struct gdb_target_bfd_subclass);
 
-  t->base.ops = &target_bfd_ops; /* FIXME */
+  t->base.ops = &target_bfd_ops;
   t->data.bfd = abfd;
   gdb_bfd_ref (abfd);
   build_section_table (abfd, &t->data.table.sections,
