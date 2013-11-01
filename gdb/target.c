@@ -145,9 +145,9 @@ static VEC (target_ops_ptr) *target_structs;
 
 static struct target_ops dummy_target;
 
-/* The last assigned target id.  */
+/* The next available target id.  */
 
-static int last_assigned_target_id;
+static int next_available_target_id;
 
 /* The type of the target stack.  */
 
@@ -594,7 +594,8 @@ default_terminal_info (const char *args, int from_tty)
 static ptid_t
 default_get_ada_task_ptid (long lwp, long tid)
 {
-  return ptid_build (ptid_get_pid (inferior_ptid), lwp, tid);
+  return ptid_build_target (ptid_get_pid (inferior_ptid), lwp, tid,
+			    target_stack_id ());
 }
 
 static enum exec_direction_kind
@@ -5279,7 +5280,12 @@ new_target_stack (void)
   /* Overwrite the globals so that push_target can work.  */
   target_stack = XCNEW (struct target_stack);
   target_stack->refc = 1;
-  target_stack->id = ++last_assigned_target_id;
+  /* A subtlety here is that post-increment ensures that the first
+     target stack we create has an id of 0.  This lets us not change
+     all calls to ptid_build to ptid_build_target.  Unconverted
+     targets will never be able to get a non-zero target id due to
+     checks elsewhere.  */
+  target_stack->id = next_available_target_id++;
   target_stack->smashed.ops = XCNEW (struct target_ops);
   current_target = &target_stack->smashed;
 

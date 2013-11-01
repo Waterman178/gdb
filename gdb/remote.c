@@ -9283,7 +9283,7 @@ threadalive_test (char *cmd, int tty)
 {
   int sample_thread = SAMPLE_THREAD;
   int pid = ptid_get_pid (inferior_ptid);
-  ptid_t ptid = ptid_build (pid, 0, sample_thread, target_stack_id ());
+  ptid_t ptid = ptid_build_target (pid, 0, sample_thread, target_stack_id ());
 
   if (remote_thread_alive (ptid))
     printf_filtered ("PASS: Thread alive test\n");

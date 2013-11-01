@@ -1268,8 +1268,9 @@ attach_thread (ptid_t ptid, const td_thrhandle_t *th_p,
     {
       int res;
 
-      res = lin_lwp_attach_lwp (ptid_build (ptid_get_pid (ptid),
-					    ti_p->ti_lid, 0));
+      res = lin_lwp_attach_lwp (ptid_build_target (ptid_get_pid (ptid),
+						   ti_p->ti_lid, 0,
+						   target_stack_id ()));
       if (res < 0)
 	{
 	  /* Error, stop iterating.  */

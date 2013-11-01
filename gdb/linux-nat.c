@@ -1367,9 +1367,9 @@ linux_nat_attach (struct gdb_target *ops, char *args, int from_tty)
 
   /* The ptrace base target adds the main thread with (pid,0,0)
      format.  Decorate it with lwp info.  */
-  ptid = ptid_build (ptid_get_pid (inferior_ptid),
-		     ptid_get_pid (inferior_ptid),
-		     0);
+  ptid = ptid_build_target (ptid_get_pid (inferior_ptid),
+			    ptid_get_pid (inferior_ptid),
+			    0, target_stack_id ());
   thread_change_ptid (inferior_ptid, ptid);
 
   /* Add the initial process as the first LWP to the list.  */
@@ -2078,7 +2078,8 @@ linux_handle_extended_wait (struct lwp_info *lp, int status,
 				"from LWP %d, new child is LWP %ld\n",
 				pid, new_pid);
 
-	  new_lp = add_lwp (ptid_build (ptid_get_pid (lp->ptid), new_pid, 0));
+	  new_lp = add_lwp (ptid_build_target (ptid_get_pid (lp->ptid),
+					       new_pid, 0, target_stack_id ()));
 	  new_lp->cloned = 1;
 	  new_lp->stopped = 1;
 
@@ -2955,7 +2956,7 @@ linux_nat_filter_event (int lwpid, int status, int *new_pending_p)
 			    "LLW: Re-adding thread group leader LWP %d.\n",
 			    lwpid);
 
-      lp = add_lwp (ptid_build (lwpid, lwpid, 0));
+      lp = add_lwp (ptid_build_target (lwpid, lwpid, 0, target_stack_id ()));
       lp->stopped = 1;
       lp->resumed = 1;
       add_thread (lp->ptid);
@@ -3225,8 +3226,9 @@ linux_nat_wait_1 (struct gdb_target *ops,
     {
       /* Upgrade the main thread's ptid.  */
       thread_change_ptid (inferior_ptid,
-			  ptid_build (ptid_get_pid (inferior_ptid),
-				      ptid_get_pid (inferior_ptid), 0));
+			  ptid_build_target (ptid_get_pid (inferior_ptid),
+					     ptid_get_pid (inferior_ptid), 0,
+					     target_stack_id ()));
 
       lp = add_initial_lwp (inferior_ptid);
       lp->resumed = 1;

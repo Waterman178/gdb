@@ -19,6 +19,9 @@
 
 #ifdef GDBSERVER
 #include "server.h"
+
+#define target_stack_id() (0)
+
 #else
 #include "defs.h"
 #include "target.h"
@@ -213,7 +216,7 @@ agent_run_command (int pid, const char *cmd, int len)
 {
   int fd;
   int tid = agent_get_helper_thread_id ();
-  ptid_t ptid = ptid_build (pid, tid, 0);
+  ptid_t ptid = ptid_build_target (pid, tid, 0, target_stack_id ());
 
 #ifdef GDBSERVER
   int ret = write_inferior_memory (ipa_sym_addrs.addr_cmd_buf,

@@ -237,7 +237,8 @@ ravenscar_running_thread (void)
   if (tid == 0)
     return null_ptid;
   else
-    return ptid_build (ptid_get_pid (base_ptid), 0, tid);
+    return ptid_build_target (ptid_get_pid (base_ptid), 0, tid,
+			      target_stack_id ());
 }
 
 static char *
@@ -353,7 +354,8 @@ ravenscar_inferior_created (struct gdb_target *target, int from_tty)
 static ptid_t
 ravenscar_get_ada_task_ptid (long lwp, long thread)
 {
-  return ptid_build (ptid_get_pid (base_ptid), 0, thread);
+  return ptid_build_target (ptid_get_pid (base_ptid), 0, thread,
+			    target_stack_id ());
 }
 
 static void
