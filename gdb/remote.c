@@ -5466,12 +5466,14 @@ discard_pending_stop_replies (struct inferior *inf)
   struct queue_iter_param param;
   struct stop_reply *reply;
   struct remote_state *rs = get_remote_state ();
-  struct remote_notif_state *rns = rs->notif_state;
+  struct remote_notif_state *rns;
 
   /* This function can be notified when an inferior exists.  When the
      target is not remote, the notification state is NULL.  */
-  if (rs->remote_desc == NULL)
+  if (rs == NULL || rs->remote_desc == NULL)
     return;
+
+  rns = rs->notif_state;
 
   reply = (struct stop_reply *) rns->pending_event[notif_client_stop.id];
 
