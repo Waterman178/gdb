@@ -5,6 +5,10 @@ See this note for a to-do list for remote.c:
 
     http://sourceware.org/ml/gdb-patches/2013-06/msg00605.html
 
+* remote_async_inferior_event_token is handled incorrectly
+  it is deleted in to_xclose
+  it should probably be per-remote
+
  
 TO DO:
 
