@@ -2601,7 +2601,6 @@ target_info (char *args, int from_tty)
       if (!(*t->ops->to_has_memory) (t))
 	continue;
 
-      /* FIXME: can this ever trigger?  */
       if ((int) (t->ops->to_stratum) <= (int) dummy_stratum)
 	continue;
       if (has_all_mem)
