@@ -1025,10 +1025,11 @@ initialize_inferiors (void)
 
   c = add_com ("add-inferior", no_class, add_inferior_command, _("\
 Add a new inferior.\n\
-Usage: add-inferior [-copies <N>] [-exec <FILENAME>]\n\
+Usage: add-inferior [-new-target] [-copies <N>] [-exec <FILENAME>]\n\
 N is the optional number of inferiors to add, default is 1.\n\
 FILENAME is the file name of the executable to use\n\
-as main program."));
+as main program.\n\
+If `-new-target' is given, then a new target stack is also created."));
   set_cmd_completer (c, filename_completer);
 
   add_com ("remove-inferiors", no_class, remove_inferior_command, _("\
