@@ -4955,6 +4955,10 @@ extern initialize_file_ftype _initialize_linux_nat;
 void
 _initialize_linux_nat (void)
 {
+  linux_ptrace_init_flags (GDB_LINUX_TRACESYSGOOD
+			   | GDB_LINUX_TRACEVFORKDONE
+			   | GDB_LINUX_TRACEALL);
+
   add_setshow_zuinteger_cmd ("lin-lwp", class_maintenance,
 			     &debug_linux_nat, _("\
 Set debugging of GNU/Linux lwp module."), _("\

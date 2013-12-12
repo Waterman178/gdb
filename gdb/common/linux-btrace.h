@@ -29,6 +29,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* Clients must define this.  */
+
+struct regcache;
+extern struct regcache *common_get_thread_regcache (ptid_t);
+
 #if HAVE_LINUX_PERF_EVENT_H
 #  include <linux/perf_event.h>
 #endif

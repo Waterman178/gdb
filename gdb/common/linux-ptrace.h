@@ -92,4 +92,13 @@ extern int linux_supports_tracevforkdone (void);
 extern int linux_supports_tracesysgood (void);
 extern void linux_ptrace_set_additional_flags (int);
 
+enum gdb_linux_support_flags
+{
+  GDB_LINUX_TRACESYSGOOD = 1,
+  GDB_LINUX_TRACEVFORKDONE = 2,
+  GDB_LINUX_TRACEALL = 4
+};
+
+extern void linux_ptrace_init_flags (int flags);
+
 #endif /* COMMON_LINUX_PTRACE_H */

@@ -43,6 +43,8 @@
 
 #include <stdint.h>
 
+static int search_options;
+
 /* Stores the currently supported ptrace options.  A value of
    -1 means we did not check for features yet.  A value of 0 means
    there are no supported features.  */
