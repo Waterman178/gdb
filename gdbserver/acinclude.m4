@@ -1,24 +1,19 @@
 dnl gdb/gdbserver/configure.in uses BFD_HAVE_SYS_PROCFS_TYPE.
-sinclude(../../bfd/bfd.m4)
+sinclude(../bfd/bfd.m4)
 
 sinclude(../acx_configure_dir.m4)
 
 # This gets GDB_AC_LIBMCHECK.
-sinclude(../libmcheck.m4)
+sinclude(../gdb/libmcheck.m4)
 
 dnl This gets autoconf bugfixes
-sinclude(../../config/override.m4)
+sinclude(../config/override.m4)
 
 dnl For ACX_PKGVERSION and ACX_BUGURL.
-sinclude(../../config/acx.m4)
+sinclude(../config/acx.m4)
 
-m4_include(../../config/depstand.m4)
-m4_include(../../config/lead-dot.m4)
-
-dnl codeset.m4 is needed for common.m4, but not for
-dnl anything else in gdbserver.
-m4_include(../../config/codeset.m4)
-m4_include(../common/common.m4)
+m4_include(../config/depstand.m4)
+m4_include(../config/lead-dot.m4)
 
 dnl Check for existence of a type $1 in libthread_db.h
 dnl Based on BFD_HAVE_SYS_PROCFS_TYPE in bfd/bfd.m4.

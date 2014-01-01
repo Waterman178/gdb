@@ -88,13 +88,9 @@ ustlibs = @ustlibs@
 ustinc = @ustinc@
 
 # gnulib
-GNULIB_BUILDDIR = build-gnulib-gdbserver
+GNULIB_BUILDDIR = ../gnulib
 LIBGNU = $(GNULIB_BUILDDIR)/import/libgnu.a
 INCGNU = -I$(srcdir)/../gnulib/import -I$(GNULIB_BUILDDIR)/import
-
-# Generated headers in the gnulib directory.  These must be listed
-# so that they are generated before other files are compiled.
-GNULIB_H = $(GNULIB_BUILDDIR)/import/string.h @GNULIB_STDINT_H@
 
 # All the includes used for CFLAGS and for lint.
 # -I. for config files.
@@ -190,7 +186,7 @@ XML_BUILTIN = @srv_xmlbuiltin@
 IPA_DEPFILES = @IPA_DEPFILES@
 extra_libraries = @extra_libraries@
 
-SUBDIRS = $(GNULIB_BUILDDIR)
+SUBDIRS = 
 CLEANDIRS = $(SUBDIRS)
 
 # List of subdirectories in the build tree that must exist.
@@ -281,11 +277,6 @@ gdbserver$(EXEEXT): $(OBS) ${ADD_DEPS} ${CDEPS} $(LIBGNU)
 	${CC-LD} $(INTERNAL_CFLAGS) $(INTERNAL_LDFLAGS) -o gdbserver$(EXEEXT) $(OBS) \
 	$(LIBGNU) $(GDBSERVER_LIBS) $(XM_CLIBS)
 
-$(LIBGNU) $(GNULIB_H): all-lib
-all-lib: $(GNULIB_BUILDDIR)/Makefile
-	@$(MAKE) $(FLAGS_TO_PASS) DO=all DODIRS=$(GNULIB_BUILDDIR) subdir_do
-.PHONY: all-lib
-
 gdbreplay$(EXEEXT): $(GDBREPLAY_OBS) $(LIBGNU)
 	rm -f gdbreplay$(EXEEXT)
 	${CC-LD} $(INTERNAL_CFLAGS) $(INTERNAL_LDFLAGS) -o gdbreplay$(EXEEXT) $(GDBREPLAY_OBS) \
@@ -352,7 +343,6 @@ clean:
 
 maintainer-clean realclean distclean: clean
 	@$(MAKE) $(FLAGS_TO_PASS) DO=$@ "DODIRS=$(SUBDIRS)" subdir_do
-	rm -rf $(GNULIB_BUILDDIR)
 	rm -f Makefile config.status config.h stamp-h config.log
 	rm -f Makefile
 
@@ -378,13 +368,6 @@ stamp-h: config.in config.status
 
 Makefile: Makefile.in config.status
 	CONFIG_HEADERS="" $(SHELL) ./config.status
-
-$(GNULIB_BUILDDIR)/Makefile: $(srcdir)/../gnulib/Makefile.in config.status
-	  @cd $(GNULIB_BUILDDIR); CONFIG_FILES="Makefile" \
-	  CONFIG_COMMANDS="depfiles" \
-	  CONFIG_HEADERS= \
-	  CONFIG_LINKS= \
-	  $(SHELL) config.status
 
 config.status: configure configure.srv $(srcdir)/../development.sh
 	$(SHELL) ./config.status --recheck

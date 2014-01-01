@@ -5385,7 +5385,7 @@ am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
 
 
 ac_aux_dir=
-for ac_dir in ../.. "$srcdir"/../..; do
+for ac_dir in .. "$srcdir"/..; do
   for ac_t in install-sh install.sh shtool; do
     if test -f "$ac_dir/$ac_t"; then
       ac_aux_dir=$ac_dir
@@ -5395,7 +5395,7 @@ for ac_dir in ../.. "$srcdir"/../..; do
   done
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error "cannot find install-sh, install.sh, or shtool in ../.. \"$srcdir\"/../.." "$LINENO" 5
+  as_fn_error "cannot find install-sh, install.sh, or shtool in .. \"$srcdir\"/.." "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,

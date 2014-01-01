@@ -30,10 +30,6 @@
    don't. */
 #undef HAVE_DECL_STRERROR
 
-/* Define to 1 if you have the declaration of `strstr', and to 0 if you don't.
-   */
-#undef HAVE_DECL_STRSTR
-
 /* Define to 1 if you have the declaration of `vasprintf', and to 0 if you
    don't. */
 #undef HAVE_DECL_VASPRINTF
@@ -60,17 +56,8 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the `fdwalk' function. */
-#undef HAVE_FDWALK
-
-/* Define to 1 if you have the `getrlimit' function. */
-#undef HAVE_GETRLIMIT
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#undef HAVE_LANGINFO_CODESET
 
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
@@ -84,17 +71,11 @@
 /* Define to 1 if you have the <linux/elf.h> header file. */
 #undef HAVE_LINUX_ELF_H
 
-/* Define to 1 if you have the <linux/perf_event.h> header file. */
-#undef HAVE_LINUX_PERF_EVENT_H
-
 /* Define if the target supports register sets. */
 #undef HAVE_LINUX_REGSETS
 
 /* Define if the target supports PTRACE_PEEKUSR for register access. */
 #undef HAVE_LINUX_USRREGS
-
-/* Define to 1 if you have the <locale.h> header file. */
-#undef HAVE_LOCALE_H
 
 /* Define if <thread_db.h> has lwpid_t. */
 #undef HAVE_LWPID_T
@@ -116,12 +97,6 @@
 
 /* Define if you support the personality syscall. */
 #undef HAVE_PERSONALITY
-
-/* Define to 1 if you have the `pipe' function. */
-#undef HAVE_PIPE
-
-/* Define to 1 if you have the `pipe2' function. */
-#undef HAVE_PIPE2
 
 /* Define to 1 if you have the `pread' function. */
 #undef HAVE_PREAD
@@ -157,9 +132,6 @@
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
 
-/* Define to 1 if you have the `socketpair' function. */
-#undef HAVE_SOCKETPAIR
-
 /* Define to 1 if the system has the type `socklen_t'. */
 #undef HAVE_SOCKLEN_T
 
@@ -190,26 +162,14 @@
 /* Define to 1 if you have the <sys/reg.h> header file. */
 #undef HAVE_SYS_REG_H
 
-/* Define to 1 if you have the <sys/resource.h> header file. */
-#undef HAVE_SYS_RESOURCE_H
-
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
-/* Define to 1 if you have the <sys/syscall.h> header file. */
-#undef HAVE_SYS_SYSCALL_H
-
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
-
-/* Define to 1 if you have the <sys/un.h> header file. */
-#undef HAVE_SYS_UN_H
-
-/* Define to 1 if you have the <sys/wait.h> header file. */
-#undef HAVE_SYS_WAIT_H
 
 /* Define if TD_VERSION is available. */
 #undef HAVE_TD_VERSION
@@ -219,9 +179,6 @@
 
 /* Define to 1 if you have the <termio.h> header file. */
 #undef HAVE_TERMIO_H
-
-/* Define to 1 if you have the <thread_db.h> header file. */
-#undef HAVE_THREAD_DB_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
@@ -234,9 +191,6 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
-
-/* Define to 1 if you have the <wait.h> header file. */
-#undef HAVE_WAIT_H
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

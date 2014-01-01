@@ -112,14 +112,6 @@
    don't. */
 #undef HAVE_DECL_SNPRINTF
 
-/* Define to 1 if you have the declaration of `strerror', and to 0 if you
-   don't. */
-#undef HAVE_DECL_STRERROR
-
-/* Define to 1 if you have the declaration of `strstr', and to 0 if you don't.
-   */
-#undef HAVE_DECL_STRSTR
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -131,9 +123,6 @@
 
 /* Define to 1 if your system has the etext variable. */
 #undef HAVE_ETEXT
-
-/* Define to 1 if you have the `fdwalk' function. */
-#undef HAVE_FDWALK
 
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
@@ -213,12 +202,6 @@
 /* Define to 1 if you have the `w' library (-lw). */
 #undef HAVE_LIBW
 
-/* Define to 1 if you have the <linux/perf_event.h> header file. */
-#undef HAVE_LINUX_PERF_EVENT_H
-
-/* Define to 1 if you have the <locale.h> header file. */
-#undef HAVE_LOCALE_H
-
 /* Define to 1 if the compiler supports long double. */
 #undef HAVE_LONG_DOUBLE
 
@@ -257,9 +240,6 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
-
-/* Define to 1 if you have the `pipe2' function. */
-#undef HAVE_PIPE2
 
 /* Define to 1 if you have the `poll' function. */
 #undef HAVE_POLL
@@ -360,9 +340,6 @@
 /* Define to 1 if you have the `sigaction' function. */
 #undef HAVE_SIGACTION
 
-/* Define to 1 if you have the <signal.h> header file. */
-#undef HAVE_SIGNAL_H
-
 /* Define to 1 if you have the `sigprocmask' function. */
 #undef HAVE_SIGPROCMASK
 
@@ -456,9 +433,6 @@
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
-/* Define to 1 if you have the <sys/socket.h> header file. */
-#undef HAVE_SYS_SOCKET_H
-
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -468,14 +442,8 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define to 1 if you have the <sys/un.h> header file. */
-#undef HAVE_SYS_UN_H
-
 /* Define to 1 if you have the <sys/user.h> header file. */
 #undef HAVE_SYS_USER_H
-
-/* Define to 1 if you have the <sys/wait.h> header file. */
-#undef HAVE_SYS_WAIT_H
 
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
@@ -509,9 +477,6 @@
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
-
-/* Define to 1 if you have the <wait.h> header file. */
-#undef HAVE_WAIT_H
 
 /* Define to 1 if you have the `wborder' function. */
 #undef HAVE_WBORDER

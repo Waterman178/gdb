@@ -1,5 +1,5 @@
 dnl Autoconf configure script for GDB, the GNU debugger.
-dnl Copyright (C) 1995-2013 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2014 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GDB.
 dnl 
@@ -19,15 +19,17 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_CONFIG_AUX_DIR(..)
 AC_INIT([libgdb], [0.1])
 AC_CONFIG_SRCDIR([common/ptid.h])
+AC_CONFIG_AUX_DIR(..)
+
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign no-dist no-define silent-rules subdir-objects 1.11 -Wall])
 
 AC_CONFIG_HEADER(libgdb-config.h:config.in)
 AM_MAINTAINER_MODE
 
+AC_USE_SYSTEM_EXTENSIONS
 
 
 dnl These must be called before LT_INIT, because it may want
@@ -40,7 +42,6 @@ LT_INIT([dlopen])
 AC_PROG_CC
 AM_PROG_CC_STDC
 
-AC_USE_SYSTEM_EXTENSIONS
 AC_GNU_SOURCE
 
 ACX_LARGEFILE

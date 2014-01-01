@@ -50,12 +50,6 @@ esac
 AM_CONDITIONAL(GMAKE, test "$MAKE_IS_GNU" = yes)
 AC_PROG_MAKE_SET
 
-# Configure gnulib.  We need to build gnulib under some other
-# directory not "gnulib", to avoid the problem of both GDB and
-# GDBserver wanting to build it in the same directory, when building
-# in the source dir.
-ACX_CONFIGURE_DIR(["gnulib"], ["build-gnulib"])
-
 dnl List of object files and targets accumulated by configure.
 
 CONFIG_OBS=
@@ -80,15 +74,6 @@ if test x"$USE_NLS" = xyes; then
    CONFIG_INSTALL="$CONFIG_INSTALL install-po"
    CONFIG_UNINSTALL="$CONFIG_UNINSTALL uninstall-po"
 fi
-
-GNULIB=build-gnulib/import
-
-# For Makefile dependencies.
-GNULIB_STDINT_H=
-if test x"$STDINT_H" != x; then
-  GNULIB_STDINT_H=$GNULIB/$STDINT_H
-fi
-AC_SUBST(GNULIB_STDINT_H)
 
 PACKAGE=gdb
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package. ])
@@ -1166,7 +1151,6 @@ AC_CHECK_FUNCS([canonicalize_file_name realpath getrusage getuid getgid \
 		setrlimit getrlimit posix_madvise waitpid lstat \
 		ptrace64])
 AM_LANGINFO_CODESET
-GDB_AC_COMMON
 
 # Check the return and argument types of ptrace.  No canned test for
 # this, so roll our own.

@@ -100,6 +100,9 @@ host_modules= { module= sim; };
 host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true; bootstrap=true; };
 host_modules= { module= gdb; };
+host_modules= { module= gnulib; no_install=true; };
+host_modules= { module= libgdb; };
+host_modules= { module= gdbserver; };
 host_modules= { module= expect; };
 host_modules= { module= guile; };
 host_modules= { module= tk; };
@@ -351,6 +354,7 @@ dependencies = { module=configure-cloog; on=all-gmp; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
+dependencies = { module=configure-gdb; on=all-gnulib; hard=true; };
 // Depend on all-libiconv so that configure checks for iconv
 // functions will work.
 dependencies = { module=configure-gdb; on=all-libiconv; };
@@ -362,6 +366,14 @@ dependencies = { module=all-gdb; on=all-build-bison; };
 dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
+dependencies = { module=all-gdb; on=all-libgdb; hard=true; };
+
+dependencies = { module=configure-gdbserver; on=all-gnulib; hard=true; };
+dependencies = { module=all-gdbserver; on=all-libiberty; hard=true; };
+dependencies = { module=all-gdbserver; on=all-libgdb; hard=true; };
+
+dependencies = { module=configure-libgdb; on=all-gnulib; };
+dependencies = { module=all-libgdb; on=all-libiberty; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };

@@ -70,13 +70,6 @@ esac
 AM_CONDITIONAL(GMAKE, test "$MAKE_IS_GNU" = yes)
 AC_PROG_MAKE_SET
 
-# Configure gnulib.  We can't use AC_CONFIG_SUBDIRS as that'd expect
-# to find the the source subdir to be configured directly under
-# gdbserver/.  We need to build gnulib under some other directory not
-# "gnulib", to avoid the problem of both GDB and GDBserver wanting to
-# build it in the same directory, when building in the source dir.
-ACX_CONFIGURE_DIR(["../gnulib"], ["build-gnulib-gdbserver"])
-
 AC_CHECK_HEADERS(sgtty.h termio.h termios.h sys/reg.h string.h dnl
 		 proc_service.h sys/procfs.h linux/elf.h dnl
 		 errno.h fcntl.h signal.h sys/file.h malloc.h dnl
@@ -84,8 +77,6 @@ AC_CHECK_HEADERS(sgtty.h termio.h termios.h sys/reg.h string.h dnl
 		 netinet/tcp.h arpa/inet.h)
 AC_CHECK_FUNCS(pread pwrite pread64 readlink)
 AC_REPLACE_FUNCS(vasprintf vsnprintf)
-
-GDB_AC_COMMON
 
 # Check for UST
 ustlibs=""
@@ -460,14 +451,6 @@ AC_SUBST(srv_xmlbuiltin)
 AC_SUBST(srv_xmlfiles)
 AC_SUBST(IPA_DEPFILES)
 AC_SUBST(extra_libraries)
-
-GNULIB=build-gnulib-gdbserver/import
-
-GNULIB_STDINT_H=
-if test x"$STDINT_H" != x; then
-  GNULIB_STDINT_H=$GNULIB/$STDINT_H
-fi
-AC_SUBST(GNULIB_STDINT_H)
 
 AC_OUTPUT(Makefile,
 [case x$CONFIG_HEADERS in
