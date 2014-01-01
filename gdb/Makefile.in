@@ -896,7 +896,6 @@ COMMON_OBS = $(DEPFILES) $(CONFIG_OBS) $(YYOBJ) \
 	expprint.o environ.o stack.o thread.o \
 	exceptions.o \
 	filesystem.o \
-	filestuff.o \
 	inf-child.o \
 	interps.o \
 	minidebug.o \
@@ -910,7 +909,6 @@ COMMON_OBS = $(DEPFILES) $(CONFIG_OBS) $(YYOBJ) \
 	build-id.o buildsym.o \
 	findcmd.o \
 	std-regs.o \
-	signals.o \
 	exec.o reverse.o \
 	bcache.o objfiles.o observer.o minsyms.o maint.o demangle.o \
 	dbxread.o coffread.o coff-pe-read.o \
@@ -919,7 +917,7 @@ COMMON_OBS = $(DEPFILES) $(CONFIG_OBS) $(YYOBJ) \
 	ada-lang.o c-lang.o d-lang.o f-lang.o objc-lang.o \
 	ada-tasks.o ada-varobj.o c-varobj.o \
 	ui-out.o cli-out.o \
-	varobj.o vec.o \
+	varobj.o \
 	go-lang.o go-valprint.o go-typeprint.o \
 	jv-lang.o jv-valprint.o jv-typeprint.o jv-varobj.o \
 	m2-lang.o opencl-lang.o p-lang.o p-typeprint.o p-valprint.o \
@@ -941,12 +939,12 @@ COMMON_OBS = $(DEPFILES) $(CONFIG_OBS) $(YYOBJ) \
 	tramp-frame.o \
 	solib.o solib-target.o \
 	prologue-value.o memory-map.o memrange.o \
-	xml-support.o xml-syscall.o xml-utils.o \
+	xml-support.o xml-syscall.o \
 	target-descriptions.o target-memory.o xml-tdesc.o xml-builtin.o \
 	inferior.o osdata.o gdb_usleep.o record.o record-full.o gcore.o \
-	gdb_vecs.o jit.o progspace.o skip.o probe.o \
-	common-utils.o buffer.o ptid.o gdb-dlfcn.o common-agent.o \
-	format.o registry.o btrace.o record-btrace.o waitstatus.o
+	jit.o progspace.o skip.o probe.o \
+	gdb-dlfcn.o \
+	registry.o btrace.o record-btrace.o
 
 TSOBS = inflow.o
 
