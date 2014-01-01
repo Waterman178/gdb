@@ -433,7 +433,9 @@ HAVE_NATIVE_GCORE_TARGET = @HAVE_NATIVE_GCORE_TARGET@
 # your system doesn't have fcntl.h in /usr/include (which is where it
 # should be according to Posix).
 DEFS = @DEFS@
-GDB_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/common -I$(srcdir)/config \
+GDB_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/../libgdb/common \
+	-I$(srcdir)/../libgdb \
+	-I$(srcdir)/config \
 	-DLOCALEDIR="\"$(localedir)\"" $(DEFS)
 
 # MH_CFLAGS, if defined, has host-dependent CFLAGS from the config directory.
@@ -765,18 +767,15 @@ SFILES = ada-exp.y ada-lang.c ada-typeprint.c ada-valprint.c ada-tasks.c \
 	typeprint.c \
 	ui-out.c utils.c ui-file.h ui-file.c \
 	user-regs.c \
-	valarith.c valops.c valprint.c value.c varobj.c common/vec.c \
+	valarith.c valops.c valprint.c value.c varobj.c \
 	xml-tdesc.c xml-support.c \
 	inferior.c gdb_usleep.c \
 	record.c record-full.c gcore.c \
 	jit.c \
 	xml-syscall.c \
-	annotate.c common/signals.c copying.c dfp.c gdb.c inf-child.c \
+	annotate.c copying.c dfp.c gdb.c inf-child.c \
 	regset.c sol-thread.c windows-termcap.c \
-	common/gdb_vecs.c common/common-utils.c common/xml-utils.c \
-	common/ptid.c common/buffer.c gdb-dlfcn.c common/agent.c \
-	common/format.c common/filestuff.c btrace.c record-btrace.c ctf.c \
-	target/waitstatus.c
+	btrace.c record-btrace.c ctf.c
 
 LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
 
@@ -787,8 +786,6 @@ LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
 # right, it is probably easiest just to list .h files here directly.
 
 HFILES_NO_SRCDIR = \
-common/gdb_signals.h common/gdb_thread_db.h common/gdb_vecs.h \
-common/i386-xstate.h common/linux-ptrace.h common/mips-linux-watch.h \
 proc-utils.h aarch64-tdep.h arm-tdep.h ax-gdb.h ppcfbsd-tdep.h \
 ppcnbsd-tdep.h cli-out.h gdb_expat.h breakpoint.h infcall.h obsd-tdep.h \
 exec.h m32r-tdep.h osabi.h gdbcore.h solib-som.h amd64bsd-nat.h \
@@ -796,7 +793,7 @@ i386bsd-nat.h xml-support.h xml-tdesc.h alphabsd-tdep.h gdb_obstack.h \
 ia64-tdep.h ada-lang.h varobj.h frv-tdep.h nto-tdep.h serial.h \
 c-lang.h d-lang.h go-lang.h frame.h event-loop.h block.h cli/cli-setshow.h \
 cli/cli-decode.h cli/cli-cmds.h cli/cli-utils.h \
-cli/cli-script.h macrotab.h symtab.h common/version.h \
+cli/cli-script.h macrotab.h symtab.h \
 remote.h remote-notif.h gdb.h sparc-nat.h \
 gdbthread.h dwarf2-frame.h dwarf2-frame-tailcall.h nbsd-nat.h dcache.h \
 amd64-nat.h s390-linux-tdep.h arm-linux-tdep.h exceptions.h macroscope.h \
@@ -804,7 +801,7 @@ gdbarch.h bsd-uthread.h memory-map.h memrange.h \
 mdebugread.h m88k-tdep.h stabsread.h hppa-linux-offsets.h linux-fork.h \
 ser-unix.h inf-ptrace.h terminal.h ui-out.h frame-base.h \
 f-lang.h dwarf2loc.h value.h sparc-tdep.h defs.h target-descriptions.h \
-objfiles.h common/vec.h disasm.h mips-tdep.h ser-base.h \
+objfiles.h disasm.h mips-tdep.h ser-base.h \
 gdb_curses.h bfd-target.h memattr.h inferior.h ax.h dummy-frame.h \
 inflow.h fbsd-nat.h ia64-libunwind-tdep.h completer.h inf-ttrace.h \
 solib-target.h gdb_vfork.h alpha-tdep.h dwarf2expr.h \
@@ -819,7 +816,7 @@ build-id.h buildsym.h valprint.h \
 typeprint.h mi/mi-getopt.h mi/mi-parse.h mi/mi-console.h \
 mi/mi-out.h mi/mi-main.h mi/mi-common.h mi/mi-cmds.h linux-nat.h \
 complaints.h gdb_proc_service.h gdb_regex.h xtensa-tdep.h inf-loop.h \
-common/gdb_wait.h common/gdb_assert.h solib.h ppc-tdep.h cp-support.h glibc-tdep.h \
+solib.h ppc-tdep.h cp-support.h glibc-tdep.h \
 interps.h auxv.h gdbcmd.h tramp-frame.h mipsnbsd-tdep.h	\
 amd64-linux-tdep.h linespec.h i387-tdep.h mn10300-tdep.h \
 sparc64-tdep.h monitor.h ppcobsd-tdep.h srec.h solib-pa64.h \
@@ -827,7 +824,7 @@ coff-pe-read.h parser-defs.h gdb_ptrace.h mips-linux-tdep.h \
 m68k-tdep.h spu-tdep.h jv-lang.h environ.h solib-irix.h amd64-tdep.h \
 doublest.h regset.h hppa-tdep.h ppc-linux-tdep.h ppc64-tdep.h \
 rs6000-tdep.h rs6000-aix-tdep.h \
-common/gdb_locale.h arch-utils.h trad-frame.h gnu-nat.h \
+arch-utils.h trad-frame.h gnu-nat.h \
 language.h nbsd-tdep.h solib-svr4.h \
 macroexp.h ui-file.h regcache.h tracepoint.h i386-tdep.h \
 inf-child.h p-lang.h event-top.h gdbtypes.h user-regs.h \
@@ -849,12 +846,10 @@ python/python-internal.h python/python.h ravenscar-thread.h record.h \
 record-full.h solib-aix.h \
 solib-darwin.h solib-ia64-hpux.h solib-spu.h windows-nat.h xcoffread.h \
 inline-frame.h skip.h \
-common/common-utils.h common/xml-utils.h common/buffer.h common/ptid.h \
-common/format.h common/host-defs.h utils.h common/queue.h \
-common/linux-osdata.h gdb-dlfcn.h auto-load.h probe.h stap-probe.h \
-gdb_bfd.h sparc-ravenscar-thread.h ppc-ravenscar-thread.h common/linux-btrace.h \
-ctf.h common/i386-cpuid.h common/i386-gcc-cpuid.h target/resume.h \
-target/wait.h target/waitstatus.h nat/linux-nat.h nat/linux-waitpid.h
+utils.h \
+gdb-dlfcn.h auto-load.h probe.h stap-probe.h \
+gdb_bfd.h sparc-ravenscar-thread.h ppc-ravenscar-thread.h \
+ctf.h
 
 # Header files that already have srcdir in them, or which are in objdir.
 
@@ -1177,7 +1172,6 @@ init.c: $(INIT_FILES)
 	    -e '/^[a-z0-9A-Z_]*_[SU].[co]$$/d' \
 	    -e '/[a-z0-9A-Z_]*-exp.tab.[co]$$/d' \
 	    -e 's/\.[co]$$/.c/' \
-	    -e 's,signals\.c,common/signals\.c,' \
 	    -e 's|^\([^  /][^     ]*\)|$(srcdir)/\1|g' | \
 	while read f; do \
 	    sed -n -e 's/^_initialize_\([a-z_0-9A-Z]*\).*/\1/p' $$f 2>/dev/null; \
@@ -1425,8 +1419,8 @@ $(srcdir)/copying.c: @MAINTAINER_MODE_TRUE@ $(srcdir)/../COPYING3 $(srcdir)/copy
 		< $(srcdir)/../COPYING3 > $(srcdir)/copying.tmp
 	mv $(srcdir)/copying.tmp $(srcdir)/copying.c
 
-version.c: Makefile version.in $(srcdir)/../bfd/version.h $(srcdir)/common/create-version.sh
-	$(SHELL) $(srcdir)/common/create-version.sh $(srcdir) \
+version.c: Makefile version.in $(srcdir)/../bfd/version.h $(srcdir)/../libgdb/common/create-version.sh
+	$(SHELL) $(srcdir)/../libgdb/common/create-version.sh $(srcdir) \
 	    $(host_alias) $(target_alias) version.c
 
 observer.h: observer.sh doc/observer.texi
@@ -1959,90 +1953,6 @@ mi-symbol-cmds.o: $(srcdir)/mi/mi-symbol-cmds.c
 
 mi-common.o: $(srcdir)/mi/mi-common.c
 	$(COMPILE) $(srcdir)/mi/mi-common.c
-	$(POSTCOMPILE)
-
-# gdb/common/ dependencies
-#
-# Need to explicitly specify the compile rule as make will do nothing
-# or try to compile the object file into the sub-directory.
-
-signals.o: $(srcdir)/common/signals.c
-	$(COMPILE) $(srcdir)/common/signals.c
-	$(POSTCOMPILE)
-
-common-utils.o: ${srcdir}/common/common-utils.c
-	$(COMPILE) $(srcdir)/common/common-utils.c
-	$(POSTCOMPILE)
-
-gdb_vecs.o: ${srcdir}/common/gdb_vecs.c
-	$(COMPILE) $(srcdir)/common/gdb_vecs.c
-	$(POSTCOMPILE)
-
-xml-utils.o: ${srcdir}/common/xml-utils.c
-	$(COMPILE) $(srcdir)/common/xml-utils.c
-	$(POSTCOMPILE)
-
-ptid.o: ${srcdir}/common/ptid.c
-	$(COMPILE) $(srcdir)/common/ptid.c
-	$(POSTCOMPILE)
-
-buffer.o: ${srcdir}/common/buffer.c
-	$(COMPILE) $(srcdir)/common/buffer.c
-	$(POSTCOMPILE)
-
-filestuff.o: $(srcdir)/common/filestuff.c
-	$(COMPILE) $(srcdir)/common/filestuff.c
-	$(POSTCOMPILE)
-
-format.o: ${srcdir}/common/format.c
-	$(COMPILE) $(srcdir)/common/format.c
-	$(POSTCOMPILE)
-
-linux-osdata.o: ${srcdir}/common/linux-osdata.c
-	$(COMPILE) $(srcdir)/common/linux-osdata.c
-	$(POSTCOMPILE)
-
-linux-procfs.o: $(srcdir)/common/linux-procfs.c
-	$(COMPILE) $(srcdir)/common/linux-procfs.c
-	$(POSTCOMPILE)
-
-linux-ptrace.o: $(srcdir)/common/linux-ptrace.c
-	$(COMPILE) $(srcdir)/common/linux-ptrace.c
-	$(POSTCOMPILE)
-
-common-agent.o: $(srcdir)/common/agent.c
-	$(COMPILE) $(srcdir)/common/agent.c
-	$(POSTCOMPILE)
-
-vec.o: ${srcdir}/common/vec.c
-	$(COMPILE) $(srcdir)/common/vec.c
-	$(POSTCOMPILE)
-
-linux-btrace.o: ${srcdir}/common/linux-btrace.c
-	$(COMPILE) $(srcdir)/common/linux-btrace.c
-	$(POSTCOMPILE)
-
-mips-linux-watch.o: ${srcdir}/common/mips-linux-watch.c
-	$(COMPILE) $(srcdir)/common/mips-linux-watch.c
-	$(POSTCOMPILE)
-
-#
-# gdb/target/ dependencies
-#
-# Need to explicitly specify the compile rule as make will do nothing
-# or try to compile the object file into the sub-directory.
-
-waitstatus.o: ${srcdir}/target/waitstatus.c
-	$(COMPILE) $(srcdir)/target/waitstatus.c
-	$(POSTCOMPILE)
-
-# gdb/nat/ dependencies
-#
-# Need to explicitly specify the compile rule as make will do nothing
-# or try to compile the object file into the sub-directory.
-
-linux-waitpid.o: ${srcdir}/nat/linux-waitpid.c
-	$(COMPILE) $(srcdir)/nat/linux-waitpid.c
 	$(POSTCOMPILE)
 
 #

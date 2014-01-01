@@ -21,8 +21,6 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
 AC_INIT([libgdb], [0.1])
 AC_CONFIG_SRCDIR([common/ptid.h])
-AC_CONFIG_AUX_DIR(..)
-
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign no-dist no-define silent-rules subdir-objects 1.11 -Wall])
 
