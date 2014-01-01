@@ -23,7 +23,7 @@
 #define LINUX_BTRACE_H
 
 #include "btrace-common.h"
-#include "config.h"
+#include "libgdb-config.h"
 #include "vec.h"
 #include "ptid.h"
 #include <stddef.h>

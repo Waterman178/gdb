@@ -20,7 +20,7 @@
 #ifndef COMMON_UTILS_H
 #define COMMON_UTILS_H
 
-#include "config.h"
+#include "libgdb-config.h"
 #include "ansidecl.h"
 #include <stddef.h>
 #include <stdarg.h>

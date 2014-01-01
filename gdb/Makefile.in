@@ -436,6 +436,7 @@ DEFS = @DEFS@
 GDB_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/../libgdb/common \
 	-I$(srcdir)/../libgdb \
 	-I$(srcdir)/config \
+	-I../libgdb \
 	-DLOCALEDIR="\"$(localedir)\"" $(DEFS)
 
 # MH_CFLAGS, if defined, has host-dependent CFLAGS from the config directory.
