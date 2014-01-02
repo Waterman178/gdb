@@ -83,6 +83,8 @@ CC-LD=${CC}
 INCLUDE_DIR =  ${srcdir}/../include
 LIBIBERTY = ../libiberty/libiberty.a
 
+LIBGDB = ../libgdb/libgdb.a
+
 # Where is ust?  These will be empty if ust was not available.
 ustlibs = @ustlibs@
 ustinc = @ustinc@
@@ -101,8 +103,9 @@ INCGNU = -I$(srcdir)/../gnulib/import -I$(GNULIB_BUILDDIR)/import
 # in those directories should be included with the subdirectory.
 # e.g.: "target/wait.h".
 #
-INCLUDE_CFLAGS = -I. -I${srcdir} -I$(srcdir)/../common \
-	-I$(srcdir)/../regformats -I$(srcdir)/../ -I$(INCLUDE_DIR) \
+INCLUDE_CFLAGS = -I. -I${srcdir} -I$(srcdir)/../libgdb/common \
+	-I../libgdb -I$(srcdir)/../libgdb \
+	-I$(srcdir)/../gdb/regformats -I$(srcdir)/../ -I$(INCLUDE_DIR) \
 	$(INCGNU) -I$(srcdir)/../../bfd -I../../bfd
 
 # M{H,T}_CFLAGS, if defined, has host- and target-dependent CFLAGS
@@ -173,7 +176,7 @@ XM_CLIBS = @LIBS@
 CDEPS = $(srcdir)/proc-service.list
 
 # XML files to compile in to gdbserver, if any.
-XML_DIR = $(srcdir)/../features
+XML_DIR = $(srcdir)/../gdb/features
 XML_FILES = @srv_xmlfiles@
 XML_BUILTIN = @srv_xmlbuiltin@
 
@@ -266,10 +269,10 @@ install-html:
 clean-info: force
 	@$(MAKE) $(FLAGS_TO_PASS) DO=$@ "DODIRS=$(SUBDIRS)" subdir_do
 
-gdbserver$(EXEEXT): $(OBS) ${ADD_DEPS} ${CDEPS} $(LIBGNU) $(LIBIBERTY)
+gdbserver$(EXEEXT): $(OBS) ${ADD_DEPS} ${CDEPS} $(LIBGDB) $(LIBGNU) $(LIBIBERTY)
 	rm -f gdbserver$(EXEEXT)
 	${CC-LD} $(INTERNAL_CFLAGS) $(INTERNAL_LDFLAGS) -o gdbserver$(EXEEXT) $(OBS) \
-	$(LIBGNU) $(LIBIBERTY) $(GDBSERVER_LIBS) $(XM_CLIBS)
+	$(LIBGDB) $(LIBGNU) $(LIBIBERTY) $(GDBSERVER_LIBS) $(XM_CLIBS)
 
 gdbreplay$(EXEEXT): $(GDBREPLAY_OBS) $(LIBGNU)
 	rm -f gdbreplay$(EXEEXT)
@@ -375,15 +378,15 @@ am--refresh:
 
 force:
 
-version.c: Makefile $(srcdir)/../version.in $(srcdir)/../../bfd/version.h $(srcdir)/../common/create-version.sh
-	$(SHELL) $(srcdir)/../common/create-version.sh $(srcdir)/.. \
+version.c: Makefile $(srcdir)/../gdb/version.in $(srcdir)/../bfd/version.h $(srcdir)/../libgdb/common/create-version.sh
+	$(SHELL) $(srcdir)/../libgdb/common/create-version.sh $(srcdir) \
 	    $(host_alias) $(target_alias) version.c
 
 xml-builtin.c: stamp-xml; @true
 stamp-xml: $(XML_DIR)/feature_to_c.sh Makefile $(XML_FILES)
 	rm -f xml-builtin.tmp
 	$(SHELL) $(XML_DIR)/feature_to_c.sh xml-builtin.tmp $(XML_FILES)
-	$(SHELL) $(srcdir)/../../move-if-change xml-builtin.tmp xml-builtin.c
+	$(SHELL) $(srcdir)/../move-if-change xml-builtin.tmp xml-builtin.c
 	echo stamp > stamp-xml
 
 .PRECIOUS: xml-builtin.c
@@ -399,7 +402,7 @@ stamp-xml: $(XML_DIR)/feature_to_c.sh Makefile $(XML_FILES)
 # will remove them.
 MAKEOVERRIDES=
 
-regdat_sh = $(srcdir)/../regformats/regdat.sh
+regdat_sh = $(srcdir)/../gdb/regformats/regdat.sh
 
 UST_CFLAGS = $(ustinc) -DCONFIG_UST_GDB_INTEGRATION
 

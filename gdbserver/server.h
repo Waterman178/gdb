@@ -20,7 +20,18 @@
 #define SERVER_H
 
 #include "config.h"
+
+/* Evil hacks.  */
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
 #include "../gnulib/config.h"
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#include "../libgdb/libgdb-config.h"
 
 #ifdef __MINGW32CE__
 #include "wincecompat.h"
