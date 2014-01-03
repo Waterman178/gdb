@@ -1797,6 +1797,17 @@ target_read_uint32 (CORE_ADDR memaddr, unsigned int *result)
   return 0;
 }
 
+int
+target_look_up_symbol (const char *name, CORE_ADDR *addr, void *data)
+{
+  struct minimal_symbol *sym = lookup_minimal_symbol (name, NULL,
+						      (struct objfile *) data);
+
+  if (sym != NULL)
+    *addr = SYMBOL_VALUE_ADDRESS (sym);
+  return sym != NULL;
+}
+
 /* Like target_read_memory, but specify explicitly that this is a read
    from the target's raw memory.  That is, this read bypasses the
    dcache, breakpoint shadowing, etc.  */
