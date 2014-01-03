@@ -107,7 +107,7 @@ GNULIB_H = $(GNULIB_BUILDDIR)/import/string.h @GNULIB_STDINT_H@
 #
 INCLUDE_CFLAGS = -I. -I${srcdir} -I$(srcdir)/../common \
 	-I$(srcdir)/../regformats -I$(srcdir)/../ -I$(INCLUDE_DIR) \
-	$(INCGNU)
+	$(INCGNU) -I$(srcdir)/../../bfd -I../../bfd
 
 # M{H,T}_CFLAGS, if defined, has host- and target-dependent CFLAGS
 # from the config/ directory.

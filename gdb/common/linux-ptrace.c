@@ -39,11 +39,9 @@
 #include "buffer.h"
 #include "gdb_assert.h"
 #include "gdb_wait.h"
+#include "common-types.h"
 
 #include <stdint.h>
-
-/* This is a bit of a hack - should be in a header somewhere.  */
-typedef unsigned char gdb_byte;
 
 /* Stores the currently supported ptrace options.  A value of
    -1 means we did not check for features yet.  A value of 0 means
