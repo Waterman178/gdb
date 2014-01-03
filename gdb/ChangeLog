@@ -1,5 +1,9 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* common/agent.c: Don't include defs.h or server.h.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* target/symbol.h: New file.
 	* target.h: Include target/symbol.h.
 	* target.c (target_look_up_symbol): New function.
