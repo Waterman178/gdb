@@ -1,5 +1,10 @@
 2014-01-09  Tom Tromey  <tromey@redhat.com>
 
+	* target.c (target_read_memory, target_read_uint32)
+	(target_write_memory): New functions.
+
+2014-01-09  Tom Tromey  <tromey@redhat.com>
+
 	* utils.c (debug_vprintf): Define.
 
 2014-06-18  Tom Tromey  <tromey@redhat.com>
