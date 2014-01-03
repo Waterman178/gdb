@@ -1,5 +1,10 @@
 2014-01-09  Tom Tromey  <tromey@redhat.com>
 
+	* common/linux-ptrace.c: Don't include server.h or defs.h; update
+	includes.
+
+2014-01-09  Tom Tromey  <tromey@redhat.com>
+
 	* utils.c (debug_vprintf): New function.
 	* common/agent.c (debug_agent_print): New function.
 	(DEBUG_AGENT): Redefine.
