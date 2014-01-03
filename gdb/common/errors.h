@@ -30,4 +30,7 @@ extern void fatal (const char *fmt, ...)
 
 extern void warning (const char *, ...) ATTRIBUTE_PRINTF (1, 2);
 
+extern void debug_vprintf (const char *, va_list)
+     ATTRIBUTE_PRINTF (1, 0);
+
 #endif /* COMMON_ERRORS_H */

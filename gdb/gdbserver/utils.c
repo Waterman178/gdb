@@ -165,6 +165,12 @@ internal_error (const char *file, int line, const char *fmt, ...)
   exit (1);
 }
 
+void
+debug_vprintf (const char *fmt, va_list ap)
+{
+  vfprintf (stderr, fmt, ap);
+}
+
 /* Temporary storage using circular buffer.  */
 #define NUMCELLS 10
 #define CELLSIZE 50
