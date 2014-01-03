@@ -1,3 +1,9 @@
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
+	* common/errors.h: New file.
+	* utils.h: Include errors.h.
+	(perror_with_name, error, fatal, warning): Don't declare.
+
 2014-06-20  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	Fix --with-system-readline with readline-6.3 patch 5.
