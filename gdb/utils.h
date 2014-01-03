@@ -23,6 +23,7 @@
 
 #include "cleanups.h"
 #include "exceptions.h"
+#include "errors.h"
 
 extern void initialize_utils (void);
 
@@ -287,7 +288,6 @@ extern void fprintf_symbol_filtered (struct ui_file *, const char *,
 
 extern void throw_perror_with_name (enum errors errcode, const char *string)
   ATTRIBUTE_NORETURN;
-extern void perror_with_name (const char *) ATTRIBUTE_NORETURN;
 
 extern void perror_warning_with_name (const char *string);
 
@@ -304,16 +304,10 @@ extern char *warning_pre_print;
 extern void verror (const char *fmt, va_list ap)
      ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 0);
 
-extern void error (const char *fmt, ...)
-     ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 2);
-
 extern void error_stream (struct ui_file *) ATTRIBUTE_NORETURN;
 
 extern void vfatal (const char *fmt, va_list ap)
      ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 0);
-
-extern void fatal (const char *fmt, ...)
-     ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 2);
 
 extern void internal_verror (const char *file, int line, const char *,
 			     va_list ap)
@@ -325,8 +319,6 @@ extern void internal_vwarning (const char *file, int line,
 
 extern void internal_warning (const char *file, int line,
 			      const char *, ...) ATTRIBUTE_PRINTF (3, 4);
-
-extern void warning (const char *, ...) ATTRIBUTE_PRINTF (1, 2);
 
 extern void vwarning (const char *, va_list args) ATTRIBUTE_PRINTF (1, 0);
 

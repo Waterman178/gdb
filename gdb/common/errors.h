@@ -1,5 +1,6 @@
-/* General utility routines for the remote server for GDB.
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+/* Declarations for error-reporting facilities.
+
+   Copyright (C) 1986-2014 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -16,15 +17,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef COMMON_ERRORS_H
+#define COMMON_ERRORS_H
 
-#include "errors.h"
+extern void perror_with_name (const char *) ATTRIBUTE_NORETURN;
 
-char *paddress (CORE_ADDR addr);
-char *pulongest (ULONGEST u);
-char *plongest (LONGEST l);
-char *phex_nz (ULONGEST l, int sizeof_l);
-char *pfildes (gdb_fildes_t fd);
+extern void error (const char *fmt, ...)
+     ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 2);
 
-#endif /* UTILS_H */
+extern void fatal (const char *fmt, ...)
+     ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (1, 2);
+
+extern void warning (const char *, ...) ATTRIBUTE_PRINTF (1, 2);
+
+#endif /* COMMON_ERRORS_H */
