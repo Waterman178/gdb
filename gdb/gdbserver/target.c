@@ -20,6 +20,7 @@
 
 #include "server.h"
 #include "tracepoint.h"
+#include "target/symbol.h"
 
 struct target_ops *the_target;
 
@@ -166,6 +167,14 @@ target_resume (ptid_t ptid, int step, enum gdb_signal signal)
   resume_info.kind = step ? resume_step : resume_continue;
   resume_info.sig = GDB_SIGNAL_0;
   (*the_target->resume) (&resume_info, 1);
+}
+
+/* See target/symbol.h.  */
+
+int
+target_look_up_symbol (const char *name, CORE_ADDR *addr, void *data)
+{
+  return look_up_one_symbol (name, addr, 1);
 }
 
 int
