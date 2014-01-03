@@ -16,13 +16,23 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
+#include <config.h>
+
 #ifdef GDBSERVER
-#include "server.h"
+#include "build-gnulib-gdbserver/config.h"
 #else
-#include "defs.h"
-#include <string.h>
+#include "build-gnulib/config.h"
 #endif
 
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+
+#include "libiberty.h"
+#include "common-utils.h"
+#include "gdb_locale.h"
+#include "errors.h"
+#include "gdb_assert.h"
 #include "linux-ptrace.h"
 #include "linux-procfs.h"
 #include "nat/linux-waitpid.h"
@@ -31,6 +41,9 @@
 #include "gdb_wait.h"
 
 #include <stdint.h>
+
+/* This is a bit of a hack - should be in a header somewhere.  */
+typedef unsigned char gdb_byte;
 
 /* Stores the currently supported ptrace options.  A value of
    -1 means we did not check for features yet.  A value of 0 means
