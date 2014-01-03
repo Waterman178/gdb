@@ -1,5 +1,12 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* common/common-types.h: New file.
+	* common/linux-ptrace.c: Include common-types.h.
+	* defs.h: Include common-types.h.
+	(gdb_byte, CORE_ADDR, CORE_ADDR_MAX, LONGEST, ULONGEST): Remove.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* common/linux-ptrace.c (additional_flags): New global.
 	(linux_test_for_tracesysgood, linux_test_for_tracefork): Use
 	additional_flags; don't check GDBSERVER.
