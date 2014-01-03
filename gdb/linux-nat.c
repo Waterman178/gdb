@@ -5025,6 +5025,12 @@ Enables printf debugging output."),
   sigdelset (&suspend_mask, SIGCHLD);
 
   sigemptyset (&blocked_mask);
+
+  linux_ptrace_set_additional_flags (PTRACE_O_TRACESYSGOOD
+				     | PTRACE_O_TRACEVFORKDONE
+				     | PTRACE_O_TRACEVFORK
+				     | PTRACE_O_TRACEFORK
+				     | PTRACE_O_TRACEEXEC);
 }
 
 
