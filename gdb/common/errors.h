@@ -43,4 +43,10 @@ extern void fatal (const char *fmt, ...)
 
 extern void warning (const char *, ...) ATTRIBUTE_PRINTF (1, 2);
 
+/* Like 'printf', but prints to the appropriate channel for debugging
+   output for the client.  */
+
+extern void debug_vprintf (const char *, va_list)
+     ATTRIBUTE_PRINTF (1, 0);
+
 #endif /* COMMON_ERRORS_H */

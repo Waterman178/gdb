@@ -144,6 +144,14 @@ internal_error (const char *file, int line, const char *fmt, ...)
   exit (1);
 }
 
+/* See errors.h.  */
+
+void
+debug_vprintf (const char *fmt, va_list ap)
+{
+  vfprintf (stderr, fmt, ap);
+}
+
 /* Convert a CORE_ADDR into a HEX string, like %lx.
    The result is stored in a circular static buffer, NUMCELLS deep.  */
 

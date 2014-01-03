@@ -1,3 +1,7 @@
+2014-01-09  Tom Tromey  <tromey@redhat.com>
+
+	* utils.c (debug_vprintf): Define.
+
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
 	* server.h: Include common-types.h.  Move gdb_assert.h include

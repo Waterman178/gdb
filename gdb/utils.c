@@ -886,6 +886,14 @@ demangler_warning (const char *file, int line, const char *string, ...)
   va_end (ap);
 }
 
+/* See errors.h.  */
+
+void
+debug_vprintf (const char *fmt, va_list ap)
+{
+  vfprintf_unfiltered (gdb_stdlog, fmt, ap);
+}
+
 /* Dummy functions to keep add_prefix_cmd happy.  */
 
 static void
