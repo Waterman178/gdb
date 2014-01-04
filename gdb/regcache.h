@@ -25,6 +25,7 @@ struct gdbarch;
 struct address_space;
 
 extern struct regcache *get_current_regcache (void);
+extern struct regcache *common_get_thread_regcache (ptid_t ptid);
 extern struct regcache *get_thread_regcache (ptid_t ptid);
 extern struct regcache *get_thread_arch_regcache (ptid_t, struct gdbarch *);
 extern struct regcache *get_thread_arch_aspace_regcache (ptid_t,

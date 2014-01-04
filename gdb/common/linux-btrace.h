@@ -33,6 +33,11 @@
 #  include <linux/perf_event.h>
 #endif
 
+/* A hack until we have an independent regcache.  This must be
+   provided by the user.  */
+
+extern struct regcache *common_get_thread_regcache (ptid_t ptid);
+
 /* Branch trace target information per thread.  */
 struct btrace_target_info
 {
