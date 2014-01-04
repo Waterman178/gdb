@@ -18,7 +18,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "build-gnulib-gdbserver/config.h"
+/* Evil hacks.  */
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#include "../gnulib/config.h"
 #include "version.h"
 
 #include <stdio.h>

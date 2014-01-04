@@ -16,13 +16,14 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <config.h>
+#include <libgdb-config.h>
 
-#ifdef GDBSERVER
-#include "build-gnulib-gdbserver/config.h"
-#else
-#include "build-gnulib/config.h"
-#endif
+/* Evil hacks.  */
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#include <gnulib/config.h>
 
 #include <string.h>
 #include <unistd.h>

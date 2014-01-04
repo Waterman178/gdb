@@ -1,6 +1,6 @@
 ## Process this file with automake to generate Makefile.in
 #
-#   Copyright 2013 Free Software Foundation
+#   Copyright 2013, 2014 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,9 +19,12 @@
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config -I common
 
-noinst_LTLIBRARIES = libcommon.la
+AM_CPPFLAGS = -I$(srcdir)/../include -I$(srcdir)/common -I$(srcdir)/.. -I.. \
+	-I$(srcdir)/../bfd -I../bfd
 
-libcommon_la_SOURCES = common/agent.c common/agent.h \
+noinst_LIBRARIES = libgdb.a
+
+libgdb_a_SOURCES = common/agent.c common/agent.h \
     common/break-common.h common/btrace-common.h common/buffer.c \
     common/buffer.h common/common-utils.c common/common-utils.h	\
     common/filestuff.c common/filestuff.h common/format.c \
@@ -32,10 +35,10 @@ libcommon_la_SOURCES = common/agent.c common/agent.h \
     common/i386-xstate.h common/linux-btrace.c common/linux-btrace.h \
     common/linux-osdata.c common/linux-osdata.h common/linux-procfs.c \
     common/linux-procfs.h common/linux-ptrace.c common/linux-ptrace.h \
-    common/mips-linux-watch.c common/mips-linux-watch.h common/ptid.c \
-    common/ptid.h common/queue.h common/signals.c common/vec.c \
-    common/vec.h common/version.h common/xml-utils.c \
+    common/ptid.c common/ptid.h common/queue.h common/signals.c	\
+    common/vec.c common/vec.h common/version.h common/xml-utils.c \
     common/xml-utils.h nat/linux-nat.h nat/linux-waitpid.c \
     nat/linux-waitpid.h target/resume.h target/wait.h \
     target/waitstatus.c target/waitstatus.h
 
+EXTRA_libgdb_a_SOURCES = common/mips-linux-watch.c common/mips-linux-watch.h

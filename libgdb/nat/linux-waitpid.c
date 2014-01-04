@@ -17,13 +17,19 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifdef GDBSERVER
-#include "server.h"
-#else
-#include "defs.h"
-#include "signal.h"
-#endif
+#include <libgdb-config.h>
 
+/* Evil hacks.  */
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#include <gnulib/config.h>
+
+#include <stdlib.h>
+#include <errno.h>
+
+#include "gdb_signals.h"
 #include "nat/linux-nat.h"
 #include "nat/linux-waitpid.h"
 #include "gdb_wait.h"

@@ -35,10 +35,9 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-LT_INIT([dlopen])
-
 AC_PROG_CC
 AM_PROG_CC_STDC
+AM_PROG_CC_C_O
 
 AC_GNU_SOURCE
 

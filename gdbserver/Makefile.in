@@ -106,7 +106,7 @@ INCGNU = -I$(srcdir)/../gnulib/import -I$(GNULIB_BUILDDIR)/import
 INCLUDE_CFLAGS = -I. -I${srcdir} -I$(srcdir)/../libgdb/common \
 	-I../libgdb -I$(srcdir)/../libgdb \
 	-I$(srcdir)/../gdb/regformats -I$(srcdir)/../ -I$(INCLUDE_DIR) \
-	$(INCGNU) -I$(srcdir)/../../bfd -I../../bfd
+	$(INCGNU) -I$(srcdir)/../bfd -I../bfd
 
 # M{H,T}_CFLAGS, if defined, has host- and target-dependent CFLAGS
 # from the config/ directory.
@@ -165,10 +165,10 @@ LIBOBJS = @LIBOBJS@
 SOURCES = $(SFILES)
 TAGFILES = $(SOURCES) ${HFILES} ${ALLPARAM} ${POSSLIBS}
 
-OBS = ax.o inferiors.o regcache.o remote-utils.o server.o signals.o \
-      target.o waitstatus.o utils.o version.o vec.o gdb_vecs.o \
-      mem-break.o hostio.o event-loop.o tracepoint.o xml-utils.o \
-      common-utils.o ptid.o buffer.o format.o filestuff.o dll.o notif.o \
+OBS = ax.o inferiors.o regcache.o remote-utils.o server.o \
+      target.o utils.o version.o \
+      mem-break.o hostio.o event-loop.o tracepoint.o \
+      dll.o notif.o \
       tdesc.o $(XML_BUILTIN) $(DEPFILES) $(LIBOBJS)
 GDBREPLAY_OBS = gdbreplay.o version.o
 GDBSERVER_LIBS = @GDBSERVER_LIBS@

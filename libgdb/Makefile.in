@@ -16,7 +16,7 @@
 @SET_MAKE@
 
 #
-#   Copyright 2013 Free Software Foundation
+#   Copyright 2013, 2014 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,10 +65,7 @@ am__aclocal_m4_deps = $(top_srcdir)/common/common.m4 \
 	$(top_srcdir)/../config/largefile.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../config/plugins.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
-	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/plugins.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -77,47 +74,44 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = libgdb-config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
-libcommon_la_LIBADD =
+LIBRARIES = $(noinst_LIBRARIES)
+ARFLAGS = cru
+AM_V_AR = $(am__v_AR_$(V))
+am__v_AR_ = $(am__v_AR_$(AM_DEFAULT_VERBOSITY))
+am__v_AR_0 = @echo "  AR    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
+libgdb_a_AR = $(AR) $(ARFLAGS)
+libgdb_a_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libcommon_la_OBJECTS = common/agent.lo common/buffer.lo \
-	common/common-utils.lo common/filestuff.lo common/format.lo \
-	common/gdb_vecs.lo common/linux-btrace.lo \
-	common/linux-osdata.lo common/linux-procfs.lo \
-	common/linux-ptrace.lo common/mips-linux-watch.lo \
-	common/ptid.lo common/signals.lo common/vec.lo \
-	common/xml-utils.lo nat/linux-waitpid.lo target/waitstatus.lo
-libcommon_la_OBJECTS = $(am_libcommon_la_OBJECTS)
-AM_V_lt = $(am__v_lt_$(V))
-am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
-am__v_lt_0 = --silent
+am_libgdb_a_OBJECTS = common/agent.$(OBJEXT) common/buffer.$(OBJEXT) \
+	common/common-utils.$(OBJEXT) common/filestuff.$(OBJEXT) \
+	common/format.$(OBJEXT) common/gdb_vecs.$(OBJEXT) \
+	common/linux-btrace.$(OBJEXT) common/linux-osdata.$(OBJEXT) \
+	common/linux-procfs.$(OBJEXT) common/linux-ptrace.$(OBJEXT) \
+	common/ptid.$(OBJEXT) common/signals.$(OBJEXT) \
+	common/vec.$(OBJEXT) common/xml-utils.$(OBJEXT) \
+	nat/linux-waitpid.$(OBJEXT) target/waitstatus.$(OBJEXT)
+libgdb_a_OBJECTS = $(am_libgdb_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_$(V))
 am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
 am__v_CC_0 = @echo "  CC    " $@;
-AM_V_at = $(am__v_at_$(V))
-am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
-am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_CCLD = $(am__v_CCLD_$(V))
 am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libcommon_la_SOURCES)
+SOURCES = $(libgdb_a_SOURCES) $(EXTRA_libgdb_a_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -137,37 +131,25 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
-DSYMUTIL = @DSYMUTIL@
-DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-FGREP = @FGREP@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBTOOL = @LIBTOOL@
-LIPO = @LIPO@
-LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
-NM = @NM@
-NMEDIT = @NMEDIT@
-OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OTOOL = @OTOOL@
-OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -177,7 +159,6 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -187,7 +168,6 @@ abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -238,8 +218,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config -I common
-noinst_LTLIBRARIES = libcommon.la
-libcommon_la_SOURCES = common/agent.c common/agent.h \
+AM_CPPFLAGS = -I$(srcdir)/../include -I$(srcdir)/common -I$(srcdir)/.. -I.. \
+	-I$(srcdir)/../bfd -I../bfd
+
+noinst_LIBRARIES = libgdb.a
+libgdb_a_SOURCES = common/agent.c common/agent.h \
     common/break-common.h common/btrace-common.h common/buffer.c \
     common/buffer.h common/common-utils.c common/common-utils.h	\
     common/filestuff.c common/filestuff.h common/format.c \
@@ -250,18 +233,18 @@ libcommon_la_SOURCES = common/agent.c common/agent.h \
     common/i386-xstate.h common/linux-btrace.c common/linux-btrace.h \
     common/linux-osdata.c common/linux-osdata.h common/linux-procfs.c \
     common/linux-procfs.h common/linux-ptrace.c common/linux-ptrace.h \
-    common/mips-linux-watch.c common/mips-linux-watch.h common/ptid.c \
-    common/ptid.h common/queue.h common/signals.c common/vec.c \
-    common/vec.h common/version.h common/xml-utils.c \
+    common/ptid.c common/ptid.h common/queue.h common/signals.c	\
+    common/vec.c common/vec.h common/version.h common/xml-utils.c \
     common/xml-utils.h nat/linux-nat.h nat/linux-waitpid.c \
     nat/linux-waitpid.h target/resume.h target/wait.h \
     target/waitstatus.c target/waitstatus.h
 
+EXTRA_libgdb_a_SOURCES = common/mips-linux-watch.c common/mips-linux-watch.h
 all: libgdb-config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -314,48 +297,41 @@ $(srcdir)/config.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 distclean-hdr:
 	-rm -f libgdb-config.h stamp-h1
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 common/$(am__dirstamp):
 	@$(MKDIR_P) common
 	@: > common/$(am__dirstamp)
 common/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) common/$(DEPDIR)
 	@: > common/$(DEPDIR)/$(am__dirstamp)
-common/agent.lo: common/$(am__dirstamp) \
+common/agent.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/buffer.lo: common/$(am__dirstamp) \
+common/buffer.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/common-utils.lo: common/$(am__dirstamp) \
+common/common-utils.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/filestuff.lo: common/$(am__dirstamp) \
+common/filestuff.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/format.lo: common/$(am__dirstamp) \
+common/format.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/gdb_vecs.lo: common/$(am__dirstamp) \
+common/gdb_vecs.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/linux-btrace.lo: common/$(am__dirstamp) \
+common/linux-btrace.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/linux-osdata.lo: common/$(am__dirstamp) \
+common/linux-osdata.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/linux-procfs.lo: common/$(am__dirstamp) \
+common/linux-procfs.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/linux-ptrace.lo: common/$(am__dirstamp) \
+common/linux-ptrace.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/mips-linux-watch.lo: common/$(am__dirstamp) \
+common/ptid.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/ptid.lo: common/$(am__dirstamp) \
+common/signals.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/signals.lo: common/$(am__dirstamp) \
+common/vec.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
-common/vec.lo: common/$(am__dirstamp) common/$(DEPDIR)/$(am__dirstamp)
-common/xml-utils.lo: common/$(am__dirstamp) \
+common/xml-utils.$(OBJEXT): common/$(am__dirstamp) \
 	common/$(DEPDIR)/$(am__dirstamp)
 nat/$(am__dirstamp):
 	@$(MKDIR_P) nat
@@ -363,7 +339,7 @@ nat/$(am__dirstamp):
 nat/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) nat/$(DEPDIR)
 	@: > nat/$(DEPDIR)/$(am__dirstamp)
-nat/linux-waitpid.lo: nat/$(am__dirstamp) \
+nat/linux-waitpid.$(OBJEXT): nat/$(am__dirstamp) \
 	nat/$(DEPDIR)/$(am__dirstamp)
 target/$(am__dirstamp):
 	@$(MKDIR_P) target
@@ -371,68 +347,55 @@ target/$(am__dirstamp):
 target/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) target/$(DEPDIR)
 	@: > target/$(DEPDIR)/$(am__dirstamp)
-target/waitstatus.lo: target/$(am__dirstamp) \
+target/waitstatus.$(OBJEXT): target/$(am__dirstamp) \
 	target/$(DEPDIR)/$(am__dirstamp)
-libcommon.la: $(libcommon_la_OBJECTS) $(libcommon_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libcommon_la_OBJECTS) $(libcommon_la_LIBADD) $(LIBS)
+common/mips-linux-watch.$(OBJEXT): common/$(am__dirstamp) \
+	common/$(DEPDIR)/$(am__dirstamp)
+libgdb.a: $(libgdb_a_OBJECTS) $(libgdb_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f libgdb.a
+	$(AM_V_AR)$(libgdb_a_AR) libgdb.a $(libgdb_a_OBJECTS) $(libgdb_a_LIBADD)
+	$(AM_V_at)$(RANLIB) libgdb.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f common/agent.$(OBJEXT)
-	-rm -f common/agent.lo
 	-rm -f common/buffer.$(OBJEXT)
-	-rm -f common/buffer.lo
 	-rm -f common/common-utils.$(OBJEXT)
-	-rm -f common/common-utils.lo
 	-rm -f common/filestuff.$(OBJEXT)
-	-rm -f common/filestuff.lo
 	-rm -f common/format.$(OBJEXT)
-	-rm -f common/format.lo
 	-rm -f common/gdb_vecs.$(OBJEXT)
-	-rm -f common/gdb_vecs.lo
 	-rm -f common/linux-btrace.$(OBJEXT)
-	-rm -f common/linux-btrace.lo
 	-rm -f common/linux-osdata.$(OBJEXT)
-	-rm -f common/linux-osdata.lo
 	-rm -f common/linux-procfs.$(OBJEXT)
-	-rm -f common/linux-procfs.lo
 	-rm -f common/linux-ptrace.$(OBJEXT)
-	-rm -f common/linux-ptrace.lo
 	-rm -f common/mips-linux-watch.$(OBJEXT)
-	-rm -f common/mips-linux-watch.lo
 	-rm -f common/ptid.$(OBJEXT)
-	-rm -f common/ptid.lo
 	-rm -f common/signals.$(OBJEXT)
-	-rm -f common/signals.lo
 	-rm -f common/vec.$(OBJEXT)
-	-rm -f common/vec.lo
 	-rm -f common/xml-utils.$(OBJEXT)
-	-rm -f common/xml-utils.lo
 	-rm -f nat/linux-waitpid.$(OBJEXT)
-	-rm -f nat/linux-waitpid.lo
 	-rm -f target/waitstatus.$(OBJEXT)
-	-rm -f target/waitstatus.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/agent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/buffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/common-utils.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/filestuff.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/format.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/gdb_vecs.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-btrace.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-osdata.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-procfs.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-ptrace.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/mips-linux-watch.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/ptid.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/signals.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/vec.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/xml-utils.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@nat/$(DEPDIR)/linux-waitpid.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@target/$(DEPDIR)/waitstatus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/agent.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/buffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/common-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/filestuff.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/format.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/gdb_vecs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-btrace.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-osdata.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-procfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/linux-ptrace.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/mips-linux-watch.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/ptid.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/signals.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/vec.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@common/$(DEPDIR)/xml-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@nat/$(DEPDIR)/linux-waitpid.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@target/$(DEPDIR)/waitstatus.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -451,27 +414,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
-@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-mostlyclean-libtool:
-	-rm -f *.lo
-
-clean-libtool:
-	-rm -rf .libs _libs
-	-rm -rf common/.libs common/_libs
-	-rm -rf nat/.libs nat/_libs
-	-rm -rf target/.libs target/_libs
-
-distclean-libtool:
-	-rm -f libtool config.lt
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -526,7 +468,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) libgdb-config.h
+all-am: Makefile $(LIBRARIES) libgdb-config.h
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -561,15 +503,14 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf common/$(DEPDIR) nat/$(DEPDIR) target/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags
+	distclean-hdr distclean-tags
 
 dvi: dvi-am
 
@@ -620,8 +561,7 @@ maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 pdf: pdf-am
 
@@ -636,18 +576,17 @@ uninstall-am:
 .MAKE: all install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-generic clean-libtool clean-noinstLTLIBRARIES ctags \
-	distclean distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags dvi dvi-am html html-am info \
-	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am
+	clean-generic clean-noinstLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
