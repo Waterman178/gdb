@@ -1,5 +1,10 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* common/linux-btrace.c: Don't include defs.h or server.h.
+	* common/linux-btrace.h (struct target_ops): Declare.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* regcache.h (common_get_thread_regcache): Declare.
 	* regcache.c (common_get_thread_regcache): New function.
 	* common/linux-btrace.h (common_get_thread_regcache): Declare.
