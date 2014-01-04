@@ -35,24 +35,12 @@
 /* Generally useful subroutines used throughout the program.  */
 
 void
-malloc_failure (long size)
+malloc_failure (size_t size)
 {
   fprintf (stderr,
 	   PREFIX "ran out of memory while trying to allocate %lu bytes\n",
 	   (unsigned long) size);
   exit (1);
-}
-
-/* Copy a string into a memory buffer.
-   If malloc fails, this will print a message to stderr and exit.  */
-
-char *
-xstrdup (const char *s)
-{
-  char *ret = strdup (s);
-  if (ret == NULL)
-    malloc_failure (strlen (s) + 1);
-  return ret;
 }
 
 #ifndef IN_PROCESS_AGENT

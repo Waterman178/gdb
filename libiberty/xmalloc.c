@@ -102,6 +102,8 @@ static const char *name = "";
 static char *first_break = NULL;
 #endif /* HAVE_SBRK */
 
+static void (*failure) (size_t) = xmalloc_failed;
+
 void
 xmalloc_set_program_name (const char *s)
 {
@@ -146,7 +148,7 @@ xmalloc (size_t size)
     size = 1;
   newmem = malloc (size);
   if (!newmem)
-    xmalloc_failed (size);
+    failure (size);
 
   return (newmem);
 }
@@ -161,7 +163,7 @@ xcalloc (size_t nelem, size_t elsize)
 
   newmem = calloc (nelem, elsize);
   if (!newmem)
-    xmalloc_failed (nelem * elsize);
+    failure (nelem * elsize);
 
   return (newmem);
 }
@@ -178,7 +180,13 @@ xrealloc (PTR oldmem, size_t size)
   else
     newmem = realloc (oldmem, size);
   if (!newmem)
-    xmalloc_failed (size);
+    failure (size);
 
   return (newmem);
+}
+
+void
+set_xmalloc_failed_function (void (*func) (size_t))
+{
+  failure = func;
 }

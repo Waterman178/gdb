@@ -294,6 +294,8 @@ extern void xmalloc_set_program_name (const char *);
 /* Report an allocation failure.  */
 extern void xmalloc_failed (size_t) ATTRIBUTE_NORETURN;
 
+extern void set_xmalloc_failed_function (void (*func) (size_t));
+
 /* Allocate memory without fail.  If malloc fails, this will print a
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */

@@ -24,7 +24,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-extern void malloc_failure (long size) ATTRIBUTE_NORETURN;
+extern void malloc_failure (size_t size) ATTRIBUTE_NORETURN;
 extern void internal_error (const char *file, int line, const char *, ...)
      ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF (3, 4);
 

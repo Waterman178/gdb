@@ -2741,6 +2741,8 @@ main (int argc, char *argv[])
   volatile int attach = 0;
   int was_running;
 
+  set_xmalloc_failed_function (malloc_failure);
+
   while (*next_arg != NULL && **next_arg == '-')
     {
       if (strcmp (*next_arg, "--version") == 0)

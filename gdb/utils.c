@@ -1066,7 +1066,7 @@ quit (void)
    memory requested in SIZE.  */
 
 void
-malloc_failure (long size)
+malloc_failure (size_t size)
 {
   if (size > 0)
     {

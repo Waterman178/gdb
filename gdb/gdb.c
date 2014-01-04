@@ -26,6 +26,8 @@ main (int argc, char **argv)
 {
   struct captured_main_args args;
 
+  set_xmalloc_failed_function (malloc_failure);
+
   memset (&args, 0, sizeof args);
   args.argc = argc;
   args.argv = argv;
