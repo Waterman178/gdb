@@ -1,5 +1,9 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* regcache.c (common_get_thread_regcache): New function.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* target.c: Include target/symbol.h.
 	(target_look_up_symbol): New function.
 

@@ -1,5 +1,13 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* regcache.h (common_get_thread_regcache): Declare.
+	* regcache.c (common_get_thread_regcache): New function.
+	* common/linux-btrace.h (common_get_thread_regcache): Declare.
+	* common/linux-btrace.c (perf_event_read_bts): Use
+	common_get_thread_regcache.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* common/agent.c: Don't include defs.h or server.h.
 
 2014-06-18  Tom Tromey  <tromey@redhat.com>

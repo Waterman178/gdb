@@ -537,6 +537,13 @@ get_current_regcache (void)
   return get_thread_regcache (inferior_ptid);
 }
 
+/* See common/linux-btrace.h.  */
+
+struct regcache *
+common_get_thread_regcache (ptid_t ptid)
+{
+  return get_thread_regcache (ptid);
+}
 
 /* Observer for the target_changed event.  */
 
