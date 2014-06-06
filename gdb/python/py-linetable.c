@@ -158,7 +158,7 @@ ltpy_get_pcs_for_line (PyObject *self, PyObject *args)
 {
   struct symtab *symtab;
   gdb_py_longest py_line;
-  struct linetable_entry *best_entry = NULL;
+  const struct linetable_entry *best_entry = NULL;
   std::vector<CORE_ADDR> pcs;
 
   LTPY_REQUIRE_VALID (self, symtab);
@@ -204,7 +204,8 @@ ltpy_has_line (PyObject *self, PyObject *args)
 
   for (index = 0; index < SYMTAB_LINETABLE (symtab)->nitems; index++)
     {
-      struct linetable_entry *item = &(SYMTAB_LINETABLE (symtab)->item[index]);
+      const struct linetable_entry *item
+	= &(SYMTAB_LINETABLE (symtab)->item[index]);
       if (item->line == py_line)
 	  Py_RETURN_TRUE;
     }
@@ -222,7 +223,7 @@ ltpy_get_all_source_lines (PyObject *self, PyObject *args)
 {
   struct symtab *symtab;
   Py_ssize_t index;
-  struct linetable_entry *item;
+  const struct linetable_entry *item;
 
   LTPY_REQUIRE_VALID (self, symtab);
 
@@ -397,7 +398,7 @@ ltpy_iternext (PyObject *self)
   ltpy_iterator_object *iter_obj = (ltpy_iterator_object *) self;
   struct symtab *symtab;
   PyObject *obj;
-  struct linetable_entry *item;
+  const struct linetable_entry *item;
 
   LTPY_REQUIRE_VALID (iter_obj->source, symtab);
 

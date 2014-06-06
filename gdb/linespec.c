@@ -389,7 +389,7 @@ static std::vector<symtab_and_line> decode_digits_ordinary
   (struct linespec_state *self,
    linespec_p ls,
    int line,
-   linetable_entry **best_entry);
+   const linetable_entry **best_entry);
 
 static std::vector<symtab_and_line> decode_digits_list_mode
   (struct linespec_state *self,
@@ -2192,7 +2192,7 @@ create_sals_line_offset (struct linespec_state *self,
     values = decode_digits_list_mode (self, ls, val);
   else
     {
-      struct linetable_entry *best_entry = NULL;
+      const struct linetable_entry *best_entry = NULL;
       int i, j;
 
       std::vector<symtab_and_line> intermediate_results
@@ -4235,7 +4235,7 @@ static std::vector<symtab_and_line>
 decode_digits_ordinary (struct linespec_state *self,
 			linespec_p ls,
 			int line,
-			struct linetable_entry **best_entry)
+			const struct linetable_entry **best_entry)
 {
   int ix;
   struct symtab *elt;

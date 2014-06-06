@@ -276,7 +276,7 @@ dump_symtab_1 (struct symtab *symtab, struct ui_file *outfile)
   int i;
   struct dict_iterator iter;
   int len;
-  struct linetable *l;
+  const struct linetable *l;
   const struct blockvector *bv;
   struct symbol *sym;
   struct block *b;
@@ -986,7 +986,7 @@ block_depth (struct block *block)
 static int
 maintenance_print_one_line_table (struct symtab *symtab, void *data)
 {
-  struct linetable *linetable;
+  const struct linetable *linetable;
   struct objfile *objfile;
 
   objfile = symtab->compunit_symtab->objfile;
@@ -1017,7 +1017,7 @@ maintenance_print_one_line_table (struct symtab *symtab, void *data)
 
       for (i = 0; i < linetable->nitems; ++i)
 	{
-	  struct linetable_entry *item;
+	  const struct linetable_entry *item;
 
 	  item = &linetable->item [i];
 	  printf_filtered (_("%-6d %6d %s\n"), i, item->line,

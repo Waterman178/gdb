@@ -563,8 +563,8 @@ static struct btrace_line_range
 btrace_find_line_range (CORE_ADDR pc)
 {
   struct btrace_line_range range;
-  struct linetable_entry *lines;
-  struct linetable *ltable;
+  const struct linetable_entry *lines;
+  const struct linetable *ltable;
   struct symtab *symtab;
   int nlines, i;
 

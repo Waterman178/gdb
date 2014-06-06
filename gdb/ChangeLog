@@ -1,5 +1,28 @@
 2018-02-08  Tom Tromey  <tom@tromey.com>
 
+	* record-btrace.c (btrace_find_line_range): Constify.
+	* buildsym.c (end_symtab_from_static_block): Update.
+	* disasm.c (do_mixed_source_and_assembly, gdb_disassembly):
+	Update.
+	* jit.c (finalize_symtab): Update and rearrange for
+	constification.
+	* linespec.c (create_sals_line_offset): Update.
+	(decode_digits_ordinary): Make "best_entry" const.
+	* mdebugread.c (psymtab_to_symtab_1): Update.
+	(new_symtab): Add "lines" parameter.
+	* mi/mi-symbol-cmds.c (mi_cmd_symbol_list_lines): Update.
+	* python/py-linetable.c (ltpy_get_pcs_for_line, ltpy_has_line)
+	(ltpy_get_all_source_lines, ltpy_iternext): Update.
+	* symmisc.c (dump_symtab_1, maintenance_print_one_line_table):
+	Update.
+	* symtab.c (find_pc_sect_line, find_line_symtab)
+	(find_pcs_for_symtab_line, find_line_common)
+	(skip_prologue_using_lineinfo, skip_prologue_using_sal): Update.
+	* symtab.h (struct symtab) <linetable>: Now const.
+	(find_pcs_for_symtab_line): Update.
+
+2018-02-08  Tom Tromey  <tom@tromey.com>
+
 	Obsoletes PR symtab/8077:
 	* record-btrace.c (btrace_find_line_range): Update.
 	* dwarf2read.c (lnp_state_machine::handle_set_address): Remove

@@ -236,7 +236,8 @@ enum block_type { FUNCTION_BLOCK, NON_FUNCTION_BLOCK };
 
 static struct block *new_block (enum block_type, enum language);
 
-static struct compunit_symtab *new_symtab (const char *, int, struct objfile *);
+static struct compunit_symtab *new_symtab (const char *, int, struct objfile *,
+					   struct linetable **);
 
 static struct linetable *new_linetable (int);
 
@@ -2177,9 +2178,6 @@ parse_external (EXTR *es, int bigend, struct section_offsets *section_offsets,
    numbers can go back and forth, apparently we can live
    with that and do not need to reorder our linetables.  */
 
-static void parse_lines (FDR *, PDR *, struct linetable *, int,
-			 struct partial_symtab *, CORE_ADDR);
-
 static void
 parse_lines (FDR *fh, PDR *pr, struct linetable *lt, int maxlines,
 	     struct partial_symtab *pst, CORE_ADDR lowest_pdr_addr)
@@ -3919,7 +3917,6 @@ psymtab_to_symtab_1 (struct objfile *objfile,
   int i;
   struct compunit_symtab *cust = NULL;
   FDR *fh;
-  struct linetable *lines;
   CORE_ADDR lowest_pdr_addr = 0;
   int last_symtab_ended = 0;
   struct section_offsets *section_offsets = objfile->section_offsets;
@@ -4160,16 +4157,17 @@ psymtab_to_symtab_1 (struct objfile *objfile,
 
       int maxlines, size;
       EXTR *ext_ptr;
+      struct linetable *lines;
 
       if (fh == 0)
 	{
 	  maxlines = 0;
-	  cust = new_symtab ("unknown", 0, objfile);
+	  cust = new_symtab ("unknown", 0, objfile, &lines);
 	}
       else
 	{
 	  maxlines = 2 * fh->cline;
-	  cust = new_symtab (pst->filename, maxlines, objfile);
+	  cust = new_symtab (pst->filename, maxlines, objfile, &lines);
 
 	  /* The proper language was already determined when building
 	     the psymtab, use it.  */
@@ -4177,8 +4175,6 @@ psymtab_to_symtab_1 (struct objfile *objfile,
 	}
 
       psymtab_language = COMPUNIT_FILETABS (cust)->language;
-
-      lines = SYMTAB_LINETABLE (COMPUNIT_FILETABS (cust));
 
       /* Get a new lexical context.  */
 
@@ -4713,17 +4709,17 @@ sort_blocks (struct symtab *s)
    linenumbers MAXLINES we'll put in it.  */
 
 static struct compunit_symtab *
-new_symtab (const char *name, int maxlines, struct objfile *objfile)
+new_symtab (const char *name, int maxlines, struct objfile *objfile,
+	    struct linetable **lines)
 {
   struct compunit_symtab *cust = allocate_compunit_symtab (objfile, name);
-  struct symtab *symtab;
   struct blockvector *bv;
   enum language lang;
 
   add_compunit_symtab_to_objfile (cust);
-  symtab = allocate_symtab (cust, name);
+  allocate_symtab (cust, name);
 
-  SYMTAB_LINETABLE (symtab) = new_linetable (maxlines);
+  *lines = new_linetable (maxlines);
   lang = compunit_language (cust);
 
   /* All symtabs must have at least two blocks.  */
