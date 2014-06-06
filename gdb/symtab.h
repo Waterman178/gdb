@@ -1228,8 +1228,20 @@ struct rust_vtable_symbol : public symbol
 struct linetable_entry
 {
   int line;
-  CORE_ADDR pc;
+
+  /* Note that the PC as stored is unrelocated.  The appropriate
+     offset must be applied before it can be used.  */
+  CORE_ADDR m_pc;
 };
+
+#define SET_LINETABLE_ENTRY_ADDRESS(ENTRY, PC)		\
+  ((ENTRY).m_pc = (PC))
+#define LINETABLE_ENTRY_RAW_ADDRESS(ENTRY)		\
+  ((ENTRY).m_pc + 0)
+#define LINETABLE_ENTRY_ADDRESS(SYMTAB, ENTRY)			\
+  ((ENTRY).m_pc							\
+   + ANOFFSET (SYMTAB_OBJFILE (SYMTAB)->section_offsets,	\
+	       SYMTAB_COMPUNIT (SYMTAB)->block_line_section))
 
 /* The order of entries in the linetable is significant.  They should
    be sorted by increasing values of the pc field.  If there is more than

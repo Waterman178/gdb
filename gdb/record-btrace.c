@@ -40,6 +40,7 @@
 #include "inf-loop.h"
 #include "vec.h"
 #include <algorithm>
+#include "objfiles.h"
 
 /* The target_ops of record-btrace.  */
 static struct target_ops record_btrace_ops;
@@ -583,7 +584,8 @@ btrace_find_line_range (CORE_ADDR pc)
   range = btrace_mk_line_range (symtab, 0, 0);
   for (i = 0; i < nlines - 1; i++)
     {
-      if ((lines[i].pc == pc) && (lines[i].line != 0))
+      if (LINETABLE_ENTRY_ADDRESS (symtab, lines[i]) == pc
+	  && (lines[i].line != 0))
 	range = btrace_line_range_add (range, lines[i].line);
     }
 

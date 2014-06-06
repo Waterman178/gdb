@@ -798,23 +798,6 @@ objfile_relocate1 (struct objfile *objfile,
   /* OK, get all the symtabs.  */
   {
     struct compunit_symtab *cust;
-    struct symtab *s;
-
-    ALL_OBJFILE_FILETABS (objfile, cust, s)
-    {
-      struct linetable *l;
-      int i;
-
-      /* First the line table.  */
-      l = SYMTAB_LINETABLE (s);
-      if (l)
-	{
-	  for (i = 0; i < l->nitems; ++i)
-	    l->item[i].pc += ANOFFSET (delta,
-				       COMPUNIT_BLOCK_LINE_SECTION
-					 (cust));
-	}
-    }
 
     ALL_OBJFILE_COMPUNITS (objfile, cust)
     {

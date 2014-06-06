@@ -20461,10 +20461,9 @@ public:
   }
 
   /* Handle DW_LNE_set_address.  */
-  void handle_set_address (CORE_ADDR baseaddr, CORE_ADDR address)
+  void handle_set_address (CORE_ADDR address)
   {
     m_op_index = 0;
-    address += baseaddr;
     m_address = gdbarch_adjust_dwarf2_line (m_gdbarch, address, false);
   }
 
@@ -20833,7 +20832,6 @@ dwarf_decode_lines_1 (struct line_header *lh, struct dwarf2_cu *cu,
   const gdb_byte *line_end;
   unsigned int bytes_read, extended_len;
   unsigned char op_code, extended_op;
-  CORE_ADDR baseaddr;
   struct objfile *objfile = cu->per_cu->dwarf2_per_objfile->objfile;
   bfd *abfd = objfile->obfd;
   struct gdbarch *gdbarch = get_objfile_arch (objfile);
@@ -20841,8 +20839,6 @@ dwarf_decode_lines_1 (struct line_header *lh, struct dwarf2_cu *cu,
      symtabs and just interested in finding include files mentioned by
      the line number program).  */
   bool record_lines_p = !decode_for_pst_p;
-
-  baseaddr = ANOFFSET (objfile->section_offsets, SECT_OFF_TEXT (objfile));
 
   line_ptr = lh->statement_program_start;
   line_end = lh->statement_program_end;
@@ -20899,7 +20895,7 @@ dwarf_decode_lines_1 (struct line_header *lh, struct dwarf2_cu *cu,
 
 		    state_machine.check_line_address (cu, line_ptr,
 						      lowpc, address);
-		    state_machine.handle_set_address (baseaddr, address);
+		    state_machine.handle_set_address (address);
 		  }
 		  break;
 		case DW_LNE_define_file:

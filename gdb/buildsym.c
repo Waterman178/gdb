@@ -947,7 +947,8 @@ record_line (struct subfile *subfile, int line, CORE_ADDR pc)
   if (line == 0 && subfile->line_vector->nitems > 0)
     {
       e = subfile->line_vector->item + subfile->line_vector->nitems - 1;
-      while (subfile->line_vector->nitems > 0 && e->pc == pc)
+      while (subfile->line_vector->nitems > 0
+	     && LINETABLE_ENTRY_RAW_ADDRESS (*e) == pc)
 	{
 	  e--;
 	  subfile->line_vector->nitems--;
@@ -956,7 +957,7 @@ record_line (struct subfile *subfile, int line, CORE_ADDR pc)
 
   e = subfile->line_vector->item + subfile->line_vector->nitems++;
   e->line = line;
-  e->pc = pc;
+  SET_LINETABLE_ENTRY_ADDRESS (*e, pc);
 }
 
 /* Needed in order to sort line tables from IBM xcoff files.  Sigh!  */
@@ -969,10 +970,10 @@ compare_line_numbers (const void *ln1p, const void *ln2p)
 
   /* Note: this code does not assume that CORE_ADDRs can fit in ints.
      Please keep it that way.  */
-  if (ln1->pc < ln2->pc)
+  if (LINETABLE_ENTRY_RAW_ADDRESS (*ln1) < LINETABLE_ENTRY_RAW_ADDRESS (*ln2))
     return -1;
 
-  if (ln1->pc > ln2->pc)
+  if (LINETABLE_ENTRY_RAW_ADDRESS (*ln1) > LINETABLE_ENTRY_RAW_ADDRESS (*ln2))
     return 1;
 
   /* If pc equal, sort by line.  I'm not sure whether this is optimum

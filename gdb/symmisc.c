@@ -303,7 +303,10 @@ dump_symtab_1 (struct symtab *symtab, struct ui_file *outfile)
       for (i = 0; i < len; i++)
 	{
 	  fprintf_filtered (outfile, " line %d at ", l->item[i].line);
-	  fputs_filtered (paddress (gdbarch, l->item[i].pc), outfile);
+	  fputs_filtered (paddress (gdbarch,
+				    LINETABLE_ENTRY_ADDRESS (symtab,
+							     l->item[i])),
+			  outfile);
 	  fprintf_filtered (outfile, "\n");
 	}
     }
@@ -1018,7 +1021,8 @@ maintenance_print_one_line_table (struct symtab *symtab, void *data)
 
 	  item = &linetable->item [i];
 	  printf_filtered (_("%-6d %6d %s\n"), i, item->line,
-			   core_addr_to_string (item->pc));
+			   core_addr_to_string (LINETABLE_ENTRY_ADDRESS
+						(symtab, *item)));
 	}
     }
 

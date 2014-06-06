@@ -622,7 +622,10 @@ jit_symtab_line_mapping_add_impl (struct gdb_symbol_callbacks *cb,
   stab->linetable->nitems = nlines;
   for (i = 0; i < nlines; i++)
     {
-      stab->linetable->item[i].pc = (CORE_ADDR) map[i].pc;
+      /* Use the absolute address here, as the offsets will all be
+	 zero.  */
+      SET_LINETABLE_ENTRY_ADDRESS (stab->linetable->item[i],
+				   (CORE_ADDR) map[i].pc);
       stab->linetable->item[i].line = map[i].line;
     }
 }

@@ -3071,6 +3071,7 @@ find_pc_sect_line (CORE_ADDR pc, struct obj_section *section, int notcurrent)
      we will use a line one less than this,
      with a range from the start of that file to the first line's pc.  */
   struct linetable_entry *alt = NULL;
+  struct symtab *alt_symtab = NULL;
 
   /* Info on best line seen in this file.  */
 
@@ -3210,14 +3211,19 @@ find_pc_sect_line (CORE_ADDR pc, struct obj_section *section, int notcurrent)
 
       /* Is this file's first line closer than the first lines of other files?
          If so, record this file, and its first line, as best alternate.  */
-      if (item->pc > pc && (!alt || item->pc < alt->pc))
-	alt = item;
+      if (LINETABLE_ENTRY_ADDRESS (iter_s, *item) > pc
+	  && (!alt || (LINETABLE_ENTRY_ADDRESS (iter_s, *item)
+		       < LINETABLE_ENTRY_ADDRESS (alt_symtab, *alt))))
+	{
+	  alt = item;
+	  alt_symtab = iter_s;
+	}
 
       for (i = 0; i < len; i++, item++)
 	{
 	  /* Leave prev pointing to the linetable entry for the last line
 	     that started at or before PC.  */
-	  if (item->pc > pc)
+	  if (LINETABLE_ENTRY_ADDRESS (iter_s, *item) > pc)
 	    break;
 
 	  prev = item;
@@ -3233,22 +3239,26 @@ find_pc_sect_line (CORE_ADDR pc, struct obj_section *section, int notcurrent)
          save prev if it represents the end of a function (i.e. line number
          0) instead of a real line.  */
 
-      if (prev && prev->line && (!best || prev->pc > best->pc))
+      if (prev
+	  && prev->line
+	  && (!best || (LINETABLE_ENTRY_ADDRESS (iter_s, *prev)
+			> LINETABLE_ENTRY_ADDRESS (best_symtab, *best))))
 	{
 	  best = prev;
 	  best_symtab = iter_s;
 
 	  /* Discard BEST_END if it's before the PC of the current BEST.  */
-	  if (best_end <= best->pc)
+	  if (best_end <= LINETABLE_ENTRY_ADDRESS (best_symtab, *best))
 	    best_end = 0;
 	}
 
       /* If another line (denoted by ITEM) is in the linetable and its
          PC is after BEST's PC, but before the current BEST_END, then
 	 use ITEM's PC as the new best_end.  */
-      if (best && i < len && item->pc > best->pc
-          && (best_end == 0 || best_end > item->pc))
-	best_end = item->pc;
+      if (best && i < len && (LINETABLE_ENTRY_ADDRESS (iter_s, *item)
+			      > LINETABLE_ENTRY_ADDRESS (best_symtab, *best))
+          && (best_end == 0 || best_end > LINETABLE_ENTRY_ADDRESS (iter_s, *item)))
+	best_end = LINETABLE_ENTRY_ADDRESS (iter_s, *item);
     }
 
   if (!best_symtab)
@@ -3270,11 +3280,12 @@ find_pc_sect_line (CORE_ADDR pc, struct obj_section *section, int notcurrent)
     {
       val.symtab = best_symtab;
       val.line = best->line;
-      val.pc = best->pc;
-      if (best_end && (!alt || best_end < alt->pc))
+      val.pc = LINETABLE_ENTRY_ADDRESS (best_symtab, *best);
+      if (best_end && (!alt || best_end < LINETABLE_ENTRY_ADDRESS (alt_symtab,
+								   *alt)))
 	val.end = best_end;
       else if (alt)
-	val.end = alt->pc;
+	val.end = LINETABLE_ENTRY_ADDRESS (alt_symtab, *alt);
       else
 	val.end = BLOCK_END (BLOCKVECTOR_BLOCK (bv, GLOBAL_BLOCK));
     }
@@ -3418,6 +3429,7 @@ find_pcs_for_symtab_line (struct symtab *symtab, int line,
 {
   int start = 0;
   std::vector<CORE_ADDR> result;
+  struct linetable *linetable = SYMTAB_LINETABLE (symtab);
 
   /* First, collect all the PCs that are at this line.  */
   while (1)
@@ -3425,14 +3437,13 @@ find_pcs_for_symtab_line (struct symtab *symtab, int line,
       int was_exact;
       int idx;
 
-      idx = find_line_common (SYMTAB_LINETABLE (symtab), line, &was_exact,
-			      start);
+      idx = find_line_common (linetable, line, &was_exact, start);
       if (idx < 0)
 	break;
 
       if (!was_exact)
 	{
-	  struct linetable_entry *item = &SYMTAB_LINETABLE (symtab)->item[idx];
+	  struct linetable_entry *item = &linetable->item[idx];
 
 	  if (*best_item == NULL || item->line < (*best_item)->line)
 	    *best_item = item;
@@ -3440,7 +3451,8 @@ find_pcs_for_symtab_line (struct symtab *symtab, int line,
 	  break;
 	}
 
-      result.push_back (SYMTAB_LINETABLE (symtab)->item[idx].pc);
+      result.push_back (LINETABLE_ENTRY_ADDRESS (symtab,
+						 linetable->item[idx]));
       start = idx + 1;
     }
 
@@ -3466,7 +3478,7 @@ find_line_pc (struct symtab *symtab, int line, CORE_ADDR *pc)
   if (symtab != NULL)
     {
       l = SYMTAB_LINETABLE (symtab);
-      *pc = l->item[ind].pc;
+      *pc = LINETABLE_ENTRY_ADDRESS (symtab, l->item[ind]);
       return 1;
     }
   else
@@ -3655,8 +3667,10 @@ skip_prologue_using_lineinfo (CORE_ADDR func_addr, struct symtab *symtab)
       /* Don't use line numbers of zero, they mark special entries in
 	 the table.  See the commentary on symtab.h before the
 	 definition of struct linetable.  */
-      if (item->line > 0 && func_start <= item->pc && item->pc < func_end)
-	return item->pc;
+      if (item->line > 0
+	  && func_start <= LINETABLE_ENTRY_ADDRESS (symtab, *item)
+	  && LINETABLE_ENTRY_ADDRESS (symtab, *item) < func_end)
+	return LINETABLE_ENTRY_ADDRESS (symtab, *item);
     }
 
   return func_addr;
@@ -3877,13 +3891,16 @@ skip_prologue_using_sal (struct gdbarch *gdbarch, CORE_ADDR func_addr)
 
 	  /* Skip any earlier lines, and any end-of-sequence marker
 	     from a previous function.  */
-	  while (linetable->item[idx].pc != prologue_sal.pc
+	  while ((LINETABLE_ENTRY_ADDRESS (prologue_sal.symtab,
+					   linetable->item[idx])
+		  != prologue_sal.pc)
 		 || linetable->item[idx].line == 0)
 	    idx++;
 
 	  if (idx+1 < linetable->nitems
 	      && linetable->item[idx+1].line != 0
-	      && linetable->item[idx+1].pc == start_pc)
+	      && LINETABLE_ENTRY_ADDRESS (prologue_sal.symtab,
+					  linetable->item[idx+1]) == start_pc)
 	    return start_pc;
 	}
 

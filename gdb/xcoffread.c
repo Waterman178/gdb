@@ -420,7 +420,11 @@ compare_lte (const void *lte1p, const void *lte2p)
   struct linetable_entry *lte1 = (struct linetable_entry *) lte1p;
   struct linetable_entry *lte2 = (struct linetable_entry *) lte2p;
 
-  return lte1->pc - lte2->pc;
+  if (LINETABLE_ENTRY_RAW_ADDRESS (*lte1) < LINETABLE_ENTRY_RAW_ADDRESS (*lte2))
+    return -1;
+  if (LINETABLE_ENTRY_RAW_ADDRESS (*lte1) > LINETABLE_ENTRY_RAW_ADDRESS (*lte2))
+    return 1;
+  return 0;
 }
 
 /* Given a line table with function entries are marked, arrange its
@@ -458,13 +462,16 @@ arrange_linetable (struct linetable *oldLineTb)
 			  fentry_size * sizeof (struct linetable_entry));
 	    }
 	  fentry[function_count].line = ii;
-	  fentry[function_count].pc = oldLineTb->item[ii].pc;
+	  SET_LINETABLE_ENTRY_ADDRESS
+	    (fentry[function_count],
+	     LINETABLE_ENTRY_RAW_ADDRESS (oldLineTb->item[ii]));
 	  ++function_count;
 
 	  /* If the function was compiled with XLC, we may have to add an
              extra line entry later.  Reserve space for that.  */
 	  if (ii + 1 < oldLineTb->nitems
-	      && oldLineTb->item[ii].pc != oldLineTb->item[ii + 1].pc)
+	      && (LINETABLE_ENTRY_RAW_ADDRESS (oldLineTb->item[ii])
+		  != LINETABLE_ENTRY_RAW_ADDRESS (oldLineTb->item[ii + 1])))
 	    extra_lines++;
 	}
     }
@@ -501,7 +508,8 @@ arrange_linetable (struct linetable *oldLineTb)
          extra line to cover the function prologue.  */
       jj = fentry[ii].line;
       if (jj + 1 < oldLineTb->nitems
-	  && oldLineTb->item[jj].pc != oldLineTb->item[jj + 1].pc)
+	  && (LINETABLE_ENTRY_RAW_ADDRESS (oldLineTb->item[jj])
+	      != LINETABLE_ENTRY_RAW_ADDRESS (oldLineTb->item[jj + 1])))
 	{
 	  newLineTb->item[newline] = oldLineTb->item[jj];
 	  newLineTb->item[newline].line = oldLineTb->item[jj + 1].line;
@@ -871,6 +879,8 @@ enter_line_range (struct subfile *subfile, unsigned beginoffset,
 
   while (curoffset <= limit_offset)
     {
+      CORE_ADDR relocated;
+
       bfd_seek (abfd, curoffset, SEEK_SET);
       bfd_bread (ext_lnno, linesz, abfd);
       bfd_coff_swap_lineno_in (abfd, ext_lnno, &int_lnno);
@@ -879,9 +889,10 @@ enter_line_range (struct subfile *subfile, unsigned beginoffset,
       addr = (int_lnno.l_lnno
 	      ? int_lnno.l_addr.l_paddr
 	      : read_symbol_nvalue (int_lnno.l_addr.l_symndx));
-      addr += ANOFFSET (objfile->section_offsets, SECT_OFF_TEXT (objfile));
 
-      if (addr < startaddr || (endaddr && addr >= endaddr))
+      relocated = (addr + ANOFFSET (objfile->section_offsets,
+				    SECT_OFF_TEXT (objfile)));
+      if (relocated < startaddr || (endaddr && relocated >= endaddr))
 	return;
 
       if (int_lnno.l_lnno == 0)

@@ -34,6 +34,7 @@ mi_cmd_symbol_list_lines (const char *command, char **argv, int argc)
   struct symtab *s;
   int i;
   struct ui_out *uiout = current_uiout;
+  struct linetable *linetable;
 
   if (argc != 1)
     error (_("-symbol-list-lines: Usage: SOURCE_FILENAME"));
@@ -51,11 +52,13 @@ mi_cmd_symbol_list_lines (const char *command, char **argv, int argc)
   gdbarch = get_objfile_arch (SYMTAB_OBJFILE (s));
 
   ui_out_emit_list list_emitter (uiout, "lines");
-  if (SYMTAB_LINETABLE (s) != NULL && SYMTAB_LINETABLE (s)->nitems > 0)
-    for (i = 0; i < SYMTAB_LINETABLE (s)->nitems; i++)
+  linetable = SYMTAB_LINETABLE (s);
+  if (linetable != NULL && linetable->nitems > 0)
+    for (i = 0; i < linetable->nitems; i++)
     {
       ui_out_emit_tuple tuple_emitter (uiout, NULL);
-      uiout->field_core_addr ("pc", gdbarch, SYMTAB_LINETABLE (s)->item[i].pc);
-      uiout->field_int ("line", SYMTAB_LINETABLE (s)->item[i].line);
+      uiout->field_core_addr ("pc", gdbarch,
+			      LINETABLE_ENTRY_ADDRESS (s, linetable->item[i]));
+      uiout->field_int ("line", linetable->item[i].line);
     }
 }

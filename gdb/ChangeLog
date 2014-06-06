@@ -1,5 +1,37 @@
 2018-02-08  Tom Tromey  <tom@tromey.com>
 
+	Obsoletes PR symtab/8077:
+	* record-btrace.c (btrace_find_line_range): Update.
+	* dwarf2read.c (lnp_state_machine::handle_set_address): Remove
+	baseaddr argument.
+	* buildsym.c (record_line, compare_line_numbers): Update.
+	* coffread.c (enter_linenos): Don't add section offset when
+	creating line table.
+	* dbxread.c (process_one_symbol): Remove section offset when
+	creating line table.
+	* disasm.c (do_mixed_source_and_assembly): Update.
+	* dwarf2read.c (dwarf_decode_lines_1): Don't add section offset
+	when creating line table.
+	* jit.c (jit_symtab_line_mapping_add_impl): Update.
+	* mdebugread.c (parse_lines, psymtab_to_symtab_1): Don't add
+	section offset when creating line table.
+	(add_line): Update.
+	* mi/mi-symbol-cmds.c (mi_cmd_symbol_list_lines): Update.
+	* objfiles.c (objfile_relocate1): Don't relocate line tables.
+	* python/py-linetable.c (ltpy_iternext): Update.
+	* symmisc.c (dump_symtab_1): Update.
+	* symtab.c (find_pc_sect_line, find_pcs_for_symtab_line)
+	(skip_prologue_using_lineinfo, skip_prologue_using_sal): Update.
+	* symtab.h (struct linetable_entry) <m_pc>: Rename from "pc".
+	(SET_LINETABLE_ENTRY_ADDRESS, LINETABLE_ENTRY_RAW_ADDRESS)
+	(LINETABLE_ENTRY_ADDRESS): New macros.
+	* xcoffread.c (compare_lte): Update and rewrite.
+	(arrange_linetable): Update.
+	(enter_line_range): Don't add section offset when creating line
+	table.
+
+2018-02-08  Tom Tromey  <tom@tromey.com>
+
 	* solib.c (solib_find_1): Use std::string.
 	(solib_bfd_fopen): Use unique_xmalloc_ptr.
 

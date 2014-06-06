@@ -30,6 +30,7 @@
 #include "safe-ctype.h"
 #include <algorithm>
 #include "common/gdb_optional.h"
+#include "objfiles.h"
 
 /* Disassemble functions.
    FIXME: We should get rid of all the duplicate code in gdb that does
@@ -368,13 +369,18 @@ do_mixed_source_and_assembly_deprecated
 
   /* First, skip all the preceding functions.  */
 
-  for (i = 0; i < nlines - 1 && le[i].pc < low; i++);
+  for (i = 0;
+       i < nlines - 1 && LINETABLE_ENTRY_ADDRESS (symtab, le[i]) < low;
+       i++)
+    ;
 
   /* Now, copy all entries before the end of this function.  */
 
-  for (; i < nlines - 1 && le[i].pc < high; i++)
+  for (; i < nlines - 1 && LINETABLE_ENTRY_ADDRESS (symtab, le[i]) < high; i++)
     {
-      if (le[i].line == le[i + 1].line && le[i].pc == le[i + 1].pc)
+      if (le[i].line == le[i + 1].line
+	  && (LINETABLE_ENTRY_RAW_ADDRESS (le[i])
+	      == LINETABLE_ENTRY_RAW_ADDRESS (le[i + 1])))
 	continue;		/* Ignore duplicates.  */
 
       /* Skip any end-of-function markers.  */
@@ -384,19 +390,19 @@ do_mixed_source_and_assembly_deprecated
       mle[newlines].line = le[i].line;
       if (le[i].line > le[i + 1].line)
 	out_of_order = 1;
-      mle[newlines].start_pc = le[i].pc;
-      mle[newlines].end_pc = le[i + 1].pc;
+      mle[newlines].start_pc = LINETABLE_ENTRY_ADDRESS (symtab, le[i]);
+      mle[newlines].end_pc = LINETABLE_ENTRY_ADDRESS (symtab, le[i + 1]);
       newlines++;
     }
 
   /* If we're on the last line, and it's part of the function,
      then we need to get the end pc in a special way.  */
 
-  if (i == nlines - 1 && le[i].pc < high)
+  if (i == nlines - 1 && LINETABLE_ENTRY_ADDRESS (symtab, le[i]) < high)
     {
       mle[newlines].line = le[i].line;
-      mle[newlines].start_pc = le[i].pc;
-      sal = find_pc_line (le[i].pc, 0);
+      mle[newlines].start_pc = LINETABLE_ENTRY_ADDRESS (symtab, le[i]);
+      sal = find_pc_line (LINETABLE_ENTRY_ADDRESS (symtab, le[i]), 0);
       mle[newlines].end_pc = sal.end;
       newlines++;
     }
@@ -517,10 +523,12 @@ do_mixed_source_and_assembly (struct gdbarch *gdbarch,
   first_le = NULL;
 
   /* Skip all the preceding functions.  */
-  for (i = 0; i < nlines && le[i].pc < low; i++)
-    continue;
+  for (i = 0;
+       i < nlines - 1 && LINETABLE_ENTRY_ADDRESS (main_symtab, le[i]) < low;
+       i++)
+    ;
 
-  if (i < nlines && le[i].pc < high)
+  if (i < nlines && LINETABLE_ENTRY_ADDRESS (main_symtab, le[i]) < high)
     first_le = &le[i];
 
   /* Add lines for every pc value.  */

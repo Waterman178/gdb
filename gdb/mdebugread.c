@@ -2213,7 +2213,7 @@ parse_lines (FDR *fh, PDR *pr, struct linetable *lt, int maxlines,
 	halt = base + fh->cbLine;
       base += pr->cbLineOffset;
 
-      adr = pst->textlow + pr->adr - lowest_pdr_addr;
+      adr = pr->adr - lowest_pdr_addr;
 
       l = adr >> 2;		/* in words */
       for (lineno = pr->lnLow; base < halt;)
@@ -4090,8 +4090,6 @@ psymtab_to_symtab_1 (struct objfile *objfile,
 	      else
 		{
 		  /* Handle encoded stab line number.  */
-		  valu += ANOFFSET (section_offsets,
-				    SECT_OFF_TEXT (objfile));
 		  record_line (current_subfile, sh.index,
 			       gdbarch_addr_bits_remove (gdbarch, valu));
 		}
@@ -4635,7 +4633,8 @@ add_line (struct linetable *lt, int lineno, CORE_ADDR adr, int last)
     return lineno;
 
   lt->item[lt->nitems].line = lineno;
-  lt->item[lt->nitems++].pc = adr << 2;
+  SET_LINETABLE_ENTRY_ADDRESS (lt->item[lt->nitems], adr << 2);
+  ++lt->nitems;
   return lineno;
 }
 
