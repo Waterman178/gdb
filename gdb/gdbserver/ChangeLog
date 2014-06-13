@@ -1,5 +1,9 @@
 2014-06-18  Tom Tromey  <tromey@redhat.com>
 
+	* defs.h (CORE_ADDR): Now unsigned.
+
+2014-06-18  Tom Tromey  <tromey@redhat.com>
+
 	* utils.h: Include errors.h.
 	(perror_with_name, error, fatal, warning): Don't declare.
 
