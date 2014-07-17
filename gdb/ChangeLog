@@ -1,5 +1,14 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* bfd-target.c (target_bfd_reopen): Set to_identity.
+	* target.c (complete_target_initialization): Set to_identity.
+	(unpush_target): Check to_identity.  Call target_close on the real
+	target.
+	(target_is_pushed): Check to_identity.
+	* target.h (struct target_ops) <to_identity>: New field.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* corefile.c (core_bfd): Remove.
 	* gdbcore.h (core_bfd): Now a macro.
 	* progspace.h (struct program_space) <cbfd>: New field.
