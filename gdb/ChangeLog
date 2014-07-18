@@ -1,5 +1,24 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* corelow.c (struct core_target_ops_with_data): New struct.
+	(core_vec, core_gdbarch, core_data): Remove.  Now fields of
+	core_target_ops_with_data.
+	(sniff_core_bfd): Add core_gdbarch parameter.
+	(get_core_target_ops): New function.
+	(core_xclose): Rename from core_close.  Update for
+	core_target_ops_with_data.  Free the target.
+	(core_close_cleanup): Rename parameter.  Update.
+	(core_open): Use TARGET_NEW.  Update.
+	(get_core_register_section, get_core_registers, core_files_info)
+	(core_xfer_partial, core_read_description, core_pid_to_str): Use
+	get_core_target_ops.  Update.
+	(init_core_ops): Set to_xclose, not to_close.
+	* target.c (allocate_target): New function.
+	* target.h (allocate_target): Declare.
+	(TARGET_NEW): New macro.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* bfd-target.c (target_bfd_reopen): Set to_identity.
 	* target.c (complete_target_initialization): Set to_identity.
 	(unpush_target): Check to_identity.  Call target_close on the real
