@@ -104,11 +104,11 @@ exec_close (void)
     }
 }
 
-/* This is the target_close implementation.  Clears all target
+/* This is the target_xclose implementation.  Clears all target
    sections and closes all executable bfds from all program spaces.  */
 
 static void
-exec_close_1 (struct target_ops *self)
+exec_xclose_1 (struct target_ops *self)
 {
   struct program_space *ss;
   struct cleanup *old_chain;
@@ -122,6 +122,7 @@ exec_close_1 (struct target_ops *self)
   }
 
   do_cleanups (old_chain);
+  xfree (self);
 }
 
 void
@@ -437,7 +438,7 @@ add_target_sections (void *owner,
       /* If these are the first file sections we can provide memory
 	 from, push the file_stratum target.  */
       if (!target_is_pushed (&exec_ops))
-	push_target (&exec_ops);
+	push_target (TARGET_NEW (struct target_ops, &exec_ops));
     }
 }
 
@@ -631,7 +632,7 @@ section_table_read_available_memory (gdb_byte *readbuf, ULONGEST offset,
   mem_range_s *r;
   int i;
 
-  table = target_get_section_table (&exec_ops);
+  table = current_target_sections;
   available_memory = section_table_available_memory (available_memory,
 						     offset, len,
 						     table->sections,
@@ -887,7 +888,7 @@ set_section_command (char *args, int from_tty)
 	  p->addr += offset;
 	  p->endaddr += offset;
 	  if (from_tty)
-	    exec_files_info (&exec_ops);
+	    exec_files_info (NULL);
 	  return;
 	}
     }
@@ -956,7 +957,7 @@ init_exec_ops (void)
   exec_ops.to_doc = "Use an executable file as a target.\n\
 Specify the filename of the executable file.";
   exec_ops.to_open = exec_open;
-  exec_ops.to_close = exec_close_1;
+  exec_ops.to_xclose = exec_xclose_1;
   exec_ops.to_xfer_partial = exec_xfer_partial;
   exec_ops.to_get_section_table = exec_get_section_table;
   exec_ops.to_files_info = exec_files_info;

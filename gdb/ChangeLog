@@ -1,5 +1,13 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* exec.c (exec_xclose_1): Rename from exec_close_1.  Free "self".
+	(add_target_sections): Push a new target instance.
+	(section_table_read_available_memory): Don't refer to "exec_ops".
+	(set_section_command): Likewise.
+	(init_exec_ops): Set to_xclose, not to_close.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* bfd-target.c (struct target_bfd_ops): Rename from
 	target_bfd_data.  Add "base" field.
 	(target_bfd_xfer_partial, target_bfd_get_section_table)
