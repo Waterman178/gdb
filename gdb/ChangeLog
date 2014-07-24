@@ -1,5 +1,13 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* bfd-target.c (struct target_bfd_ops): Rename from
+	target_bfd_data.  Add "base" field.
+	(target_bfd_xfer_partial, target_bfd_get_section_table)
+	(target_bfd_xclose, target_bfd_reopen): Update.
+	* target.h (struct target_ops) <to_data>: Remove.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* corelow.c (struct core_target_ops_with_data): New struct.
 	(core_vec, core_gdbarch, core_data): Remove.  Now fields of
 	core_target_ops_with_data.
