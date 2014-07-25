@@ -621,7 +621,7 @@ run_command_1 (char *args, int from_tty, int tbreak_at_main)
 
   /* Pass zero for FROM_TTY, because at this point the "run" command
      has done its thing; now we are setting up the running program.  */
-  post_create_inferior (&current_target, 0);
+  post_create_inferior (current_target, 0);
 
   /* Start the target running.  Do not use -1 continuation as it would skip
      breakpoint right at the entry point.  */
@@ -761,7 +761,7 @@ continue_command (char *args, int from_tty)
   if (args != NULL)
     async_exec = strip_bg_char (&args);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   if (args != NULL)
     {
@@ -893,7 +893,7 @@ step_1 (int skip_subroutines, int single_inst, char *count_string)
   if (count_string)
     async_exec = strip_bg_char (&count_string);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   count = count_string ? parse_and_eval_long (count_string) : 1;
 
@@ -1128,7 +1128,7 @@ jump_command (char *arg, int from_tty)
   if (arg != NULL)
     async_exec = strip_bg_char (&arg);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   if (!arg)
     error_no_arg (_("starting address"));
@@ -1222,7 +1222,7 @@ signal_command (char *signum_exp, int from_tty)
   if (signum_exp != NULL)
     async_exec = strip_bg_char (&signum_exp);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   if (!signum_exp)
     error_no_arg (_("signal number"));
@@ -1407,7 +1407,7 @@ until_command (char *arg, int from_tty)
   if (arg != NULL)
     async_exec = strip_bg_char (&arg);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   if (arg)
     until_break_command (arg, from_tty, 0);
@@ -1432,7 +1432,7 @@ advance_command (char *arg, int from_tty)
   if (arg != NULL)
     async_exec = strip_bg_char (&arg);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   until_break_command (arg, from_tty, 1);
 }
@@ -1721,7 +1721,7 @@ finish_command (char *arg, int from_tty)
   if (arg != NULL)
     async_exec = strip_bg_char (&arg);
 
-  prepare_execution_command (&current_target, async_exec);
+  prepare_execution_command (current_target, async_exec);
 
   if (arg)
     error (_("The \"finish\" command does not take any arguments."));
@@ -2422,7 +2422,7 @@ attach_command_post_wait (char *args, int from_tty, int async_exec)
   /* Take any necessary post-attaching actions for this platform.  */
   target_post_attach (ptid_get_pid (inferior_ptid));
 
-  post_create_inferior (&current_target, from_tty);
+  post_create_inferior (current_target, from_tty);
 
   if (async_exec)
     {

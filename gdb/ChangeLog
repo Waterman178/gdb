@@ -1,5 +1,64 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* target.c (current_target): Now a pointer.
+	(update_current_target): Use size of target_ops, not
+	current_target.
+	(initialize_targets): Initialize current_target.
+	* target.h (current_target): Now a pointer.
+	* auxv.c: Update.
+	* avr-tdep.c: Update.
+	* breakpoint.c: Update.
+	* corefile.c: Update.
+	* elfread.c: Update.
+	* eval.c: Update.
+	* frame.c: Update.
+	* gnu-v3-abi.c: Update.
+	* ia64-hpux-tdep.c: Update.
+	* ia64-tdep.c: Update.
+	* ia64-vms-tdep.c: Update.
+	* infcall.c: Update.
+	* infcmd.c: Update.
+	* infrun.c: Update.
+	* linespec.c: Update.
+	* linux-nat.c: Update.
+	* linux-tdep.c: Update.
+	* linux-thread-db.c: Update.
+	* mi/mi-main.c: Update.
+	* minsyms.c: Update.
+	* parse.c: Update.
+	* ppc-linux-nat.c: Update.
+	* ppc-linux-tdep.c: Update.
+	* procfs.c: Update.
+	* remote-m32r-sdi.c: Update.
+	* remote.c: Update.
+	* s390-linux-nat.c: Update.
+	* s390-linux-tdep.c: Update.
+	* sol-thread.c: Update.
+	* solib-aix.c: Update.
+	* solib-darwin.c: Update.
+	* solib-dsbt.c: Update.
+	* solib-ia64-hpux.c: Update.
+	* solib-irix.c: Update.
+	* solib-osf.c: Update.
+	* solib-spu.c: Update.
+	* solib-svr4.c: Update.
+	* solib-target.c: Update.
+	* solib.c: Update.
+	* sparc-tdep.c: Update.
+	* spu-tdep.c: Update.
+	* symfile.c: Update.
+	* target-descriptions.c: Update.
+	* target-memory.c: Update.
+	* target.c: Update.
+	* target.h: Update.
+	* tracepoint.c: Update.
+	* valops.c: Update.
+	* valprint.c: Update.
+	* value.c: Update.
+	* windows-tdep.c: Update.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* exec.c (exec_xclose_1): Rename from exec_close_1.  Free "self".
 	(add_target_sections): Push a new target instance.
 	(section_table_read_available_memory): Don't refer to "exec_ops".
