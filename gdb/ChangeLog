@@ -1,5 +1,11 @@
 2014-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* linux-thread-db.c (thread_db_xclose): New function.
+	(init_thread_db_ops): Set to_xclose.
+	(try_thread_db_load_1): Push a new instance of the target.
+
+2014-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* target.h (target_stack_decref_cleanup): Declare.
 	* exec.c (exec_xclose_1): Skip program spaces from other targets.
 	* target.c (target_stack_decref_cleanup): New function.
