@@ -2111,12 +2111,20 @@ rust_lookup_symbol_nonlocal (const struct language_defn *langdef,
 
 
 
+/* la_demangle for Rust.  */
+
+static char *
+rust_la_demangle (const char *mangled, int options)
+{
+  return gdb_demangle (mangled, options | DMGL_RUST);
+}
+
 /* la_sniff_from_mangled_name for Rust.  */
 
 static int
 rust_sniff_from_mangled_name (const char *mangled, char **demangled)
 {
-  *demangled = gdb_demangle (mangled, DMGL_PARAMS | DMGL_ANSI);
+  *demangled = gdb_demangle (mangled, DMGL_PARAMS | DMGL_ANSI | DMGL_RUST);
   return *demangled != NULL;
 }
 
@@ -2163,7 +2171,7 @@ static const struct language_defn rust_language_defn =
   NULL,				/* name_of_this */
   rust_lookup_symbol_nonlocal,	/* lookup_symbol_nonlocal */
   basic_lookup_transparent_type,/* lookup_transparent_type */
-  gdb_demangle,			/* Language specific symbol demangler */
+  rust_la_demangle,		/* Language specific symbol demangler */
   rust_sniff_from_mangled_name,
   NULL,				/* Language specific
 				   class_name_from_physname */

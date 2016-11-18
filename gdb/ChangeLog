@@ -1,3 +1,9 @@
+2016-11-18  Tom Tromey  <tom@tromey.com>
+
+	* rust-lang.c (rust_la_demangle): New function.
+	(rust_sniff_from_mangled_name): Use DMGL_RUST.
+	(rust_language_defn): Use rust_la_demangle.
+
 2017-02-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* NEWS: Mention new set/show disassembler-options commands.
