@@ -81,6 +81,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
+#include <sys/mman.h>
+#include <sstream>
 
 typedef struct symbol *symbolp;
 DEF_VEC_P (symbolp);
@@ -2062,6 +2064,9 @@ static void process_cu_includes (void);
 static void check_producer (struct dwarf2_cu *cu);
 
 static void free_line_header_voidp (void *arg);
+
+static void write_psymtabs_to_index (struct objfile *objfile, const char *dir, const char *basebane);
+
 
 /* Various complaints about symbol reading that don't abort the process.  */
 
@@ -3266,10 +3271,11 @@ find_slot_in_mapped_hash (struct mapped_index *index, const char *name,
    Returns 1 if all went well, 0 otherwise.  */
 
 static int
-read_index_from_section (struct objfile *objfile,
+read_index_from_buffer (struct objfile *objfile,
 			 const char *filename,
 			 int deprecated_ok,
-			 struct dwarf2_section_info *section,
+			 const gdb_byte *buffer,
+			 size_t buffer_size,
 			 struct mapped_index *map,
 			 const gdb_byte **cu_list,
 			 offset_type *cu_list_elements,
@@ -3281,17 +3287,7 @@ read_index_from_section (struct objfile *objfile,
   offset_type *metadata;
   int i;
 
-  if (dwarf2_section_empty_p (section))
-    return 0;
-
-  /* Older elfutils strip versions could keep the section in the main
-     executable while splitting it for the separate debug info file.  */
-  if ((get_section_flags (section) & SEC_HAS_CONTENTS) == 0)
-    return 0;
-
-  dwarf2_read_section (objfile, section);
-
-  addr = section->buffer;
+  addr = buffer;
   /* Version check.  */
   version = MAYBE_SWAP (*(offset_type *) addr);
   /* Versions earlier than 3 emitted every copy of a psymbol.  This
@@ -3345,7 +3341,7 @@ to use the section anyway."),
     return 0;
 
   map->version = version;
-  map->total_size = section->size;
+  map->total_size = buffer_size;
 
   metadata = (offset_type *) (addr + sizeof (offset_type));
 
@@ -3377,6 +3373,77 @@ to use the section anyway."),
   return 1;
 }
 
+static int
+read_index_from_section (struct objfile *objfile,
+			 const char *filename,
+			 int deprecated_ok,
+			 struct dwarf2_section_info *section,
+			 struct mapped_index *map,
+			 const gdb_byte **cu_list,
+			 offset_type *cu_list_elements,
+			 const gdb_byte **types_list,
+			 offset_type *types_list_elements)
+{
+  if (dwarf2_section_empty_p (section))
+     return 0;
+
+  /* Older elfutils strip versions could keep the section in the main
+    executable while splitting it for the separate debug info file.  */
+  if ((get_section_flags (section) & SEC_HAS_CONTENTS) == 0)
+   return 0;
+
+  dwarf2_read_section (objfile, section);
+
+  printf("Reading index from section\n");
+
+  return read_index_from_buffer (objfile, filename, deprecated_ok,
+				 section->buffer, section->size, map, cu_list,
+				 cu_list_elements, types_list,
+				 types_list_elements);
+}
+
+static int
+read_index_from_file (struct objfile *objfile,
+		      const char *filename,
+		      int deprecated_ok,
+		      struct mapped_index *map,
+		      const gdb_byte **cu_list,
+		      offset_type *cu_list_elements,
+		      const gdb_byte **types_list,
+		      offset_type *types_list_elements)
+{
+  struct stat st;
+  printf("Reading index from file %s", filename);
+  if (stat (filename, &st) < 0)
+    {
+      printf(" not found\n");
+      return 0;
+    }
+
+  size_t sz = st.st_size;
+
+  printf("of size %zu\n", sz);
+
+  int fd = gdb_open_cloexec(filename, O_RDONLY, 0);
+
+  if (fd < 0)
+    return 0;
+
+  void *buf = mmap (NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
+  if (buf == MAP_FAILED)
+    {
+      perror ("mmap");
+      return 0;
+    }
+
+  return read_index_from_buffer (objfile, filename, deprecated_ok,
+				 (gdb_byte *) buf, sz, map, cu_list,
+				 cu_list_elements, types_list,
+				 types_list_elements);
+}
+
+static std::string
+index_cache_file_name (struct objfile *objfile);
 
 /* Read the index file.  If everything went ok, initialize the "quick"
    elements of all the CUs and return 1.  Otherwise, return 0.  */
@@ -3394,7 +3461,21 @@ dwarf2_read_index (struct objfile *objfile)
 				&dwarf2_per_objfile->gdb_index, &local_map,
 				&cu_list, &cu_list_elements,
 				&types_list, &types_list_elements))
-    return 0;
+    {
+      std::stringstream filename_builder;
+
+      filename_builder
+	<< "/home/simark/gdb-index-cache/"
+	<< index_cache_file_name(objfile)
+	<< ".gdb-index";
+      std::string filename = filename_builder.str();
+
+      if (!read_index_from_file (objfile, filename.c_str(),
+				use_deprecated_index_sections, &local_map,
+				&cu_list, &cu_list_elements,
+				&types_list, &types_list_elements))
+	return 0;
+    }
 
   /* Don't use the index if it's empty.  */
   if (local_map.symbol_table_slots == 0)
@@ -4450,6 +4531,28 @@ dwarf2_initialize_objfile (struct objfile *objfile)
 
 
 
+static std::string
+index_cache_file_name (struct objfile *objfile)
+{
+  const bfd_build_id *build_id = build_id_bfd_get  (objfile->obfd);
+  std::string s;
+
+  if (build_id == NULL)
+    return "";
+
+  for (int i = 0; i < build_id->size; i++) {
+      char buf[10];
+
+      sprintf(buf, "%02x", build_id->data[i]);
+
+      s.append(buf);
+  }
+
+  printf("build id is %s\n", s.c_str ());
+
+  return s;
+}
+
 /* Build a partial symbol table.  */
 
 void
@@ -4468,6 +4571,18 @@ dwarf2_build_psymtabs (struct objfile *objfile)
       psymtab_discarder psymtabs (objfile);
       dwarf2_build_psymtabs_hard (objfile);
       psymtabs.keep ();
+
+      std::string cache_filename = index_cache_file_name(objfile);
+      if (cache_filename.length() > 0)
+	{
+	  const char *dir = "/home/simark/gdb-index-cache";
+	  struct stat st;
+	  if (stat (dir, &st) != 0)
+	    {
+	      mkdir (dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	    }
+	  write_psymtabs_to_index (objfile, dir, cache_filename.c_str ());
+	}
     }
   CATCH (except, RETURN_MASK_ERROR)
     {
@@ -23822,7 +23937,7 @@ recursively_write_psymbols (struct objfile *objfile,
 /* Create an index file for OBJFILE in the directory DIR.  */
 
 static void
-write_psymtabs_to_index (struct objfile *objfile, const char *dir)
+write_psymtabs_to_index (struct objfile *objfile, const char *dir, const char *basename)
 {
   if (dwarf2_per_objfile->using_index)
     error (_("Cannot use an index to create the index"));
@@ -23837,8 +23952,8 @@ write_psymtabs_to_index (struct objfile *objfile, const char *dir)
   if (stat (objfile_name (objfile), &st) < 0)
     perror_with_name (objfile_name (objfile));
 
-  std::string filename (std::string (dir) + SLASH_STRING
-			+ lbasename (objfile_name (objfile)) + INDEX_SUFFIX);
+  std::string filename (std::string (dir) + SLASH_STRING + basename
+			+ INDEX_SUFFIX);
 
   FILE *out_file = gdb_fopen_cloexec (filename.c_str (), "wb").release ();
   if (!out_file)
@@ -24001,7 +24116,7 @@ save_gdb_index_command (const char *arg, int from_tty)
 
 	TRY
 	  {
-	    write_psymtabs_to_index (objfile, arg);
+	    write_psymtabs_to_index (objfile, arg, lbasename (objfile_name (objfile)));
 	  }
 	CATCH (except, RETURN_MASK_ERROR)
 	  {

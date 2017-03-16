@@ -1268,7 +1268,9 @@ static void
 read_psyms (struct objfile *objfile)
 {
   if (dwarf2_has_info (objfile, NULL))
-    dwarf2_build_psymtabs (objfile);
+    {
+      dwarf2_build_psymtabs (objfile);
+    }
 }
 
 /* Initialize anything that needs initializing when a completely new symbol
