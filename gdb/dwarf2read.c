@@ -83,6 +83,7 @@
 #include <unordered_map>
 #include <sys/mman.h>
 #include <sstream>
+#include "gdb_tilde_expand.h"
 
 typedef struct symbol *symbolp;
 DEF_VEC_P (symbolp);
@@ -3394,7 +3395,7 @@ read_index_from_section (struct objfile *objfile,
 
   dwarf2_read_section (objfile, section);
 
-  printf("Reading index from section\n");
+  printf_unfiltered ("Reading index from section\n");
 
   return read_index_from_buffer (objfile, filename, deprecated_ok,
 				 section->buffer, section->size, map, cu_list,
@@ -3413,18 +3414,18 @@ read_index_from_file (struct objfile *objfile,
 		      offset_type *types_list_elements)
 {
   struct stat st;
-  printf("Reading index from file %s", filename);
+  printf_unfiltered ("Reading index from file %s", filename);
   if (stat (filename, &st) < 0)
     {
-      printf(" not found\n");
+      printf_unfiltered (" not found\n");
       return 0;
     }
 
   size_t sz = st.st_size;
 
-  printf("of size %zu\n", sz);
+  printf_unfiltered ("of size %zu\n", sz);
 
-  int fd = gdb_open_cloexec(filename, O_RDONLY, 0);
+  int fd = gdb_open_cloexec (filename, O_RDONLY, 0);
 
   if (fd < 0)
     return 0;
@@ -3466,11 +3467,11 @@ dwarf2_read_index (struct objfile *objfile)
 
       filename_builder
 	<< "/home/simark/gdb-index-cache/"
-	<< index_cache_file_name(objfile)
+	<< index_cache_file_name (objfile)
 	<< ".gdb-index";
-      std::string filename = filename_builder.str();
+      std::string filename = filename_builder.str ();
 
-      if (!read_index_from_file (objfile, filename.c_str(),
+      if (!read_index_from_file (objfile, filename.c_str (),
 				use_deprecated_index_sections, &local_map,
 				&cu_list, &cu_list_elements,
 				&types_list, &types_list_elements))
@@ -4543,12 +4544,12 @@ index_cache_file_name (struct objfile *objfile)
   for (int i = 0; i < build_id->size; i++) {
       char buf[10];
 
-      sprintf(buf, "%02x", build_id->data[i]);
+      xsnprintf (buf, sizeof (buf), "%02x", build_id->data[i]);
 
-      s.append(buf);
+      s.append (buf);
   }
 
-  printf("build id is %s\n", s.c_str ());
+  printf_unfiltered ("build id is %s\n", s.c_str ());
 
   return s;
 }
@@ -4572,16 +4573,16 @@ dwarf2_build_psymtabs (struct objfile *objfile)
       dwarf2_build_psymtabs_hard (objfile);
       psymtabs.keep ();
 
-      std::string cache_filename = index_cache_file_name(objfile);
-      if (cache_filename.length() > 0)
+      std::string cache_filename = index_cache_file_name (objfile);
+      if (cache_filename.length () > 0)
 	{
-	  const char *dir = "/home/simark/gdb-index-cache";
+	  std::string dir = gdb_tilde_expand ("~/.gdb-index-cache");
+
 	  struct stat st;
-	  if (stat (dir, &st) != 0)
-	    {
-	      mkdir (dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	    }
-	  write_psymtabs_to_index (objfile, dir, cache_filename.c_str ());
+	  if (stat (dir.c_str (), &st) != 0)
+	    mkdir (dir.c_str (), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	  write_psymtabs_to_index (objfile, dir.c_str (),
+				   cache_filename.c_str ());
 	}
     }
   CATCH (except, RETURN_MASK_ERROR)
