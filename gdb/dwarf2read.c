@@ -82,8 +82,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <sys/mman.h>
-#include <sstream>
-#include "gdb_tilde_expand.h"
+#include "readline/readline.h"
 
 typedef struct symbol *symbolp;
 DEF_VEC_P (symbolp);
@@ -3463,19 +3462,21 @@ dwarf2_read_index (struct objfile *objfile)
 				&cu_list, &cu_list_elements,
 				&types_list, &types_list_elements))
     {
-      std::stringstream filename_builder;
+      std::string basename = index_cache_file_name (objfile);
 
-      filename_builder
-	<< "/home/simark/gdb-index-cache/"
-	<< index_cache_file_name (objfile)
-	<< ".gdb-index";
-      std::string filename = filename_builder.str ();
+      if (basename.length () > 0)
+	{
+	  gdb::unique_xmalloc_ptr<char> dir
+	    (tilde_expand ("~/.gdb-index-cache/"));
 
-      if (!read_index_from_file (objfile, filename.c_str (),
-				use_deprecated_index_sections, &local_map,
-				&cu_list, &cu_list_elements,
-				&types_list, &types_list_elements))
-	return 0;
+	  std::string filename = dir.get () + basename + INDEX_SUFFIX;
+
+	  if (!read_index_from_file (objfile, filename.c_str (),
+				     use_deprecated_index_sections, &local_map,
+				     &cu_list, &cu_list_elements,
+				     &types_list, &types_list_elements))
+	    return 0;
+	}
     }
 
   /* Don't use the index if it's empty.  */
@@ -4576,12 +4577,13 @@ dwarf2_build_psymtabs (struct objfile *objfile)
       std::string cache_filename = index_cache_file_name (objfile);
       if (cache_filename.length () > 0)
 	{
-	  std::string dir = gdb_tilde_expand ("~/.gdb-index-cache");
+	  gdb::unique_xmalloc_ptr<char> dir
+	    (tilde_expand ("~/.gdb-index-cache"));
 
 	  struct stat st;
-	  if (stat (dir.c_str (), &st) != 0)
-	    mkdir (dir.c_str (), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	  write_psymtabs_to_index (objfile, dir.c_str (),
+	  if (stat (dir.get (), &st) != 0)
+	    mkdir (dir.get (), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	  write_psymtabs_to_index (objfile, dir.get (),
 				   cache_filename.c_str ());
 	}
     }
