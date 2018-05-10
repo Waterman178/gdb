@@ -1,3 +1,32 @@
+2018-09-27  Tom Tromey  <tom@tromey.com>
+
+	* symfile.c (reread_symbols): Clear psymtab_map.
+	* xcoffread.c (read_xcoff_symtab, xcoff_psymtab_to_symtab_1)
+	(xcoff_read_symtab): Update.
+	* psymtab.h (associate_psymtab_with_symtab, psymtab_read_in_p)
+	(get_psymtab_compunit): Declare.
+	* psymtab.c (partial_map_expand_apply)
+	(psym_find_pc_sect_compunit_symtab, psym_lookup_symbol)
+	(psymtab_to_symtab, psym_find_last_source_symtab, dump_psymtab)
+	(psym_print_stats, psym_expand_symtabs_for_function)
+	(psym_map_symbol_filenames, psym_map_matching_symbols)
+	(psym_expand_symtabs_matching, allocate_psymtab): Update.
+	(associate_psymtab_with_symtab, psymtab_read_in_p)
+	(get_psymtab_compunit): New functions.
+	(maintenance_info_psymtabs, maintenance_check_psymtabs): Update.
+	(struct psymtab_map_entry): New.
+	(hash_psymtab_map_entry, eq_psymtab_map_entry): New functions.
+	* psympriv.h (struct partial_symtab) <readin, compunit_symtab>:
+	Remove.
+	* objfiles.h (objfile::psymtab_map): New member.
+	* mdebugread.c (psymtab_to_symtab_1): Update.
+	* dwarf2read.c (dw2_do_instantiate_symtab, dwarf2_read_symtab)
+	(process_queue): Update.
+	(psymtab_to_symtab_1): Add 'objfile' parameter.
+	(get_compunit_symtab, process_full_comp_unit)
+	(process_full_type_unit): Update.
+	* dbxread.c (dbx_psymtab_to_symtab_1, read_ofile_symtab): Update.
+
 2018-05-09  Tom Tromey  <tom@tromey.com>
 
 	* symtab.h (SYMBOL_SET_NAMES): Update.
