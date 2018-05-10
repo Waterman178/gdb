@@ -2483,6 +2483,7 @@ reread_symbols (void)
 	     enough?  */
 	  objfile->global_psymbols.clear ();
 	  objfile->static_psymbols.clear ();
+	  objfile->psymtab_map.reset ();
 
 	  /* Free the obstacks for non-reusable objfiles.  */
 	  psymbol_bcache_free (objfile->psymbol_cache);
