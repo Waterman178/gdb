@@ -1,3 +1,12 @@
+2018-05-09  Tom Tromey  <tom@tromey.com>
+
+	* symfile.h (mdebug_build_psymtabs, elfmdebug_build_psymtabs):
+	Don't declare.
+	* mipsread.c: Include mdebugread.h.
+	* mdebugread.h (mdebug_build_psymtabs, elfmdebug_build_psymtabs):
+	Declare.
+	* elfread.c: Include mdebugread.h.
+
 2018-12-02  Joel Brobecker  <brobecker@adacore.com>
 
 	* aarch64-ravenscar-thread.h, aarch64-ravenscar-thread.c: New files.
