@@ -1,3 +1,8 @@
+2018-05-09  Tom Tromey  <tom@tromey.com>
+
+	* symfile.c (reread_symbols): Call objfile->reset_psymtabs.
+	* objfiles.h (objfile::reset_psymtabs): New method.
+
 2018-05-10  Tom Tromey  <tom@tromey.com>
 
 	* symmisc.c (print_symbol_bcache_statistics): Update.
