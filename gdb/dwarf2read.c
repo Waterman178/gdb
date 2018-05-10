@@ -3192,8 +3192,8 @@ create_addrmap_from_index (struct dwarf2_per_objfile *dwarf2_per_objfile,
 			 dwarf2_per_objfile->get_cu (cu_index));
     }
 
-  objfile->psymtabs_addrmap = addrmap_create_fixed (mutable_map,
-						    &objfile->objfile_obstack);
+  objfile->partial_symtabs->psymtabs_addrmap
+    = addrmap_create_fixed (mutable_map, &objfile->objfile_obstack);
 }
 
 /* Read the address map data from DWARF-5 .debug_aranges, and use it to
@@ -3353,8 +3353,8 @@ create_addrmap_from_aranges (struct dwarf2_per_objfile *dwarf2_per_objfile,
 	}
     }
 
-  objfile->psymtabs_addrmap = addrmap_create_fixed (mutable_map,
-						    &objfile->objfile_obstack);
+  objfile->partial_symtabs->psymtabs_addrmap
+    = addrmap_create_fixed (mutable_map, &objfile->objfile_obstack);
 }
 
 /* Find a slot in the mapped index INDEX for the object named NAME.
@@ -5247,13 +5247,13 @@ dw2_find_pc_sect_compunit_symtab (struct objfile *objfile,
   struct dwarf2_per_cu_data *data;
   struct compunit_symtab *result;
 
-  if (!objfile->psymtabs_addrmap)
+  if (!objfile->partial_symtabs->psymtabs_addrmap)
     return NULL;
 
   CORE_ADDR baseaddr = ANOFFSET (objfile->section_offsets,
 				 SECT_OFF_TEXT (objfile));
-  data = (struct dwarf2_per_cu_data *) addrmap_find (objfile->psymtabs_addrmap,
-						     pc - baseaddr);
+  data = (struct dwarf2_per_cu_data *) addrmap_find
+    (objfile->partial_symtabs->psymtabs_addrmap, pc - baseaddr);
   if (!data)
     return NULL;
 
@@ -8006,7 +8006,8 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
 	   - baseaddr - 1);
       /* Store the contiguous range if it is not empty; it can be
 	 empty for CUs with no code.  */
-      addrmap_set_empty (objfile->psymtabs_addrmap, low, high, pst);
+      addrmap_set_empty (objfile->partial_symtabs->psymtabs_addrmap,
+			 low, high, pst);
     }
 
   /* Check if comp unit has_children.
@@ -8463,7 +8464,7 @@ dwarf2_build_psymtabs_hard (struct dwarf2_per_objfile *dwarf2_per_objfile)
   auto_obstack temp_obstack;
 
   scoped_restore save_psymtabs_addrmap
-    = make_scoped_restore (&objfile->psymtabs_addrmap,
+    = make_scoped_restore (&objfile->partial_symtabs->psymtabs_addrmap,
 			   addrmap_create_mutable (&temp_obstack));
 
   for (dwarf2_per_cu_data *per_cu : dwarf2_per_objfile->all_comp_units)
@@ -8484,8 +8485,9 @@ dwarf2_build_psymtabs_hard (struct dwarf2_per_objfile *dwarf2_per_objfile)
 
   set_partial_user (dwarf2_per_objfile);
 
-  objfile->psymtabs_addrmap = addrmap_create_fixed (objfile->psymtabs_addrmap,
-						    &objfile->objfile_obstack);
+  objfile->partial_symtabs->psymtabs_addrmap
+    = addrmap_create_fixed (objfile->partial_symtabs->psymtabs_addrmap,
+			    &objfile->objfile_obstack);
   /* At this point we want to keep the address map.  */
   save_psymtabs_addrmap.release ();
 
@@ -9109,7 +9111,7 @@ add_partial_subprogram (struct partial_die_info *pdi,
 		= (gdbarch_adjust_dwarf2_addr (gdbarch,
 					       pdi->highpc + baseaddr)
 		   - baseaddr);
-	      addrmap_set_empty (objfile->psymtabs_addrmap,
+	      addrmap_set_empty (objfile->partial_symtabs->psymtabs_addrmap,
 				 this_lowpc, this_highpc - 1,
 				 cu->per_cu->v.psymtab);
 	    }
@@ -14601,8 +14603,8 @@ dwarf2_ranges_read (unsigned offset, CORE_ADDR *low_return,
 	  highpc = (gdbarch_adjust_dwarf2_addr (gdbarch,
 						range_end + baseaddr)
 		    - baseaddr);
-	  addrmap_set_empty (objfile->psymtabs_addrmap, lowpc, highpc - 1,
-			     ranges_pst);
+	  addrmap_set_empty (objfile->partial_symtabs->psymtabs_addrmap,
+			     lowpc, highpc - 1, ranges_pst);
 	}
 
       /* FIXME: This is recording everything as a low-high
