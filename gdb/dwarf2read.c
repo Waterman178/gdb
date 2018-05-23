@@ -8363,6 +8363,15 @@ set_partial_user (struct dwarf2_per_objfile *dwarf2_per_objfile)
     }
 }
 
+/* FIXME */
+
+static void
+process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
+{
+  for (dwarf2_per_cu_data *per_cu : dwarf2_per_objfile->all_comp_units)
+    process_psymtab_comp_unit (per_cu, 0, language_minimal);
+}
+
 /* Build the partial symbol table by doing a quick pass through the
    .debug_info and .debug_abbrev sections.  */
 
@@ -8397,8 +8406,7 @@ dwarf2_build_psymtabs_hard (struct dwarf2_per_objfile *dwarf2_per_objfile)
     = make_scoped_restore (&objfile->psymtabs_addrmap,
 			   addrmap_create_mutable (&temp_obstack));
 
-  for (dwarf2_per_cu_data *per_cu : dwarf2_per_objfile->all_comp_units)
-    process_psymtab_comp_unit (per_cu, 0, language_minimal);
+  process_psymtabs_in_parallel (dwarf2_per_objfile);
 
   /* This has to wait until we read the CUs, we need the list of DWOs.  */
   process_skeletonless_type_units (dwarf2_per_objfile);
