@@ -7866,21 +7866,6 @@ create_partial_symtab (struct dwarf2_per_cu_data *per_cu, const char *name)
   return pst;
 }
 
-/* The DATA object passed to process_psymtab_comp_unit_reader has this
-   type.  */
-
-struct process_psymtab_comp_unit_data
-{
-  /* True if we are reading a DW_TAG_partial_unit.  */
-
-  int want_partial_unit;
-
-  /* The "pretend" language that is used if the CU doesn't declare a
-     language.  */
-
-  enum language pretend_language;
-};
-
 /* die_reader_func for process_psymtab_comp_unit.  */
 
 static void
@@ -7899,15 +7884,11 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
   struct partial_symtab *pst;
   enum pc_bounds_kind cu_bounds_kind;
   const char *filename;
-  struct process_psymtab_comp_unit_data *info
-    = (struct process_psymtab_comp_unit_data *) data;
-
-  if (comp_unit_die->tag == DW_TAG_partial_unit && !info->want_partial_unit)
-    return;
+  enum language pretend_language = *(enum language *) data;
 
   gdb_assert (! per_cu->is_debug_types);
 
-  prepare_one_comp_unit (cu, comp_unit_die, info->pretend_language);
+  prepare_one_comp_unit (cu, comp_unit_die, pretend_language);
 
   cu->list_in_scope = &file_symbols;
 
@@ -8017,7 +7998,7 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
 
 static void
 process_psymtab_comp_unit (struct dwarf2_per_cu_data *this_cu,
-			   int want_partial_unit,
+			   bool want_partial_unit,
 			   enum language pretend_language)
 {
   /* If this compilation unit was already read in, free the
@@ -8033,11 +8014,9 @@ process_psymtab_comp_unit (struct dwarf2_per_cu_data *this_cu,
 			     build_type_psymtabs_reader, NULL);
   else
     {
-      process_psymtab_comp_unit_data info;
-      info.want_partial_unit = want_partial_unit;
-      info.pretend_language = pretend_language;
-      init_cutu_and_read_dies (this_cu, NULL, 0, 0, false,
-			       process_psymtab_comp_unit_reader, &info);
+      init_cutu_and_read_dies (this_cu, NULL, 0, 0, want_partial_unit,
+			       process_psymtab_comp_unit_reader,
+			       &pretend_language);
     }
 
   /* Age out any secondary CUs.  */
@@ -8369,7 +8348,7 @@ static void
 process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
 {
   for (dwarf2_per_cu_data *per_cu : dwarf2_per_objfile->all_comp_units)
-    process_psymtab_comp_unit (per_cu, 0, language_minimal);
+    process_psymtab_comp_unit (per_cu, false, language_minimal);
 }
 
 /* Build the partial symbol table by doing a quick pass through the
@@ -8630,7 +8609,7 @@ scan_partial_symbols (struct partial_die_info *first_die, CORE_ADDR *lowpc,
 
 		/* Go read the partial unit, if needed.  */
 		if (per_cu->v.psymtab == NULL)
-		  process_psymtab_comp_unit (per_cu, 1, cu->language);
+		  process_psymtab_comp_unit (per_cu, true, cu->language);
 
 		VEC_safe_push (dwarf2_per_cu_ptr,
 			       cu->per_cu->imported_symtabs, per_cu);
