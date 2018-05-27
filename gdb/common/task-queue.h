@@ -36,6 +36,7 @@ public:
     : m_done (false),
       m_writer_count (writer_count)
   {
+    gdb_assert (m_writer_count > 0);
   }
 
   ~task_queue ()
