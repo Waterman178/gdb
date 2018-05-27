@@ -414,6 +414,8 @@ struct delayed_method_info
   struct die_info *die;
 };
 
+struct stub_partial_symtab;
+
 /* Internal state when decoding a particular compilation unit.  */
 struct dwarf2_cu
 {
@@ -531,6 +533,8 @@ struct dwarf2_cu
      type might not have been fully processed.  So, we keep a list of
      all such types here and process them after expansion.  */
   std::vector<struct type *> rust_unions;
+
+  struct stub_partial_symtab *stub_psymtab;
 
   /* Mark used when releasing cached dies.  */
   unsigned int mark : 1;
@@ -1466,6 +1470,8 @@ struct stub_partial_symtab
   enum pc_bounds_kind bounds_kind;
 
   std::vector<struct stub_partial_symbol> psyms;
+
+  std::vector<const char *> dep_names;
 };
 
 typedef gdb::task_queue<dwarf2_per_cu_data *> job_queue_type;
@@ -6526,6 +6532,7 @@ read_abbrev_offset (struct dwarf2_per_objfile *dwarf2_per_objfile,
 /* Allocate a new partial symtab for file named NAME and mark this new
    partial symtab as being an include of PST.  */
 
+#if 0				/* FIXME */
 static void
 dwarf2_create_include_psymtab (const char *name,
 			       struct partial_symtab *pst,
@@ -6560,6 +6567,7 @@ dwarf2_create_include_psymtab (const char *name,
      the regular ones.  */
   subpst->read_symtab_private = NULL;
 }
+#endif
 
 /* Read the Line Number Program data and extract the list of files
    included by the source file represented by PST.  Build an include
@@ -6567,8 +6575,7 @@ dwarf2_create_include_psymtab (const char *name,
 
 static void
 dwarf2_build_include_psymtabs (struct dwarf2_cu *cu,
-			       struct die_info *die,
-			       struct stub_partial_symtab *pst)
+			       struct die_info *die)
 {
   line_header_up lh;
   struct attribute *attr;
@@ -6580,7 +6587,9 @@ dwarf2_build_include_psymtabs (struct dwarf2_cu *cu,
     return;  /* No linetable, so no includes.  */
 
   /* NOTE: pst->dirname is DW_AT_comp_dir (if present).  */
-  dwarf_decode_lines (lh.get (), pst->dirname, cu, pst, pst->textlow, 1);
+  dwarf_decode_lines (lh.get (), cu->stub_psymtab->dirname, cu,
+		      cu->stub_psymtab,
+		      cu->stub_psymtab->textlow, 1);
 }
 
 static hashval_t
@@ -7923,6 +7932,8 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
   // enum language pretend_language = *(enum language *) data;
   result_queue_type *results = (result_queue_type *) data;
 
+  scoped_restore restore_pst = make_scoped_restore (&cu->stub_psymtab, &pst);
+
   gdb_assert (! per_cu->is_debug_types);
 
   prepare_one_comp_unit (cu, comp_unit_die, language_minimal/* pretend_language */);
@@ -7985,7 +7996,7 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
 
   /* Get the list of files included in the current compilation unit,
      and build a psymtab for each of them.  */
-  dwarf2_build_include_psymtabs (cu, comp_unit_die, &pst);
+  dwarf2_build_include_psymtabs (cu, comp_unit_die);
 
   if (dwarf_read_debug)
     {
@@ -8376,13 +8387,20 @@ create_psymtab_from_stub (stub_partial_symtab *ps_stub,
 
   /* set_dependencies; */
 
-  for (auto &psym : ps_stub->psyms)
+  for (auto &spsym : ps_stub->psyms)
     {
-      add_psymbol_to_list (lbah);
+      add_psymbol_to_list (spsym.sym.ginfo.name, strlen (spsym.sym.ginfo.name),
+			   spsym.copy_name, PSYMBOL_DOMAIN (&spsym.sym),
+			   PSYMBOL_CLASS (&spsym.sym),
+			   (spsym.is_static ? &objfile->static_psymbols
+			    : &objfile->global_psymbols),
+			   SYMBOL_VALUE_ADDRESS (&spsym.sym),
+			   spsym.sym.ginfo.language, objfile);
+
       /* If we had to copy the name for the psymbol, then it is
-	 heap-allocated, so we have to free it. .  */
-      if (psym.copy_name)
-	xfree (blah);
+	 heap-allocated, so we have to free it.  */
+      if (spsym.copy_name)
+	xfree ((char *) spsym.sym.ginfo.name);
     }
 }
 
@@ -8855,7 +8873,7 @@ stub_add_psymbol (struct stub_partial_symtab *psptab,
   spsym.copy_name = copy_name;
   spsym.is_static = is_static;
 
-  psptab->psymbols.push_back (spsym);
+  psptab->psyms.push_back (spsym);
 }
 
 static void
@@ -8890,17 +8908,17 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
              of the global scope.  But in Ada, we want to be able to access
              nested procedures globally.  So all Ada subprograms are stored
              in the global scope.  */
-	  stub_add_psymbol (actual_name, built_actual_name != NULL,
+	  stub_add_psymbol (cu->stub_psymtab, actual_name, built_actual_name != NULL,
 			    VAR_DOMAIN, LOC_BLOCK,
 			    false,
-			    addr, cu->language, objfile);
+			    addr, cu->language);
 	}
       else
 	{
-	  stub_add_psymbol (actual_name, built_actual_name != NULL,
+	  stub_add_psymbol (cu->stub_psymtab, actual_name, built_actual_name != NULL,
 			    VAR_DOMAIN, LOC_BLOCK,
 			    true,
-			    addr, cu->language, objfile);
+			    addr, cu->language);
 	}
 
       if (pdi->main_subprogram && actual_name != NULL)
@@ -8914,9 +8932,9 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 	  list = false;
 	else
 	  list = true;
-	stub_add_psymbol (actual_name,
+	stub_add_psymbol (cu->stub_psymtab, actual_name,
 			  built_actual_name != NULL, VAR_DOMAIN, LOC_STATIC,
-			  list, 0, cu->language, objfile);
+			  list, 0, cu->language);
       }
       break;
     case DW_TAG_variable:
@@ -8948,12 +8966,12 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 	     table building.  */
 
 	  if (pdi->d.locdesc || pdi->has_type)
-	    stub_add_psymbol (actual_name,
+	    stub_add_psymbol (cu->stub_psymtab, actual_name,
 			      built_actual_name != NULL,
 			      VAR_DOMAIN, LOC_STATIC,
 			      false,
 			      addr + baseaddr,
-			      cu->language, objfile);
+			      cu->language);
 	}
       else
 	{
@@ -8967,37 +8985,37 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 	      return;
 	    }
 
-	  stub_add_psymbol (actual_name,
+	  stub_add_psymbol (cu->stub_psymtab, actual_name,
 			    built_actual_name != NULL,
 			    VAR_DOMAIN, LOC_STATIC,
 			    true,
 			    has_loc ? addr + baseaddr : (CORE_ADDR) 0,
-			    cu->language, objfile);
+			    cu->language);
 	}
       break;
     case DW_TAG_typedef:
     case DW_TAG_base_type:
     case DW_TAG_subrange_type:
-      stub_add_psymbol (actual_name,
+      stub_add_psymbol (cu->stub_psymtab, actual_name,
 			built_actual_name != NULL,
 			VAR_DOMAIN, LOC_TYPEDEF,
 			true,
-			0, cu->language, objfile);
+			0, cu->language);
       break;
     case DW_TAG_imported_declaration:
     case DW_TAG_namespace:
-      stub_add_psymbol (actual_name,
+      stub_add_psymbol (cu->stub_psymtab, actual_name,
 			built_actual_name != NULL,
 			VAR_DOMAIN, LOC_TYPEDEF,
 			false,
-			0, cu->language, objfile);
+			0, cu->language);
       break;
     case DW_TAG_module:
-      stub_add_psymbol (actual_name,
+      stub_add_psymbol (cu->stub_psymtab, actual_name,
 			built_actual_name != NULL,
 			MODULE_DOMAIN, LOC_TYPEDEF,
 			false,
-			0, cu->language, objfile);
+			0, cu->language);
       break;
     case DW_TAG_class_type:
     case DW_TAG_interface_type:
@@ -9017,23 +9035,23 @@ add_partial_symbol (struct partial_die_info *pdi, struct dwarf2_cu *cu)
 
       /* NOTE: carlton/2003-10-07: See comment in new_symbol about
 	 static vs. global.  */
-      stub_add_psymbol (actual_name,
+      stub_add_psymbol (cu->stub_psymtab, actual_name,
 			built_actual_name != NULL,
 			STRUCT_DOMAIN, LOC_TYPEDEF,
 			cu->language == language_cplus
 			? false
 			: true,
-			0, cu->language, objfile);
+			0, cu->language);
 
       break;
     case DW_TAG_enumerator:
-      stub_add_psymbol (actual_name,
+      stub_add_psymbol (cu->stub_psymtab, actual_name,
 			built_actual_name != NULL,
 			VAR_DOMAIN, LOC_CONST,
 			cu->language == language_cplus
 			? false
 			: true,
-			0, cu->language, objfile);
+			0, cu->language);
       break;
     default:
       break;
@@ -14530,7 +14548,7 @@ dwarf2_ranges_process (unsigned offset, struct dwarf2_cu *cu,
 static int
 dwarf2_ranges_read (unsigned offset, CORE_ADDR *low_return,
 		    CORE_ADDR *high_return, struct dwarf2_cu *cu,
-		    struct partial_symtab *ranges_pst)
+		    struct stub_partial_symtab *ranges_pst)
 {
   struct objfile *objfile = cu->per_cu->dwarf2_per_objfile->objfile;
   struct gdbarch *gdbarch = get_objfile_arch (objfile);
@@ -14599,7 +14617,7 @@ dwarf2_ranges_read (unsigned offset, CORE_ADDR *low_return,
 static enum pc_bounds_kind
 dwarf2_get_pc_bounds (struct die_info *die, CORE_ADDR *lowpc,
 		      CORE_ADDR *highpc, struct dwarf2_cu *cu,
-		      struct partial_symtab *pst)
+		      struct stub_partial_symtab *pst)
 {
   struct dwarf2_per_objfile *dwarf2_per_objfile
     = cu->per_cu->dwarf2_per_objfile;
@@ -18309,7 +18327,7 @@ load_partial_dies (const struct die_reader_specs *reader,
 	      || pdi.tag == DW_TAG_subrange_type))
 	{
 	  if (building_psymtab && pdi.name != NULL)
-	    stub_add_psymbol (pdi.name, false,
+	    stub_add_psymbol (cu->stub_psymtab, pdi.name, false,
 			      VAR_DOMAIN, LOC_TYPEDEF,
 			      true,
 			      0, cu->language);
@@ -18343,7 +18361,7 @@ load_partial_dies (const struct die_reader_specs *reader,
 	  if (pdi.name == NULL)
 	    complaint (_("malformed enumerator DIE ignored"));
 	  else if (building_psymtab)
-	    stub_add_psymbol (pdi.name, false,
+	    stub_add_psymbol (cu->stub_psymtab, pdi.name, false,
 			      VAR_DOMAIN, LOC_CONST,
 			      cu->language != language_cplus,
 			      0, cu->language);
@@ -20318,6 +20336,7 @@ dwarf_decode_line_header (sect_offset sect_off, struct dwarf2_cu *cu)
    If space for the result is malloc'd, *NAME_HOLDER will be set.
    Returns NULL if FILE_INDEX should be ignored, i.e., it is pst->filename.  */
 
+#if 0 				/* FIXME */
 static const char *
 psymtab_include_file_name (const struct line_header *lh, int file_index,
 			   const struct partial_symtab *pst,
@@ -20387,6 +20406,7 @@ psymtab_include_file_name (const struct line_header *lh, int file_index,
     return NULL;
   return include_name;
 }
+#endif
 
 /* State machine to track the state of the line number program.  */
 
@@ -21019,7 +21039,7 @@ dwarf_decode_lines_1 (struct line_header *lh, struct dwarf2_cu *cu,
 
 static void
 dwarf_decode_lines (struct line_header *lh, const char *comp_dir,
-		    struct dwarf2_cu *cu, struct partial_symtab *pst,
+		    struct dwarf2_cu *cu, struct stub_partial_symtab *pst,
 		    CORE_ADDR lowpc, int decode_mapping)
 {
   struct objfile *objfile = cu->per_cu->dwarf2_per_objfile->objfile;
@@ -21038,11 +21058,11 @@ dwarf_decode_lines (struct line_header *lh, const char *comp_dir,
         if (lh->file_names[file_index].included_p == 1)
           {
 	    gdb::unique_xmalloc_ptr<char> name_holder;
-	    const char *include_name =
-	      psymtab_include_file_name (lh, file_index, pst, comp_dir,
-					 &name_holder);
+	    const char *include_name = nullptr; /* FIXME */
+	      /* psymtab_include_file_name (lh, file_index, pst, comp_dir, */
+	      /* 				 &name_holder); */
 	    if (include_name != NULL)
-              dwarf2_create_include_psymtab (include_name, pst, objfile);
+	      pst->dep_names.push_back (include_name);
           }
     }
   else

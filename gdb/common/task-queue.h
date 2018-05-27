@@ -67,7 +67,8 @@ public:
       {
 	if (!m_items.empty ())
 	  {
-	    *item = m_items.pop ();
+	    *item = std::move (m_items.front ());
+	    m_items.pop ();
 	    return true;
 	  }
 	if (m_done)
