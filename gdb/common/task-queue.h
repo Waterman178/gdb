@@ -32,7 +32,7 @@ class task_queue
 {
 public:
 
-  task_queue (int writer_count)
+  task_queue (size_t writer_count)
     : m_done (false),
       m_writer_count (writer_count)
   {
@@ -96,7 +96,7 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_condvar;
   bool m_done;
-  int m_writer_count;
+  size_t m_writer_count;
   std::queue<T> m_items;
 };
 

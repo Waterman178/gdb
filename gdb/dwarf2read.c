@@ -8427,7 +8427,11 @@ process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
     cu_job_queue.push (per_cu);
   cu_job_queue.end_writing ();
 
-  const int n_threads = 5;	/* FIXME */
+  const size_t max_threads = 5;	/* FIXME */
+  /* On occasion there are not many CUs, so handle that by reducing
+     the number of threads.  */
+  const size_t n_threads
+    = std::min (max_threads, dwarf2_per_objfile->all_comp_units.size ());
   result_queue_type result_queue (n_threads);
 
   // start the threads.
