@@ -8424,7 +8424,17 @@ psymtab_processing_thread (job_queue_type *jobs, result_queue_type *results)
   dwarf2_per_cu_data *per_cu;
 
   while (jobs->pop (&per_cu))
-    process_psymtab_comp_unit (per_cu, false, language_minimal, results);
+    {
+      TRY
+	{
+	  process_psymtab_comp_unit (per_cu, false, language_minimal, results);
+	}
+      CATCH (except, RETURN_MASK_ERROR)
+	{
+	  fprintf (stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	}
+      END_CATCH
+    }
   results->end_writing ();
 }
 
