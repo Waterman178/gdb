@@ -8483,6 +8483,7 @@ dwarf2_build_psymtabs_hard (struct dwarf2_per_objfile *dwarf2_per_objfile)
   dwarf2_per_objfile->reading_partial_symbols = 1;
 
   dwarf2_read_section (objfile, &dwarf2_per_objfile->info);
+  dwarf2_read_section (objfile, &dwarf2_per_objfile->str);
 
   /* Any cached compilation units will be linked by the per-objfile
      read_in_chain.  Make sure to free them when we're done.  */
