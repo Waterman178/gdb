@@ -8391,6 +8391,7 @@ create_psymtab_from_stub (stub_partial_symtab *ps_stub,
 
   for (auto &spsym : ps_stub->psyms)
     {
+      std::lock_guard<std::mutex> guard (per_bfd_obstack_mutex);
       add_psymbol_to_list (spsym.sym.ginfo.name, strlen (spsym.sym.ginfo.name),
 			   spsym.copy_name, PSYMBOL_DOMAIN (&spsym.sym),
 			   PSYMBOL_CLASS (&spsym.sym),
@@ -8404,6 +8405,8 @@ create_psymtab_from_stub (stub_partial_symtab *ps_stub,
       if (spsym.copy_name)
 	xfree ((char *) spsym.sym.ginfo.name);
     }
+
+  end_psymtab_common (objfile, pst);
 }
 
 static void
