@@ -220,7 +220,7 @@ exceptions_state_mc_action_iter_1 (void)
 /* How many nested TRY blocks we have.  See exception_messages and
    throw_it.  */
 
-static int try_scope_depth;
+static thread_local int try_scope_depth;
 
 /* Called on entry to a TRY scope.  */
 
