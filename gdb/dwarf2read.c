@@ -8432,7 +8432,7 @@ process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
   result_queue_type result_queue;
 
   // start the threads.
-  for (int i = 0; i < 1 /*FIXME*/ ; ++i)
+  for (int i = 0; i < 5 /*FIXME*/ ; ++i)
     {
       std::thread t (psymtab_processing_thread, &cu_job_queue, &result_queue);
       t.detach ();
