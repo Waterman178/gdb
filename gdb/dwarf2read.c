@@ -1462,12 +1462,12 @@ struct stub_partial_symbol
 /* Like partial_symtab but used FIXME */
 struct stub_partial_symtab
 {
-  struct dwarf2_per_cu_data *per_cu;
-  const char *filename;
-  const char *dirname;
-  CORE_ADDR textlow;
-  CORE_ADDR texthigh;
-  enum pc_bounds_kind bounds_kind;
+  struct dwarf2_per_cu_data *per_cu = nullptr;
+  const char *filename = nullptr;
+  const char *dirname = nullptr;
+  CORE_ADDR textlow = 0;
+  CORE_ADDR texthigh = 0;
+  enum pc_bounds_kind bounds_kind = PC_BOUNDS_NOT_PRESENT;
 
   std::vector<struct stub_partial_symbol> psyms;
 
@@ -7933,7 +7933,8 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
   result_queue_type *results = (result_queue_type *) data;
 
   scoped_restore restore_pst = make_scoped_restore (&cu->stub_psymtab, &pst);
-
+  pst.per_cu = per_cu;
+  
   gdb_assert (! per_cu->is_debug_types);
 
   prepare_one_comp_unit (cu, comp_unit_die, language_minimal/* pretend_language */);
