@@ -8391,17 +8391,20 @@ psymtab_processing_thread (job_queue_type *jobs, result_queue_type *results)
 {
   dwarf2_per_cu_data *per_cu;
 
+  results->start_writing ();
   while (jobs->pop (&per_cu))
     process_psymtab_comp_unit (per_cu, false, language_minimal, results);
+  results->end_writing ();
 }
 
 static void
 process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
 {
   job_queue_type cu_job_queue;
+  cu_job_queue.start_writing ();
   for (dwarf2_per_cu_data *per_cu : dwarf2_per_objfile->all_comp_units)
     cu_job_queue.push (per_cu);
-  cu_job_queue.finished ();
+  cu_job_queue.end_writing ();
 
   result_queue_type result_queue;
 

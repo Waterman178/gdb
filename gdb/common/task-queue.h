@@ -33,7 +33,8 @@ class task_queue
 public:
 
   task_queue ()
-    : m_done (false)
+    : m_done (false),
+      m_writer_count (0)
   {
   }
 
@@ -75,12 +76,24 @@ public:
       }
   }
 
-  void finished ()
+  void start_writing ()
   {
     std::unique_lock<std::mutex> guard (m_mutex);
     gdb_assert (!m_done);
-    m_done = true;
-    m_condvar.notify_all ();
+    ++m_writer_count;
+  }
+
+  void end_writing ()
+  {
+    std::unique_lock<std::mutex> guard (m_mutex);
+    gdb_assert (!m_done);
+    gdb_assert (m_writer_count > 0);
+    --m_writer_count;
+    if (m_writer_count == 0)
+      {
+	m_done = true;
+	m_condvar.notify_all ();
+      }
   }
 
 private:
@@ -88,6 +101,7 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_condvar;
   bool m_done;
+  int m_writer_count;
   std::queue<T> m_items;
 };
 
