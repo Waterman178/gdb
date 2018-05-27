@@ -7945,6 +7945,7 @@ process_psymtab_comp_unit_reader (const struct die_reader_specs *reader,
   filename = dwarf2_string_attr (comp_unit_die, DW_AT_name, cu);
   if (filename == NULL)
     filename = "";
+  pst.filename = filename;
 
   /* This must be done before calling dwarf2_build_include_psymtabs.  */
   pst.dirname = dwarf2_string_attr (comp_unit_die, DW_AT_comp_dir, cu);
@@ -8428,7 +8429,7 @@ process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
   result_queue_type result_queue;
 
   // start the threads.
-  for (int i = 0; i < 5 /*FIXME*/ ; ++i)
+  for (int i = 0; i < 1 /*FIXME*/ ; ++i)
     {
       std::thread t (psymtab_processing_thread, &cu_job_queue, &result_queue);
       t.detach ();
