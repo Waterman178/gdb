@@ -32,9 +32,9 @@ class task_queue
 {
 public:
 
-  task_queue ()
+  task_queue (int writer_count)
     : m_done (false),
-      m_writer_count (0)
+      m_writer_count (writer_count)
   {
   }
 
@@ -75,13 +75,6 @@ public:
 	  return false;
 	m_condvar.wait (guard);
       }
-  }
-
-  void start_writing ()
-  {
-    std::unique_lock<std::mutex> guard (m_mutex);
-    gdb_assert (!m_done);
-    ++m_writer_count;
   }
 
   void end_writing ()
