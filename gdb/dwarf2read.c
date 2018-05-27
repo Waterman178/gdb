@@ -1430,6 +1430,15 @@ show_dwarf_max_cache_age (struct ui_file *file, int from_tty,
 		    value);
 }
 
+static int dwarf_thread_count = 15;
+static void
+show_dwarf_thread_count (struct ui_file *file, int from_tty,
+			 struct cmd_list_element *c, const char *value)
+{
+  fprintf_filtered (file, _("The maximum number of psymtab threads is %s.\n"),
+		    value);
+}
+
 // Ugh.
 static std::mutex per_bfd_obstack_mutex;
 
@@ -8427,7 +8436,8 @@ process_psymtabs_in_parallel (struct dwarf2_per_objfile *dwarf2_per_objfile)
     cu_job_queue.push (per_cu);
   cu_job_queue.end_writing ();
 
-  const size_t max_threads = 5;	/* FIXME */
+  /* FIXME */
+  const size_t max_threads = size_t (dwarf_thread_count);
   /* On occasion there are not many CUs, so handle that by reducing
      the number of threads.  */
   const size_t n_threads
@@ -25480,6 +25490,16 @@ in memory longer, and more total memory will be used.  Zero disables\n\
 caching, which can slow down startup."),
 			    NULL,
 			    show_dwarf_max_cache_age,
+			    &set_dwarf_cmdlist,
+			    &show_dwarf_cmdlist);
+
+  add_setshow_zinteger_cmd ("thread-count", class_obscure,
+			    &dwarf_thread_count, _("\
+Set the upper bound on the number of psymtab-reading threads."), _("\
+Show the upper bound on the number of psymtab-reading threads."), _("\
+Maximum number of threads to use."),
+			    NULL,
+			    show_dwarf_thread_count,
 			    &set_dwarf_cmdlist,
 			    &show_dwarf_cmdlist);
 
