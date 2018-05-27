@@ -8485,6 +8485,7 @@ dwarf2_build_psymtabs_hard (struct dwarf2_per_objfile *dwarf2_per_objfile)
   dwarf2_read_section (objfile, &dwarf2_per_objfile->info);
   dwarf2_read_section (objfile, &dwarf2_per_objfile->str);
   dwarf2_read_section (objfile, &dwarf2_per_objfile->ranges);
+  dwarf2_read_section (objfile, &dwarf2_per_objfile->abbrev);
 
   /* Any cached compilation units will be linked by the per-objfile
      read_in_chain.  Make sure to free them when we're done.  */
