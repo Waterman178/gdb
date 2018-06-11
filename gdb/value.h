@@ -321,13 +321,6 @@ struct value
   std::vector<range> m_optimized_out;
 };
 
-/* Values are stored in a chain, so that they can be deleted easily
-   over calls to the inferior.  Values assigned to internal variables,
-   put into the value history or exposed to Python are taken off this
-   list.  */
-
-extern struct value *value_next (const struct value *);
-
 /* Type of the value.  */
 
 extern struct type *value_type (const struct value *);
