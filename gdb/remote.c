@@ -96,17 +96,7 @@ struct protocol_feature;
 struct packet_reg;
 
 struct stop_reply;
-static void stop_reply_xfree (struct stop_reply *);
-
-struct stop_reply_deleter
-{
-  void operator() (stop_reply *r) const
-  {
-    stop_reply_xfree (r);
-  }
-};
-
-typedef std::unique_ptr<stop_reply, stop_reply_deleter> stop_reply_up;
+typedef std::unique_ptr<stop_reply> stop_reply_up;
 
 /* Generic configuration support for packets the stub optionally
    supports.  Allows the user to specify the use of the packet as well
@@ -5920,10 +5910,10 @@ extended_remote_target::attach (const char *args, int from_tty)
 
       if (target_can_async_p ())
 	{
-	  struct notif_event *reply
-	    =  remote_notif_parse (this, &notif_client_stop, wait_status);
+	  std::unique_ptr<struct notif_event> reply
+	    = remote_notif_parse (this, &notif_client_stop, wait_status);
 
-	  push_stop_reply ((struct stop_reply *) reply);
+	  push_stop_reply ((struct stop_reply *) reply.release ());
 
 	  target_async (1);
 	}
@@ -6842,9 +6832,9 @@ remote_console_output (char *msg)
 
 DEF_VEC_O(cached_reg_t);
 
-typedef struct stop_reply
+struct stop_reply : public notif_event
 {
-  struct notif_event base;
+  ~stop_reply () override;
 
   /* The identifier of the thread about this event  */
   ptid_t ptid;
@@ -6870,13 +6860,7 @@ typedef struct stop_reply
   CORE_ADDR watch_data_address;
 
   int core;
-} *stop_reply_p;
-
-static void
-stop_reply_xfree (struct stop_reply *r)
-{
-  notif_event_xfree ((struct notif_event *) r);
-}
+};
 
 /* Return the length of the stop reply queue.  */
 
@@ -6928,30 +6912,23 @@ remote_notif_stop_can_get_pending_events (remote_target *remote,
   return 0;
 }
 
-static void
-stop_reply_dtr (struct notif_event *event)
+stop_reply::~stop_reply ()
 {
-  struct stop_reply *r = (struct stop_reply *) event;
   cached_reg_t *reg;
   int ix;
 
   for (ix = 0;
-       VEC_iterate (cached_reg_t, r->regcache, ix, reg);
+       VEC_iterate (cached_reg_t, regcache, ix, reg);
        ix++)
     xfree (reg->data);
 
-  VEC_free (cached_reg_t, r->regcache);
+  VEC_free (cached_reg_t, regcache);
 }
 
-static struct notif_event *
-remote_notif_stop_alloc_reply (void)
+static std::unique_ptr<struct notif_event>
+remote_notif_stop_alloc_reply ()
 {
-  /* We cast to a pointer to the "base class".  */
-  struct notif_event *r = (struct notif_event *) XNEW (struct stop_reply);
-
-  r->dtr = stop_reply_dtr;
-
-  return r;
+  return std::unique_ptr<notif_event> (new stop_reply);
 }
 
 /* A client of notification Stop.  */
@@ -7090,14 +7067,12 @@ remote_target::discard_pending_stop_replies (struct inferior *inf)
   if (rs->remote_desc == NULL)
     return;
 
-  reply = (struct stop_reply *) rns->pending_event[notif_client_stop.id];
+  reply
+    = (struct stop_reply *) rns->pending_event[notif_client_stop.id].get ();
 
   /* Discard the in-flight notification.  */
   if (reply != NULL && reply->ptid.pid () == inf->pid)
-    {
-      stop_reply_xfree (reply);
-      rns->pending_event[notif_client_stop.id] = NULL;
-    }
+    rns->pending_event[notif_client_stop.id].reset (nullptr);
 
   /* Discard the stop replies we have already pulled with
      vStopped.  */
@@ -7637,8 +7612,8 @@ remote_target::remote_notif_get_pending_events (notif_client *nc)
 			    nc->name);
 
       /* acknowledge */
-      nc->ack (this, nc, rs->buf, rs->notif_state->pending_event[nc->id]);
-      rs->notif_state->pending_event[nc->id] = NULL;
+      nc->ack (this, nc, rs->buf, rs->notif_state->pending_event[nc->id].get ());
+      rs->notif_state->pending_event[nc->id].reset (nullptr);
 
       while (1)
 	{
@@ -7716,7 +7691,7 @@ remote_target::process_stop_reply (struct stop_reply *stop_reply,
       remote_thr->vcont_resumed = 0;
     }
 
-  stop_reply_xfree (stop_reply);
+  delete stop_reply;
   return ptid;
 }
 
@@ -7870,7 +7845,7 @@ remote_target::wait_as (ptid_t ptid, target_waitstatus *status, int options)
 	stop_reply
 	  = (struct stop_reply *) remote_notif_parse (this,
 						      &notif_client_stop,
-						      rs->buf);
+						      rs->buf).release ();
 
 	event_ptid = process_stop_reply (stop_reply, status);
 	break;

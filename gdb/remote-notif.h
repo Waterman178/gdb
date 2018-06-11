@@ -26,9 +26,9 @@
 
 struct notif_event
 {
-  /* Destructor.  Release everything from SELF, but not SELF
-     itself.  */
-  void (*dtr) (struct notif_event *self);
+  virtual ~notif_event ()
+  {
+  }
 };
 
 /* ID of the notif_client.  */
@@ -70,7 +70,7 @@ struct notif_client
 				 struct notif_client *self);
 
   /* Allocate an event.  */
-  struct notif_event *(*alloc_event) (void);
+  std::unique_ptr<struct notif_event> (*alloc_event) (void);
 
   /* Id of this notif_client.  */
   const enum REMOTE_NOTIF_ID id;
@@ -104,7 +104,7 @@ struct remote_notif_state
    this notification (which is done by
    remote.c:remote_notif_pending_replies).  */
 
-  struct notif_event *pending_event[REMOTE_NOTIF_LAST];
+  std::unique_ptr<struct notif_event> pending_event[REMOTE_NOTIF_LAST];
 
 private:
 
@@ -112,11 +112,9 @@ private:
 };
 
 void remote_notif_ack (remote_target *remote, notif_client *nc, char *buf);
-struct notif_event *remote_notif_parse (remote_target *remote,
-					notif_client *nc,
-					char *buf);
-
-void notif_event_xfree (struct notif_event *event);
+std::unique_ptr<struct notif_event> remote_notif_parse (remote_target *remote,
+							notif_client *nc,
+							char *buf);
 
 void handle_notification (struct remote_notif_state *notif_state,
 			  char *buf);
