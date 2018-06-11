@@ -155,12 +155,6 @@ value::~value ()
 
 /* See value.h.  */
 
-struct gdbarch *
-get_value_arch (const struct value *value)
-{
-  return get_type_arch (value->type ());
-}
-
 int
 value_bits_available (const struct value *value, LONGEST offset, LONGEST length)
 {
@@ -929,7 +923,7 @@ set_value_parent (struct value *value, struct value *parent)
 gdb_byte *
 value_contents_raw (struct value *value)
 {
-  struct gdbarch *arch = get_value_arch (value);
+  struct gdbarch *arch = value->arch ();
   int unit_size = gdbarch_addressable_memory_unit_size (arch);
 
   allocate_value_contents (value);
@@ -1096,7 +1090,7 @@ value_contents_copy_raw (struct value *dst, LONGEST dst_offset,
 			 struct value *src, LONGEST src_offset, LONGEST length)
 {
   LONGEST src_bit_offset, dst_bit_offset, bit_length;
-  struct gdbarch *arch = get_value_arch (src);
+  struct gdbarch *arch = src->arch ();
   int unit_size = gdbarch_addressable_memory_unit_size (arch);
 
   /* A lazy DST would make that this copy operation useless, since as
@@ -2022,7 +2016,7 @@ set_internalvar_component (struct internalvar *var,
     {
     case INTERNALVAR_VALUE:
       addr = value_contents_writeable (var->u.value);
-      arch = get_value_arch (var->u.value);
+      arch = var->u.value->arch ();
       unit_size = gdbarch_addressable_memory_unit_size (arch);
 
       if (bitsize)
@@ -2683,7 +2677,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 {
   struct value *v;
   struct type *type;
-  struct gdbarch *arch = get_value_arch (arg1);
+  struct gdbarch *arch = arg1->arch ();
   int unit_size = gdbarch_addressable_memory_unit_size (arch);
 
   arg_type = check_typedef (arg_type);

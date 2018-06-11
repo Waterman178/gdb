@@ -167,6 +167,12 @@ struct value
     return m_type;
   }
 
+  /* Return the gdbarch associated with the value. */
+  struct gdbarch *arch () const
+  {
+    return get_type_arch (type ());
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -327,10 +333,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* Return the gdbarch associated with the value. */
-
-extern struct gdbarch *get_value_arch (const struct value *value);
 
 /* This is being used to change the type of an existing value, that
    code should instead be creating a new value with the changed type
