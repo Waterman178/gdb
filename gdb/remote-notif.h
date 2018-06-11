@@ -82,6 +82,9 @@ DECLARE_QUEUE_P (notif_client_p);
 
 struct remote_notif_state
 {
+  explicit remote_notif_state (remote_target *remote_);
+  ~remote_notif_state ();
+
   /* The remote target.  */
   remote_target *remote;
 
@@ -104,6 +107,10 @@ struct remote_notif_state
    remote.c:remote_notif_pending_replies).  */
 
   struct notif_event *pending_event[REMOTE_NOTIF_LAST];
+
+private:
+
+  DISABLE_COPY_AND_ASSIGN (remote_notif_state);
 };
 
 void remote_notif_ack (remote_target *remote, notif_client *nc, char *buf);
@@ -118,8 +125,6 @@ void handle_notification (struct remote_notif_state *notif_state,
 
 void remote_notif_process (struct remote_notif_state *state,
 			   struct notif_client *except);
-remote_notif_state *remote_notif_state_allocate (remote_target *remote);
-void remote_notif_state_xfree (struct remote_notif_state *state);
 
 extern struct notif_client notif_client_stop;
 

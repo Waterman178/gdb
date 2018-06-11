@@ -237,41 +237,32 @@ do_notif_event_xfree (void *arg)
 
 /* Return an allocated remote_notif_state.  */
 
-struct remote_notif_state *
-remote_notif_state_allocate (remote_target *remote)
+remote_notif_state::remote_notif_state (remote_target *remote_)
+  : remote (remote_)
 {
-  struct remote_notif_state *notif_state = XCNEW (struct remote_notif_state);
-
-  notif_state->remote = remote;
-
-  notif_state->notif_queue = QUEUE_alloc (notif_client_p, NULL);
+  notif_queue = QUEUE_alloc (notif_client_p, NULL);
 
   /* Register async_event_handler for notification.  */
 
-  notif_state->get_pending_events_token
+  get_pending_events_token
     = create_async_event_handler (remote_async_get_pending_events_handler,
-				  notif_state);
-
-  return notif_state;
+				  this);
 }
 
 /* Free STATE and its fields.  */
 
-void
-remote_notif_state_xfree (struct remote_notif_state *state)
+remote_notif_state::~remote_notif_state ()
 {
   int i;
 
-  QUEUE_free (notif_client_p, state->notif_queue);
+  QUEUE_free (notif_client_p, notif_queue);
 
   /* Unregister async_event_handler for notification.  */
-  if (state->get_pending_events_token != NULL)
-    delete_async_event_handler (&state->get_pending_events_token);
+  if (get_pending_events_token != NULL)
+    delete_async_event_handler (&get_pending_events_token);
 
   for (i = 0; i < REMOTE_NOTIF_LAST; i++)
-    notif_event_xfree (state->pending_event[i]);
-
-  xfree (state);
+    notif_event_xfree (pending_event[i]);
 }
 
 void

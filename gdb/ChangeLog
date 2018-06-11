@@ -1,3 +1,19 @@
+2018-06-18  Tom Tromey  <tom@tromey.com>
+
+	* remote.c (class remote_state) <notif_state>: Now a unique_ptr.
+	(~remote_target, remote_target::open_1, remote_target::resume)
+	(remote_target::discard_pending_stop_replies)
+	(remote_target::putpkt_binary)
+	(remote_target::getpkt_or_notif_sane_1): Update.
+	* remote-notif.h (struct remote_notif_state): Add constructor,
+	destructor.
+	(remote_notif_state_allocate, remote_notif_state_xfree): Don't
+	declare.
+	* remote-notif.c (remote_notif_state::remote_notif_state): Rename
+	from remote_notif_state_allocate.
+	(remote_notif_state::~remote_notif_state): Rename from
+	remote_notif_state_xfree.
+
 2018-09-09  Simon Marchi  <simon.marchi@ericsson.com>
 
 	* python/py-prettyprint.c (pretty_print_one_value): Return

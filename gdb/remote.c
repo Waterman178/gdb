@@ -349,7 +349,7 @@ public: /* data */
   threadref resultthreadlist[MAXTHREADLISTRESULTS] {};
 
   /* The state of remote notification.  */
-  struct remote_notif_state *notif_state = nullptr;
+  std::unique_ptr<struct remote_notif_state> notif_state;
 
   /* The branch trace configuration.  */
   struct btrace_config btrace_config {};
@@ -4061,8 +4061,6 @@ remote_target::~remote_target ()
 
   if (rs->remote_async_inferior_event_token)
     delete_async_event_handler (&rs->remote_async_inferior_event_token);
-
-  remote_notif_state_xfree (rs->notif_state);
 }
 
 /* Query the remote side for the text, data and bss offsets.  */
@@ -5573,7 +5571,7 @@ remote_target::open_1 (const char *name, int from_tty, int extended_p)
   rs->remote_async_inferior_event_token
     = create_async_event_handler (remote_async_inferior_event_handler,
 				  remote);
-  rs->notif_state = remote_notif_state_allocate (remote);
+  rs->notif_state.reset (new remote_notif_state (remote));
 
   /* Reset the target state; these things will be queried either by
      remote_query_supported or as they are needed.  */
@@ -6302,7 +6300,7 @@ remote_target::resume (ptid_t ptid, int step, enum gdb_signal siggnal)
      before resuming inferior, because inferior was stopped and no RSP
      traffic at that moment.  */
   if (!target_is_non_stop_p ())
-    remote_notif_process (rs->notif_state, &notif_client_stop);
+    remote_notif_process (rs->notif_state.get (), &notif_client_stop);
 
   rs->last_resume_exec_dir = ::execution_direction;
 
@@ -7085,7 +7083,7 @@ remote_target::discard_pending_stop_replies (struct inferior *inf)
 {
   struct stop_reply *reply;
   struct remote_state *rs = get_remote_state ();
-  struct remote_notif_state *rns = rs->notif_state;
+  struct remote_notif_state *rns = rs->notif_state.get ();
 
   /* This function can be notified when an inferior exists.  When the
      target is not remote, the notification state is NULL.  */
@@ -9306,7 +9304,7 @@ remote_target::putpkt_binary (const char *buf, int cnt)
 					    "  Notification received: %s\n",
 					    str.c_str ());
 		      }
-		    handle_notification (rs->notif_state, rs->buf);
+		    handle_notification (rs->notif_state.get (), rs->buf);
 		    /* We're in sync now, rewait for the ack.  */
 		    tcount = 0;
 		  }
@@ -9686,7 +9684,7 @@ remote_target::getpkt_or_notif_sane_1 (char **buf, long *sizeof_buf,
 	  if (is_notif != NULL)
 	    *is_notif = 1;
 
-	  handle_notification (rs->notif_state, *buf);
+	  handle_notification (rs->notif_state.get (), *buf);
 
 	  /* Notifications require no acknowledgement.  */
 
