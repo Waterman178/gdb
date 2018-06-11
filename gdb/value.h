@@ -167,6 +167,15 @@ struct value
     return m_type;
   }
 
+  /* This is being used to change the type of an existing value, that
+     code should instead be creating a new value with the changed type
+     (but possibly shared content).  */
+
+  void deprecated_set_type (struct type *type)
+  {
+    m_type = type;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -333,13 +342,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* This is being used to change the type of an existing value, that
-   code should instead be creating a new value with the changed type
-   (but possibly shared content).  */
-
-extern void deprecated_set_value_type (struct value *value,
-				       struct type *type);
 
 /* Only used for bitfields; number of bits contained in them.  */
 

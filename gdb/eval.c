@@ -1874,7 +1874,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	if (gnu_runtime && (method != NULL))
 	  {
 	    /* Function objc_msg_lookup returns a pointer.  */
-	    deprecated_set_value_type (argvec[0],
+	    argvec[0]->deprecated_set_type (
 				       lookup_pointer_type (lookup_function_type (argvec[0]->type ())));
 	    argvec[0]
 	      = call_function_by_hand (argvec[0], NULL, nargs + 2, argvec + 1);

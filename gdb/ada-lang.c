@@ -2776,7 +2776,7 @@ ada_value_assign (struct value *toval, struct value *fromval)
       val = value_copy (toval);
       memcpy (value_contents_raw (val), value_contents (fromval),
               TYPE_LENGTH (type));
-      deprecated_set_value_type (val, type);
+      val->deprecated_set_type (type);
 
       return val;
     }
@@ -9797,7 +9797,7 @@ coerce_for_assign (struct type *type, struct value *val)
       if (TYPE_LENGTH (TYPE_TARGET_TYPE (type2))
           != TYPE_LENGTH (TYPE_TARGET_TYPE (type)))
         error (_("Incompatible types in assignment"));
-      deprecated_set_value_type (val, type);
+      val->deprecated_set_type (type);
     }
   return val;
 }
