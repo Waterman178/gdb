@@ -902,11 +902,11 @@ value::actual_type (int resolve_simple_types, int *real_type_found)
       if ((TYPE_CODE (result) == TYPE_CODE_PTR || TYPE_IS_REFERENCE (result))
 	  && TYPE_CODE (check_typedef (TYPE_TARGET_TYPE (result)))
 	     == TYPE_CODE_STRUCT
-	  && !value_optimized_out (value))
+	  && !value_optimized_out (this))
         {
           struct type *real_type;
 
-          real_type = value_rtti_indirect_type (value, NULL, NULL, NULL);
+          real_type = value_rtti_indirect_type (this, NULL, NULL, NULL);
           if (real_type)
             {
               if (real_type_found)
