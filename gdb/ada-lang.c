@@ -690,7 +690,7 @@ coerce_unspec_val_to_type (struct value *val, struct type *type)
 	}
       set_value_component_location (result, val);
       result->set_bitsize (val->bitsize ());
-      set_value_bitpos (result, value_bitpos (val));
+      result->set_bitpos (val->bitpos ());
       set_value_address (result, value_address (val));
       return result;
     }
@@ -2620,12 +2620,12 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
       long new_offset = offset;
 
       set_value_component_location (v, obj);
-      set_value_bitpos (v, bit_offset + value_bitpos (obj));
+      v->set_bitpos (bit_offset + obj->bitpos ());
       v->set_bitsize (bit_size);
-      if (value_bitpos (v) >= HOST_CHAR_BIT)
+      if (v->bitpos () >= HOST_CHAR_BIT)
         {
 	  ++new_offset;
-          set_value_bitpos (v, value_bitpos (v) - HOST_CHAR_BIT);
+          v->set_bitpos (v->bitpos () - HOST_CHAR_BIT);
         }
       set_value_offset (v, new_offset);
 
@@ -2751,7 +2751,7 @@ ada_value_assign (struct value *toval, struct value *fromval)
       && (TYPE_CODE (type) == TYPE_CODE_FLT
           || TYPE_CODE (type) == TYPE_CODE_STRUCT))
     {
-      int len = (value_bitpos (toval)
+      int len = (toval->bitpos ()
 		 + bits + HOST_CHAR_BIT - 1) / HOST_CHAR_BIT;
       int from_size;
       gdb_byte *buffer = (gdb_byte *) alloca (len);
@@ -2766,10 +2766,10 @@ ada_value_assign (struct value *toval, struct value *fromval)
       if (from_size == 0)
 	from_size = TYPE_LENGTH (fromval->type ()) * TARGET_CHAR_BIT;
       if (gdbarch_bits_big_endian (get_type_arch (type)))
-        move_bits (buffer, value_bitpos (toval),
+        move_bits (buffer, toval->bitpos (),
 		   value_contents (fromval), from_size - bits, bits, 1);
       else
-        move_bits (buffer, value_bitpos (toval),
+        move_bits (buffer, toval->bitpos (),
 		   value_contents (fromval), 0, bits, 0);
       write_memory_with_notification (to_addr, buffer, len);
 
@@ -2803,7 +2803,7 @@ value_assign_to_component (struct value *container, struct value *component,
   LONGEST offset_in_container =
     (LONGEST)  (value_address (component) - value_address (container));
   int bit_offset_in_container =
-    value_bitpos (component) - value_bitpos (container);
+    component->bitpos () - container->bitpos ();
   int bits;
 
   val = value_cast (component->type (), val);
@@ -2815,13 +2815,13 @@ value_assign_to_component (struct value *container, struct value *component,
 
   if (gdbarch_bits_big_endian (get_type_arch (container->type ())))
     move_bits (value_contents_writeable (container) + offset_in_container,
-	       value_bitpos (container) + bit_offset_in_container,
+	       container->bitpos () + bit_offset_in_container,
 	       value_contents (val),
 	       TYPE_LENGTH (component->type ()) * TARGET_CHAR_BIT - bits,
 	       bits, 1);
   else
     move_bits (value_contents_writeable (container) + offset_in_container,
-	       value_bitpos (container) + bit_offset_in_container,
+	       container->bitpos () + bit_offset_in_container,
 	       value_contents (val), 0, bits, 0);
 }
 

@@ -188,6 +188,20 @@ struct value
     m_bitsize = bit;
   }
 
+  /* Only used for bitfields; position of start of field.  For
+     gdbarch_bits_big_endian=0 targets, it is the position of the LSB.  For
+     gdbarch_bits_big_endian=1 targets, it is the position of the MSB.  */
+
+  LONGEST bitpos () const
+  {
+    return m_bitpos;
+  }
+
+  void set_bitpos (LONGEST bit)
+  {
+    m_bitpos = bit;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -354,13 +368,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* Only used for bitfields; position of start of field.  For
-   gdbarch_bits_big_endian=0 targets, it is the position of the LSB.  For
-   gdbarch_bits_big_endian=1 targets, it is the position of the MSB.  */
-
-extern LONGEST value_bitpos (const struct value *);
-extern void set_value_bitpos (struct value *, LONGEST bit);
 
 /* Only used for bitfields; the containing value.  This allows a
    single read from the target when displaying multiple

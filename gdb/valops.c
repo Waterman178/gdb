@@ -1045,7 +1045,7 @@ value_assign (struct value *toval, struct value *fromval)
 
 	set_internalvar_component (VALUE_INTERNALVAR (toval),
 				   offset,
-				   value_bitpos (toval),
+				   toval->bitpos (),
 				   toval->bitsize (),
 				   fromval);
       }
@@ -1063,7 +1063,7 @@ value_assign (struct value *toval, struct value *fromval)
 	    struct value *parent = value_parent (toval);
 
 	    changed_addr = value_address (parent) + value_offset (toval);
-	    changed_len = (value_bitpos (toval)
+	    changed_len = (toval->bitpos ()
 			   + toval->bitsize ()
 			   + HOST_CHAR_BIT - 1)
 	      / HOST_CHAR_BIT;
@@ -1084,7 +1084,7 @@ value_assign (struct value *toval, struct value *fromval)
 
 	    read_memory (changed_addr, buffer, changed_len);
 	    modify_field (type, buffer, value_as_long (fromval),
-			  value_bitpos (toval), toval->bitsize ());
+			  toval->bitpos (), toval->bitsize ());
 	    dest_buffer = buffer;
 	  }
 	else
@@ -1128,7 +1128,7 @@ value_assign (struct value *toval, struct value *fromval)
 	    gdb_byte buffer[sizeof (LONGEST)];
 	    int optim, unavail;
 
-	    changed_len = (value_bitpos (toval)
+	    changed_len = (toval->bitpos ()
 			   + toval->bitsize ()
 			   + HOST_CHAR_BIT - 1)
 			  / HOST_CHAR_BIT;
@@ -1151,7 +1151,7 @@ value_assign (struct value *toval, struct value *fromval)
 	      }
 
 	    modify_field (type, buffer, value_as_long (fromval),
-			  value_bitpos (toval), toval->bitsize ());
+			  toval->bitpos (), toval->bitsize ());
 
 	    put_frame_register_bytes (frame, value_reg, offset,
 				      changed_len, buffer);
