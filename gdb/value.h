@@ -216,6 +216,22 @@ struct value
     m_parent = value_ref_ptr::new_reference (parent);
   }
 
+  /* Describes offset of a value within lval of a structure in bytes.
+     If lval == lval_memory, this is an offset to the address.  If lval
+     == lval_register, this is a further offset from location.address
+     within the registers structure.  Note also the member
+     embedded_offset below.  */
+
+  LONGEST offset () const
+  {
+    return m_offset;
+  }
+
+  void set_offset (LONGEST offset)
+  {
+    m_offset = offset;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -382,15 +398,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* Describes offset of a value within lval of a structure in bytes.
-   If lval == lval_memory, this is an offset to the address.  If lval
-   == lval_register, this is a further offset from location.address
-   within the registers structure.  Note also the member
-   embedded_offset below.  */
-
-extern LONGEST value_offset (const struct value *);
-extern void set_value_offset (struct value *, LONGEST offset);
 
 /* The comment from "struct value" reads: ``Is it modifiable?  Only
    relevant if lval != not_lval.''.  Shouldn't the value instead be

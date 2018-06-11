@@ -170,7 +170,7 @@ lval_func_read (struct value *v)
   struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
   struct type *type = check_typedef (v->type ());
   struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
-  LONGEST offset = value_offset (v);
+  LONGEST offset = v->offset ();
   LONGEST elsize = TYPE_LENGTH (eltype);
   int n, i, j = 0;
   LONGEST lowb = 0;
@@ -199,7 +199,7 @@ lval_func_write (struct value *v, struct value *fromval)
   struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
   struct type *type = check_typedef (v->type ());
   struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
-  LONGEST offset = value_offset (v);
+  LONGEST offset = v->offset ();
   LONGEST elsize = TYPE_LENGTH (eltype);
   int n, i, j = 0;
   LONGEST lowb = 0;

@@ -368,7 +368,7 @@ spu_value_from_register (struct gdbarch *gdbarch, struct type *type,
   if (regnum < SPU_NUM_GPRS && len < 16)
     {
       int preferred_slot = len < 4 ? 4 - len : 0;
-      set_value_offset (value, preferred_slot);
+      value->set_offset (preferred_slot);
     }
 
   return value;

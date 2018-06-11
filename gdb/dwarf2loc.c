@@ -1790,10 +1790,10 @@ rw_pieced_value (struct value *v, struct value *from)
       from_contents = NULL;
     }
 
-  bits_to_skip = 8 * value_offset (v);
+  bits_to_skip = 8 * v->offset ();
   if (v->bitsize ())
     {
-      bits_to_skip += (8 * value_offset (v->parent ())
+      bits_to_skip += (8 * v->parent ()->offset ()
 		       + v->bitpos ());
       if (from != NULL
 	  && (gdbarch_byte_order (get_type_arch (from->type ()))
@@ -2069,7 +2069,7 @@ check_pieced_synthetic_pointer (const struct value *value, LONGEST bit_offset,
     = (struct piece_closure *) value_computed_closure (value);
   int i;
 
-  bit_offset += 8 * value_offset (value);
+  bit_offset += 8 * value->offset ();
   if (value->bitsize ())
     bit_offset += value->bitpos ();
 
@@ -2189,7 +2189,7 @@ indirect_pieced_value (struct value *value)
     return NULL;
 
   bit_length = 8 * TYPE_LENGTH (type);
-  bit_offset = 8 * value_offset (value);
+  bit_offset = 8 * value->offset ();
   if (value->bitsize ())
     bit_offset += value->bitpos ();
 
@@ -2399,7 +2399,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
       free_values.free_to_mark ();
       retval = allocate_computed_value (subobj_type,
 					&pieced_value_funcs, c);
-      set_value_offset (retval, subobj_byte_offset);
+      retval->set_offset (subobj_byte_offset);
     }
   else
     {

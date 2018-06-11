@@ -8747,7 +8747,7 @@ siginfo_value_read (struct value *v)
     target_read (current_top_target (), TARGET_OBJECT_SIGNAL_INFO,
 		 NULL,
 		 value_contents_all_raw (v),
-		 value_offset (v),
+		 v->offset (),
 		 TYPE_LENGTH (v->type ()));
 
   if (transferred != TYPE_LENGTH (v->type ()))
@@ -8770,7 +8770,7 @@ siginfo_value_write (struct value *v, struct value *fromval)
 			      TARGET_OBJECT_SIGNAL_INFO,
 			      NULL,
 			      value_contents_all_raw (fromval),
-			      value_offset (v),
+			      v->offset (),
 			      TYPE_LENGTH (fromval->type ()));
 
   if (transferred != TYPE_LENGTH (fromval->type ()))

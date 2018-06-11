@@ -865,19 +865,6 @@ allocate_optimized_out_value (struct type *type)
   return retval;
 }
 
-/* Accessor methods.  */
-
-LONGEST
-value_offset (const struct value *value)
-{
-  return value->m_offset;
-}
-void
-set_value_offset (struct value *value, LONGEST offset)
-{
-  value->m_offset = offset;
-}
-
 gdb_byte *
 value_contents_raw (struct value *value)
 {
@@ -2709,7 +2696,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 				   TYPE_LENGTH (value_enclosing_type (arg1)));
 	}
       v->m_type = type;
-      v->m_offset = value_offset (arg1);
+      v->m_offset = arg1->offset ();
       v->m_embedded_offset = offset + value_embedded_offset (arg1) + boffset;
     }
   else if (NULL != TYPE_DATA_LOCATION (type))
@@ -2742,7 +2729,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 				   arg1, value_embedded_offset (arg1) + offset,
 				   type_length_units (type));
 	}
-      v->m_offset = (value_offset (arg1) + offset
+      v->m_offset = (arg1->offset () + offset
 		   + value_embedded_offset (arg1));
     }
   set_value_component_location (v, arg1);
@@ -2815,7 +2802,7 @@ value_fn_field (struct value **arg1p, struct fn_field *f,
 					value_addr (*arg1p)));
 
       /* Move the `this' pointer according to the offset.
-         VALUE_OFFSET (*arg1p) += offset; */
+         (*arg1p)->offset () += offset; */
     }
 
   return v;
@@ -3318,7 +3305,7 @@ value_from_component (struct value *whole, struct type *type, LONGEST offset)
 			   whole, value_embedded_offset (whole) + offset,
 			   type_length_units (type));
     }
-  v->m_offset = value_offset (whole) + offset + value_embedded_offset (whole);
+  v->m_offset = whole->offset () + offset + value_embedded_offset (whole);
   set_value_component_location (v, whole);
 
   return v;
@@ -3477,7 +3464,7 @@ value_fetch_lazy_bitfield (struct value *val)
 
   unpack_value_bitfield (val, val->bitpos (), val->bitsize (),
 			 value_contents_for_printing (parent),
-			 value_offset (val), parent);
+			 val->offset (), parent);
 }
 
 /* Helper for value_fetch_lazy when the value is in memory.  */
@@ -3508,7 +3495,7 @@ value_fetch_lazy_register (struct value *val)
 
   /* Offsets are not supported here; lazy register values must
      refer to the entire register.  */
-  gdb_assert (value_offset (val) == 0);
+  gdb_assert (val->offset () == 0);
 
   while (VALUE_LVAL (new_val) == lval_register && value_lazy (new_val))
     {
