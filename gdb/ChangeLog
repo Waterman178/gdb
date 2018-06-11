@@ -1,5 +1,13 @@
 2018-06-18  Tom Tromey  <tom@tromey.com>
 
+	* remote-notif.h: Include <queue>, not "queue.h".
+	(notif_client_p): Remove typedef.  Don't declare queue.
+	(struct remote_notif_state) <notif_queue>: Now a std::queue.
+	* remote-notif.c (remote_notif_process, handle_notification)
+	(remote_notif_state, ~remote_notif_state): Update.
+
+2018-06-18  Tom Tromey  <tom@tromey.com>
+
 	* remote.c (class remote_state) <notif_state>: Now a unique_ptr.
 	(~remote_target, remote_target::open_1, remote_target::resume)
 	(remote_target::discard_pending_stop_replies)

@@ -20,7 +20,7 @@
 #ifndef REMOTE_NOTIF_H
 #define REMOTE_NOTIF_H
 
-#include "queue.h"
+#include <queue>
 
 /* An event of a type of async remote notification.  */
 
@@ -43,7 +43,7 @@ struct remote_target;
 
 /* A client to a sort of async remote notification.  */
 
-typedef struct notif_client
+struct notif_client
 {
   /* The name of notification packet.  */
   const char *name;
@@ -74,9 +74,7 @@ typedef struct notif_client
 
   /* Id of this notif_client.  */
   const enum REMOTE_NOTIF_ID id;
-} *notif_client_p;
-
-DECLARE_QUEUE_P (notif_client_p);
+};
 
 /* State on remote async notification.  */
 
@@ -90,7 +88,7 @@ struct remote_notif_state
 
   /* Notification queue.  */
 
-  QUEUE(notif_client_p) *notif_queue;
+  std::queue<notif_client *> notif_queue;
 
   /* Asynchronous signal handle registered as event loop source for when
      the remote sent us a notification.  The registered callback
