@@ -182,18 +182,7 @@ struct value
   {
   }
 
-  ~value ()
-  {
-    if (VALUE_LVAL (this) == lval_computed)
-      {
-	const struct lval_funcs *funcs = m_location.computed.funcs;
-
-	if (funcs->free_closure)
-	  funcs->free_closure (this);
-      }
-    else if (VALUE_LVAL (this) == lval_xcallable)
-      delete m_location.xm_worker;
-  }
+  ~value ();
 
   DISABLE_COPY_AND_ASSIGN (value);
 
@@ -356,6 +345,19 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
+
+value::~value ()
+{
+  if (VALUE_LVAL (this) == lval_computed)
+    {
+      const struct lval_funcs *funcs = m_location.computed.funcs;
+
+      if (funcs->free_closure)
+	funcs->free_closure (this);
+    }
+  else if (VALUE_LVAL (this) == lval_xcallable)
+    delete m_location.xm_worker;
+}
 
 /* See value.h.  */
 
