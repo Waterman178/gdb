@@ -2464,7 +2464,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	    retval = value_at_lazy (subobj_type,
 				    address + subobj_byte_offset);
 	    if (in_stack_memory)
-	      set_value_stack (retval, 1);
+	      retval->set_stack (1);
 	  }
 	  break;
 

@@ -373,6 +373,16 @@ struct value
     m_lazy = val;
   }
 
+  int stack () const
+  {
+    return m_stack;
+  }
+
+  void set_stack (int val)
+  {
+    m_stack = val;
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -611,9 +621,6 @@ extern int valprint_check_validity (struct ui_file *stream, struct type *type,
 				    const struct value *val);
 
 extern struct value *allocate_optimized_out_value (struct type *type);
-
-extern int value_stack (const struct value *);
-extern void set_value_stack (struct value *value, int val);
 
 /* Throw an error complaining that the value has been optimized
    out.  */

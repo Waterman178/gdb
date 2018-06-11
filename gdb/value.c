@@ -1080,18 +1080,6 @@ value_contents_copy (struct value *dst, LONGEST dst_offset,
   value_contents_copy_raw (dst, dst_offset, src, src_offset, length);
 }
 
-int
-value_stack (const struct value *value)
-{
-  return value->m_stack;
-}
-
-void
-set_value_stack (struct value *value, int val)
-{
-  value->m_stack = val;
-}
-
 const gdb_byte *
 value_contents (struct value *value)
 {
@@ -3412,7 +3400,7 @@ value_fetch_lazy_memory (struct value *val)
   struct type *type = check_typedef (val->enclosing_type ());
 
   if (TYPE_LENGTH (type))
-      read_value_memory (val, 0, value_stack (val),
+      read_value_memory (val, 0, val->stack (),
 			 addr, value_contents_all_raw (val),
 			 type_length_units (type));
 }
