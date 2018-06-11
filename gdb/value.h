@@ -121,7 +121,7 @@ typedef gdb::ref_ptr<struct value, value_ref_policy> value_ref_ptr;
    put into the value history or exposed to Python are taken off this
    list.  */
 
-struct value *value_next (const struct value *);
+extern struct value *value_next (const struct value *);
 
 /* Type of the value.  */
 
@@ -622,8 +622,8 @@ extern void read_value_memory (struct value *val, LONGEST bit_offset,
 /* Cast SCALAR_VALUE to the element type of VECTOR_TYPE, then replicate
    into each element of a new vector value with VECTOR_TYPE.  */
 
-struct value *value_vector_widen (struct value *scalar_value,
-				  struct type *vector_type);
+extern struct value *value_vector_widen (struct value *scalar_value,
+					 struct type *vector_type);
 
 
 
@@ -709,7 +709,8 @@ extern struct value *address_of_variable (struct symbol *var,
 
 extern struct value *value_of_register (int regnum, struct frame_info *frame);
 
-struct value *value_of_register_lazy (struct frame_info *frame, int regnum);
+extern struct value *value_of_register_lazy (struct frame_info *frame,
+					     int regnum);
 
 /* Return the symbol's reading requirement.  */
 
@@ -889,9 +890,9 @@ extern int value_in (struct value *element, struct value *set);
 extern int value_bit_index (struct type *type, const gdb_byte *addr,
 			    int index);
 
-extern enum return_value_convention
-struct_return_convention (struct gdbarch *gdbarch, struct value *function,
-			  struct type *value_type);
+extern enum return_value_convention struct_return_convention
+    (struct gdbarch *gdbarch, struct value *function,
+     struct type *value_type);
 
 extern int using_struct_return (struct gdbarch *gdbarch,
 				struct value *function,
@@ -1163,16 +1164,17 @@ typedef struct value *(*internal_function_fn)
      int argc,
      struct value **argv);
 
-void add_internal_function (const char *name, const char *doc,
-			    internal_function_fn handler,
-			    void *cookie);
+extern void add_internal_function (const char *name, const char *doc,
+				   internal_function_fn handler,
+				   void *cookie);
 
-struct value *call_internal_function (struct gdbarch *gdbarch,
-				      const struct language_defn *language,
-				      struct value *function,
-				      int argc, struct value **argv);
+extern struct value *call_internal_function
+    (struct gdbarch *gdbarch,
+     const struct language_defn *language,
+     struct value *function,
+     int argc, struct value **argv);
 
-char *value_internal_function_name (struct value *);
+extern char *value_internal_function_name (struct value *);
 
 /* Build a value wrapping and representing WORKER.  The value takes ownership
    of the xmethod_worker object.  */
