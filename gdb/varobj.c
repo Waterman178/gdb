@@ -1311,7 +1311,7 @@ install_new_value (struct varobj *var, struct value *value, bool initial)
 
 	  TRY
 	    {
-	      value_fetch_lazy (value);
+	      value->fetch_lazy ();
 	    }
 
 	  CATCH (except, RETURN_MASK_ERROR)

@@ -323,6 +323,8 @@ struct value
     m_embedded_offset = val;
   }
 
+  void fetch_lazy ();
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -542,6 +544,12 @@ struct value
      treated pretty much the same, except not-saved registers have a
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
+
+private:
+
+  void fetch_lazy_bitfield ();
+  void fetch_lazy_memory ();
+  void fetch_lazy_register ();
 };
 
 /* For lval_computed values, this structure holds functions used to
@@ -668,8 +676,6 @@ extern const gdb_byte *value_contents_for_printing (struct value *value);
    value must _not_ be lazy.  */
 extern const gdb_byte *
   value_contents_for_printing_const (const struct value *value);
-
-extern void value_fetch_lazy (struct value *val);
 
 /* If nonzero, this is the value of a variable which does not actually
    exist in the program, at least partially.  If the value is lazy,

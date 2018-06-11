@@ -272,7 +272,7 @@ value_of_register (int regnum, struct frame_info *frame)
     return value_of_user_reg (regnum, frame);
 
   reg_val = value_of_register_lazy (frame, regnum);
-  value_fetch_lazy (reg_val);
+  reg_val->fetch_lazy ();
   return reg_val;
 }
 

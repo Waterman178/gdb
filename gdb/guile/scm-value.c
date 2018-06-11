@@ -1316,7 +1316,7 @@ gdbscm_value_fetch_lazy_x (SCM self)
   TRY
     {
       if (value->lazy ())
-	value_fetch_lazy (value);
+	value->fetch_lazy ();
     }
   CATCH (except, RETURN_MASK_ALL)
     {

@@ -186,7 +186,7 @@ value_entirely_available (struct value *value)
   /* We can only tell whether the whole value is available when we try
      to read it.  */
   if (value->m_lazy)
-    value_fetch_lazy (value);
+    value->fetch_lazy ();
 
   if (value->m_unavailable.empty ())
     return 1;
@@ -204,7 +204,7 @@ value_entirely_covered_by_range_vector (struct value *value,
   /* We can only tell whether the whole value is optimized out /
      unavailable when we try to read it.  */
   if (value->m_lazy)
-    value_fetch_lazy (value);
+    value->fetch_lazy ();
 
   if (ranges.size () == 1)
     {
@@ -954,7 +954,7 @@ const gdb_byte *
 value_contents_for_printing (struct value *value)
 {
   if (value->m_lazy)
-    value_fetch_lazy (value);
+    value->fetch_lazy ();
   return value->m_contents.get ();
 }
 
@@ -1075,7 +1075,7 @@ value_contents_copy (struct value *dst, LONGEST dst_offset,
 		     struct value *src, LONGEST src_offset, LONGEST length)
 {
   if (src->m_lazy)
-    value_fetch_lazy (src);
+    src->fetch_lazy ();
 
   value_contents_copy_raw (dst, dst_offset, src, src_offset, length);
 }
@@ -1093,7 +1093,7 @@ gdb_byte *
 value_contents_writeable (struct value *value)
 {
   if (value->m_lazy)
-    value_fetch_lazy (value);
+    value->fetch_lazy ();
   return value_contents_raw (value);
 }
 
@@ -1106,7 +1106,7 @@ value_optimized_out (struct value *value)
     {
       TRY
 	{
-	  value_fetch_lazy (value);
+	  value->fetch_lazy ();
 	}
       CATCH (ex, RETURN_MASK_ERROR)
 	{
@@ -1444,7 +1444,7 @@ record_latest_value (struct value *val)
      the value was taken, and fast watchpoints should be able to assume that
      a value on the value history never changes.  */
   if (val->lazy ())
-    value_fetch_lazy (val);
+    val->fetch_lazy ();
   /* We preserve VALUE_LVAL so that the user can find out where it was fetched
      from.  This is a bit dubious, because then *&$1 does not just return $1
      but the current contents of that location.  c'est la vie...  */
@@ -1794,7 +1794,7 @@ value_of_internalvar (struct gdbarch *gdbarch, struct internalvar *var)
     case INTERNALVAR_VALUE:
       val = value_copy (var->u.value);
       if (val->lazy ())
-	value_fetch_lazy (val);
+	val->fetch_lazy ();
       break;
 
     case INTERNALVAR_MAKE_VALUE:
@@ -1934,7 +1934,7 @@ set_internalvar (struct internalvar *var, struct value *val)
 	 later when this internalvar is referenced and the target is gone or
 	 has changed.  */
       if (new_data.value->lazy ())
-       value_fetch_lazy (new_data.value);
+       new_data.value->fetch_lazy ();
 
       /* Release the value from the value chain to prevent it from being
 	 deleted by free_all_values.  From here on this function should not
@@ -2584,7 +2584,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 		   + (bitpos - v->m_bitpos) / 8);
       v->set_parent (arg1);
       if (!arg1->lazy ())
-	value_fetch_lazy (v);
+	v->fetch_lazy ();
     }
   else if (fieldno < TYPE_N_BASECLASSES (arg_type))
     {
@@ -2595,7 +2595,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 
       /* Lazy register values with offsets are not supported.  */
       if (VALUE_LVAL (arg1) == lval_register && arg1->lazy ())
-	value_fetch_lazy (arg1);
+	arg1->fetch_lazy ();
 
       /* We special case virtual inheritance here because this
 	 requires access to the contents, which we would rather avoid
@@ -2640,7 +2640,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 
       /* Lazy register values with offsets are not supported.  */
       if (VALUE_LVAL (arg1) == lval_register && arg1->lazy ())
-	value_fetch_lazy (arg1);
+	arg1->fetch_lazy ();
 
       if (arg1->lazy ())
 	v = allocate_value_lazy (type);
@@ -3368,56 +3368,56 @@ value_initialized (const struct value *val)
 
 /* Helper for value_fetch_lazy when the value is a bitfield.  */
 
-static void
-value_fetch_lazy_bitfield (struct value *val)
+void
+value::fetch_lazy_bitfield ()
 {
-  gdb_assert (val->bitsize () != 0);
+  gdb_assert (bitsize () != 0);
 
   /* To read a lazy bitfield, read the entire enclosing value.  This
      prevents reading the same block of (possibly volatile) memory once
      per bitfield.  It would be even better to read only the containing
      word, but we have no way to record that just specific bits of a
      value have been fetched.  */
-  struct type *type = check_typedef (val->type ());
-  struct value *parent = val->parent ();
+  struct type *type = check_typedef (type ());
+  struct value *parent = parent ();
 
   if (parent->lazy ())
-    value_fetch_lazy (parent);
+    parent->fetch_lazy ();
 
-  unpack_value_bitfield (val, val->bitpos (), val->bitsize (),
+  unpack_value_bitfield (val, bitpos (), bitsize (),
 			 value_contents_for_printing (parent),
-			 val->offset (), parent);
+			 offset (), parent);
 }
 
 /* Helper for value_fetch_lazy when the value is in memory.  */
 
-static void
-value_fetch_lazy_memory (struct value *val)
+void
+value::fetch_lazy_memory ()
 {
-  gdb_assert (VALUE_LVAL (val) == lval_memory);
+  gdb_assert (m_lval == lval_memory);
 
   CORE_ADDR addr = value_address (val);
-  struct type *type = check_typedef (val->enclosing_type ());
+  struct type *type = check_typedef (enclosing_type ());
 
   if (TYPE_LENGTH (type))
-      read_value_memory (val, 0, val->stack (),
+      read_value_memory (val, 0, stack (),
 			 addr, value_contents_all_raw (val),
 			 type_length_units (type));
 }
 
 /* Helper for value_fetch_lazy when the value is in a register.  */
 
-static void
-value_fetch_lazy_register (struct value *val)
+void
+value::fetch_lazy_register ()
 {
   struct frame_info *next_frame;
   int regnum;
-  struct type *type = check_typedef (val->type ());
+  struct type *type = check_typedef (type ());
   struct value *new_val = val, *mark = value_mark ();
 
   /* Offsets are not supported here; lazy register values must
      refer to the entire register.  */
-  gdb_assert (val->offset () == 0);
+  gdb_assert (offset () == 0);
 
   while (VALUE_LVAL (new_val) == lval_register && new_val->lazy ())
     {
@@ -3464,13 +3464,13 @@ value_fetch_lazy_register (struct value *val)
   /* If it's still lazy (for instance, a saved register on the
      stack), fetch it.  */
   if (new_val->lazy ())
-    value_fetch_lazy (new_val);
+    new_val->fetch_lazy ();
 
   /* Copy the contents and the unavailability/optimized-out
      meta-data from NEW_VAL to VAL.  */
-  val->set_lazy (0);
-  value_contents_copy (val, val->embedded_offset (),
-		       new_val, new_val->embedded_offset (),
+  set_lazy (0);
+  value_contents_copy (val, embedded_offset (),
+		       new_val, new_embedded_offset (),
 		       type_length_units (type));
 
   if (frame_debug)
@@ -3534,28 +3534,28 @@ value_fetch_lazy_register (struct value *val)
    it.  */
 
 void
-value_fetch_lazy (struct value *val)
+value::fetch_lazy ()
 {
-  gdb_assert (val->lazy ());
+  gdb_assert (lazy ());
   allocate_value_contents (val);
   /* A value is either lazy, or fully fetched.  The
      availability/validity is only established as we try to fetch a
      value.  */
-  gdb_assert (val->m_optimized_out.empty ());
-  gdb_assert (val->m_unavailable.empty ());
-  if (val->bitsize ())
-    value_fetch_lazy_bitfield (val);
+  gdb_assert (m_optimized_out.empty ());
+  gdb_assert (m_unavailable.empty ());
+  if (bitsize ())
+    fetch_lazy_bitfield ();
   else if (VALUE_LVAL (val) == lval_memory)
-    value_fetch_lazy_memory (val);
+    fetch_lazy_memory ();
   else if (VALUE_LVAL (val) == lval_register)
-    value_fetch_lazy_register (val);
+    fetch_lazy_register ();
   else if (VALUE_LVAL (val) == lval_computed
-	   && val->computed_funcs ()->read != NULL)
-    val->computed_funcs ()->read (val);
+	   && computed_funcs ()->read != NULL)
+    computed_funcs ()->read (this);
   else
     internal_error (__FILE__, __LINE__, _("Unexpected lazy value type."));
 
-  val->set_lazy (0);
+  set_lazy (0);
 }
 
 /* Implementation of the convenience function $_isvoid.  */

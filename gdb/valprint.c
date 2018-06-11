@@ -1145,7 +1145,7 @@ common_val_print (struct value *val, struct ui_file *stream, int recurse,
     val = ada_to_fixed_value (val);
 
   if (val->lazy ())
-    value_fetch_lazy (val);
+    val->fetch_lazy ();
 
   val_print (val->type (),
 	     val->embedded_offset (), value_address (val),

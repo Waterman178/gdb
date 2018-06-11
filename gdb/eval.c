@@ -240,7 +240,7 @@ fetch_subexp_value (struct expression *exp, int *pc, struct value **valp,
 
 	  TRY
 	    {
-	      value_fetch_lazy (result);
+	      result->fetch_lazy ();
 	      *valp = result;
 	    }
 	  CATCH (except, RETURN_MASK_ERROR)
@@ -3257,7 +3257,7 @@ evaluate_subexp_for_cast (expression *exp, int *pos,
       if (VALUE_LVAL (val) == lval_memory)
 	{
 	  if (val->lazy ())
-	    value_fetch_lazy (val);
+	    val->fetch_lazy ();
 	  VALUE_LVAL (val) = not_lval;
 	}
       return val;

@@ -1102,7 +1102,7 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
   ada_ensure_varsize_limit (deref_val->type ());
 
   if (deref_val->lazy ())
-    value_fetch_lazy (deref_val);
+    deref_val->fetch_lazy ();
 
   val_print (deref_val->type (),
 	     deref_val->embedded_offset (),

@@ -910,7 +910,7 @@ get_value_at (struct type *type, CORE_ADDR addr, int lazy)
   val = value_from_contents_and_address (type, NULL, addr);
 
   if (!lazy)
-    value_fetch_lazy (val);
+    val->fetch_lazy ();
 
   return val;
 }
