@@ -885,8 +885,7 @@ value_contents_all_raw (struct value *value)
 /* Look at value.h for description.  */
 
 struct type *
-value_actual_type (struct value *value, int resolve_simple_types,
-		   int *real_type_found)
+value::actual_type (int resolve_simple_types, int *real_type_found)
 {
   struct value_print_options opts;
   struct type *result;
@@ -895,7 +894,7 @@ value_actual_type (struct value *value, int resolve_simple_types,
 
   if (real_type_found)
     *real_type_found = 0;
-  result = value->type ();
+  result = type ();
   if (opts.objectprint)
     {
       /* If result's target type is TYPE_CODE_STRUCT, proceed to
@@ -919,7 +918,7 @@ value_actual_type (struct value *value, int resolve_simple_types,
         {
           if (real_type_found)
             *real_type_found = 1;
-          result = value->enclosing_type ();
+          result = enclosing_type ();
         }
     }
 

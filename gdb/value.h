@@ -289,6 +289,20 @@ struct value
 
   void set_enclosing_type (struct type *new_type);
 
+  /* Returns value_type or value_enclosing_type depending on
+     value_print_options.objectprint.
+
+     If RESOLVE_SIMPLE_TYPES is 0 the enclosing type will be resolved
+     only for pointers and references, else it will be returned
+     for all the types (e.g. structures).  This option is useful
+     to prevent retrieving enclosing type for the base classes fields.
+
+     REAL_TYPE_FOUND is used to inform whether the real type was found
+     (or just static type was used).  The NULL may be passed if it is not
+     necessary. */
+
+  struct type *actual_type (int resolve_simple_types, int *real_type_found);
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -455,22 +469,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* Returns value_type or value_enclosing_type depending on
-   value_print_options.objectprint.
-
-   If RESOLVE_SIMPLE_TYPES is 0 the enclosing type will be resolved
-   only for pointers and references, else it will be returned
-   for all the types (e.g. structures).  This option is useful
-   to prevent retrieving enclosing type for the base classes fields.
-
-   REAL_TYPE_FOUND is used to inform whether the real type was found
-   (or just static type was used).  The NULL may be passed if it is not
-   necessary. */
-
-extern struct type *value_actual_type (struct value *value,
-				       int resolve_simple_types,
-				       int *real_type_found);
 
 extern LONGEST value_pointed_to_offset (const struct value *value);
 extern void set_value_pointed_to_offset (struct value *value, LONGEST val);

@@ -119,7 +119,7 @@ adjust_value_for_child_access (struct value **value,
       struct type *enclosing_type;
       int real_type_found = 0;
 
-      enclosing_type = value_actual_type (*value, 1, &real_type_found);
+      enclosing_type = (*value)->actual_type (1, &real_type_found);
       if (real_type_found)
         {
           *type = enclosing_type;

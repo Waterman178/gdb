@@ -382,7 +382,7 @@ varobj_create (const char *objname,
 	{
 	  int real_type_found = 0;
 
-	  var->type = value_actual_type (value, 0, &real_type_found);
+	  var->type = value->actual_type (0, &real_type_found);
 	  if (real_type_found)
 	    value = value_cast (var->type, value);
 	}
@@ -1212,7 +1212,7 @@ update_type_if_necessary (struct varobj *var, struct value *new_value)
       get_user_print_options (&opts);
       if (opts.objectprint)
 	{
-	  struct type *new_type = value_actual_type (new_value, 0, 0);
+	  struct type *new_type = new_value->actual_type (0, 0);
 	  std::string new_type_str = type_to_string (new_type);
 	  std::string curr_type_str = varobj_get_type (var);
 
@@ -1950,7 +1950,7 @@ create_child_with_value (struct varobj *parent, int index,
   if (item->value != NULL)
     /* If the child had no evaluation errors, var->value
        will be non-NULL and contain a valid type.  */
-    child->type = value_actual_type (item->value, 0, NULL);
+    child->type = item->value->actual_type (0, NULL);
   else
     /* Otherwise, we must compute the type.  */
     child->type = (*child->root->lang_ops->type_of_child) (child->parent,
