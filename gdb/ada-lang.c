@@ -2886,7 +2886,7 @@ ada_value_ptr_subscript (struct value *arr, int arity, struct value **ind)
       arr = value_cast (lookup_pointer_type (TYPE_TARGET_TYPE (type)),
                         value_copy (arr));
       get_discrete_bounds (TYPE_INDEX_TYPE (type), &lwb, &upb);
-      lwb_value = value_from_longest (value_type(ind[k]), lwb);
+      lwb_value = value_from_longest (ind[k]->type (), lwb);
       arr = value_ptradd (arr, pos_atr (ind[k]) - pos_atr (lwb_value));
       type = TYPE_TARGET_TYPE (type);
     }
