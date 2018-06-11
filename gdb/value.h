@@ -232,6 +232,15 @@ struct value
     m_offset = offset;
   }
 
+  /* The comment from "struct value" reads: ``Is it modifiable?  Only
+     relevant if lval != not_lval.''.  Shouldn't the value instead be
+     not_lval and be done with it?  */
+
+  int deprecated_modifiable () const
+  {
+    return m_modifiable;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -398,12 +407,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* The comment from "struct value" reads: ``Is it modifiable?  Only
-   relevant if lval != not_lval.''.  Shouldn't the value instead be
-   not_lval and be done with it?  */
-
-extern int deprecated_value_modifiable (const struct value *value);
 
 /* If a value represents a C++ object, then the `type' field gives the
    object's compile-time type.  If the object actually belongs to some

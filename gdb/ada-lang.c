@@ -2743,7 +2743,7 @@ ada_value_assign (struct value *toval, struct value *fromval)
   if (ada_is_direct_array_type (fromval->type ()))
     fromval = ada_coerce_to_simple_array (fromval);
 
-  if (!deprecated_value_modifiable (toval))
+  if (!toval->deprecated_modifiable ())
     error (_("Left operand of assignment is not a modifiable lvalue."));
 
   if (VALUE_LVAL (toval) == lval_memory
@@ -9990,7 +9990,7 @@ assign_aggregate (struct value *container,
   if (ada_is_direct_array_type (container->type ()))
     container = ada_coerce_to_simple_array (container);
   lhs = ada_coerce_ref (lhs);
-  if (!deprecated_value_modifiable (lhs))
+  if (!lhs->deprecated_modifiable ())
     error (_("Left operand of assignment is not a modifiable lvalue."));
 
   lhs_type = check_typedef (lhs->type ());

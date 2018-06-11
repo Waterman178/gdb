@@ -745,7 +745,7 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
 	return arg1;
 
-      if (deprecated_value_modifiable (arg1)
+      if (arg1->deprecated_modifiable ()
 	  && VALUE_LVAL (arg1) != lval_internalvar)
 	arg2 = opencl_value_cast (type1, arg2);
 
