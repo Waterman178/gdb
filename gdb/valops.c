@@ -1039,7 +1039,7 @@ value_assign (struct value *toval, struct value *fromval)
 	  {
 	    /* VALUE_INTERNALVAR below refers to the parent value, while
 	       the offset is relative to this parent value.  */
-	    gdb_assert (value_parent (toval)->parent () == NULL);
+	    gdb_assert (toval->parent ()->parent () == NULL);
 	    offset += toval->parent ()->offset ();
 	  }
 
