@@ -1227,7 +1227,7 @@ frame_unwind_register_value (struct frame_info *frame, int regnum)
 	  else
 	    fprintf_unfiltered (gdb_stdlog, " computed");
 
-	  if (value_lazy (value))
+	  if (value->lazy ())
 	    fprintf_unfiltered (gdb_stdlog, " lazy");
 	  else
 	    {

@@ -348,6 +348,31 @@ struct value
     return m_location.computed.closure;
   }
 
+  /* If zero, contents of this value are in the contents field.  If
+     nonzero, contents are in inferior.  If the lval field is lval_memory,
+     the contents are in inferior memory at location.address plus offset.
+     The lval field may also be lval_register.
+
+     WARNING: This field is used by the code which handles watchpoints
+     (see breakpoint.c) to decide whether a particular value can be
+     watched by hardware watchpoints.  If the lazy flag is set for some
+     member of a value chain, it is assumed that this member of the
+     chain doesn't need to be watched as part of watching the value
+     itself.  This is how GDB avoids watching the entire struct or array
+     when the user wants to watch a single struct member or array
+     element.  If you ever change the way lazy flag is set and reset, be
+     sure to consider this use as well!  */
+
+  int lazy () const
+  {
+    return m_lazy;
+  }
+
+  void set_lazy (int val)
+  {
+    m_lazy = val;
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -586,24 +611,6 @@ extern int valprint_check_validity (struct ui_file *stream, struct type *type,
 				    const struct value *val);
 
 extern struct value *allocate_optimized_out_value (struct type *type);
-
-/* If zero, contents of this value are in the contents field.  If
-   nonzero, contents are in inferior.  If the lval field is lval_memory,
-   the contents are in inferior memory at location.address plus offset.
-   The lval field may also be lval_register.
-
-   WARNING: This field is used by the code which handles watchpoints
-   (see breakpoint.c) to decide whether a particular value can be
-   watched by hardware watchpoints.  If the lazy flag is set for some
-   member of a value chain, it is assumed that this member of the
-   chain doesn't need to be watched as part of watching the value
-   itself.  This is how GDB avoids watching the entire struct or array
-   when the user wants to watch a single struct member or array
-   element.  If you ever change the way lazy flag is set and reset, be
-   sure to consider this use as well!  */
-
-extern int value_lazy (const struct value *);
-extern void set_value_lazy (struct value *value, int val);
 
 extern int value_stack (const struct value *);
 extern void set_value_stack (struct value *value, int val);

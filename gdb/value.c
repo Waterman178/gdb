@@ -861,7 +861,7 @@ allocate_optimized_out_value (struct type *type)
   struct value *retval = allocate_value_lazy (type);
 
   mark_value_bytes_optimized_out (retval, 0, TYPE_LENGTH (type));
-  set_value_lazy (retval, 0);
+  retval->set_lazy (0);
   return retval;
 }
 
@@ -1078,18 +1078,6 @@ value_contents_copy (struct value *dst, LONGEST dst_offset,
     value_fetch_lazy (src);
 
   value_contents_copy_raw (dst, dst_offset, src, src_offset, length);
-}
-
-int
-value_lazy (const struct value *value)
-{
-  return value->m_lazy;
-}
-
-void
-set_value_lazy (struct value *value, int val)
-{
-  value->m_lazy = val;
 }
 
 int
@@ -1339,7 +1327,7 @@ value_copy (struct value *arg)
   struct type *encl_type = arg->enclosing_type ();
   struct value *val;
 
-  if (value_lazy (arg))
+  if (arg->lazy ())
     val = allocate_value_lazy (encl_type);
   else
     val = allocate_value (encl_type);
@@ -1353,7 +1341,7 @@ value_copy (struct value *arg)
   val->m_embedded_offset = arg->embedded_offset ();
   val->m_pointed_to_offset = arg->m_pointed_to_offset;
   val->m_modifiable = arg->m_modifiable;
-  if (!value_lazy (val))
+  if (!val->lazy ())
     {
       memcpy (value_contents_all_raw (val), value_contents_all_raw (arg),
 	      TYPE_LENGTH (arg->enclosing_type ()));
@@ -1467,7 +1455,7 @@ record_latest_value (struct value *val)
      In particular, "set $1 = 50" should not affect the variable from which
      the value was taken, and fast watchpoints should be able to assume that
      a value on the value history never changes.  */
-  if (value_lazy (val))
+  if (val->lazy ())
     value_fetch_lazy (val);
   /* We preserve VALUE_LVAL so that the user can find out where it was fetched
      from.  This is a bit dubious, because then *&$1 does not just return $1
@@ -1817,7 +1805,7 @@ value_of_internalvar (struct gdbarch *gdbarch, struct internalvar *var)
 
     case INTERNALVAR_VALUE:
       val = value_copy (var->u.value);
-      if (value_lazy (val))
+      if (val->lazy ())
 	value_fetch_lazy (val);
       break;
 
@@ -1957,7 +1945,7 @@ set_internalvar (struct internalvar *var, struct value *val)
       /* Force the value to be fetched from the target now, to avoid problems
 	 later when this internalvar is referenced and the target is gone or
 	 has changed.  */
-      if (value_lazy (new_data.value))
+      if (new_data.value->lazy ())
        value_fetch_lazy (new_data.value);
 
       /* Release the value from the value chain to prevent it from being
@@ -2607,7 +2595,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 		   + offset
 		   + (bitpos - v->m_bitpos) / 8);
       v->set_parent (arg1);
-      if (!value_lazy (arg1))
+      if (!arg1->lazy ())
 	value_fetch_lazy (v);
     }
   else if (fieldno < TYPE_N_BASECLASSES (arg_type))
@@ -2618,7 +2606,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
       LONGEST boffset;
 
       /* Lazy register values with offsets are not supported.  */
-      if (VALUE_LVAL (arg1) == lval_register && value_lazy (arg1))
+      if (VALUE_LVAL (arg1) == lval_register && arg1->lazy ())
 	value_fetch_lazy (arg1);
 
       /* We special case virtual inheritance here because this
@@ -2633,7 +2621,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
       else
 	boffset = TYPE_FIELD_BITPOS (arg_type, fieldno) / 8;
 
-      if (value_lazy (arg1))
+      if (arg1->lazy ())
 	v = allocate_value_lazy (arg1->enclosing_type ());
       else
 	{
@@ -2663,10 +2651,10 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 	         / (HOST_CHAR_BIT * unit_size));
 
       /* Lazy register values with offsets are not supported.  */
-      if (VALUE_LVAL (arg1) == lval_register && value_lazy (arg1))
+      if (VALUE_LVAL (arg1) == lval_register && arg1->lazy ())
 	value_fetch_lazy (arg1);
 
-      if (value_lazy (arg1))
+      if (arg1->lazy ())
 	v = allocate_value_lazy (type);
       else
 	{
@@ -3242,7 +3230,7 @@ value_from_component (struct value *whole, struct type *type, LONGEST offset)
 {
   struct value *v;
 
-  if (VALUE_LVAL (whole) == lval_memory && value_lazy (whole))
+  if (VALUE_LVAL (whole) == lval_memory && whole->lazy ())
     v = allocate_value_lazy (type);
   else
     {
@@ -3405,7 +3393,7 @@ value_fetch_lazy_bitfield (struct value *val)
   struct type *type = check_typedef (val->type ());
   struct value *parent = val->parent ();
 
-  if (value_lazy (parent))
+  if (parent->lazy ())
     value_fetch_lazy (parent);
 
   unpack_value_bitfield (val, val->bitpos (), val->bitsize (),
@@ -3443,7 +3431,7 @@ value_fetch_lazy_register (struct value *val)
      refer to the entire register.  */
   gdb_assert (val->offset () == 0);
 
-  while (VALUE_LVAL (new_val) == lval_register && value_lazy (new_val))
+  while (VALUE_LVAL (new_val) == lval_register && new_val->lazy ())
     {
       struct frame_id next_frame_id = VALUE_NEXT_FRAME_ID (new_val);
 
@@ -3479,7 +3467,7 @@ value_fetch_lazy_register (struct value *val)
 	 any case, it should always be an internal error to end up
 	 in this situation.  */
       if (VALUE_LVAL (new_val) == lval_register
-	  && value_lazy (new_val)
+	  && new_val->lazy ()
 	  && frame_id_eq (VALUE_NEXT_FRAME_ID (new_val), next_frame_id))
 	internal_error (__FILE__, __LINE__,
 			_("infinite loop while fetching a register"));
@@ -3487,12 +3475,12 @@ value_fetch_lazy_register (struct value *val)
 
   /* If it's still lazy (for instance, a saved register on the
      stack), fetch it.  */
-  if (value_lazy (new_val))
+  if (new_val->lazy ())
     value_fetch_lazy (new_val);
 
   /* Copy the contents and the unavailability/optimized-out
      meta-data from NEW_VAL to VAL.  */
-  set_value_lazy (val, 0);
+  val->set_lazy (0);
   value_contents_copy (val, val->embedded_offset (),
 		       new_val, new_val->embedded_offset (),
 		       type_length_units (type));
@@ -3560,7 +3548,7 @@ value_fetch_lazy_register (struct value *val)
 void
 value_fetch_lazy (struct value *val)
 {
-  gdb_assert (value_lazy (val));
+  gdb_assert (val->lazy ());
   allocate_value_contents (val);
   /* A value is either lazy, or fully fetched.  The
      availability/validity is only established as we try to fetch a
@@ -3579,7 +3567,7 @@ value_fetch_lazy (struct value *val)
   else
     internal_error (__FILE__, __LINE__, _("Unexpected lazy value type."));
 
-  set_value_lazy (val, 0);
+  val->set_lazy (0);
 }
 
 /* Implementation of the convenience function $_isvoid.  */

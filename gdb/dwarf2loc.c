@@ -1441,7 +1441,7 @@ value_of_dwarf_reg_entry (struct type *type, struct frame_info *frame,
   /* Copy the referencing pointer to the new computed value.  */
   memcpy (value_contents_raw (val), value_contents_raw (outer_val),
 	  TYPE_LENGTH (checked_type));
-  set_value_lazy (val, 0);
+  val->set_lazy (0);
 
   return val;
 }

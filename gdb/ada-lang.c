@@ -680,7 +680,7 @@ coerce_unspec_val_to_type (struct value *val, struct type *type)
          trying to allocate some memory for it.  */
       ada_ensure_varsize_limit (type);
 
-      if (value_lazy (val)
+      if (val->lazy ()
           || TYPE_LENGTH (type) > TYPE_LENGTH (val->type ()))
 	result = allocate_value_lazy (type);
       else
@@ -2599,7 +2599,7 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
       v = allocate_value (type);
       src = valaddr + offset;
     }
-  else if (VALUE_LVAL (obj) == lval_memory && value_lazy (obj))
+  else if (VALUE_LVAL (obj) == lval_memory && obj->lazy ())
     {
       int src_len = (bit_size + bit_offset + HOST_CHAR_BIT - 1) / 8;
       gdb_byte *buf;
@@ -10532,7 +10532,7 @@ ada_evaluate_subexp_for_cast (expression *exp, int *pos,
 	 an address of the result of a cast (view conversion in Ada).  */
       if (VALUE_LVAL (val) == lval_memory)
         {
-          if (value_lazy (val))
+          if (val->lazy ())
             value_fetch_lazy (val);
           VALUE_LVAL (val) = not_lval;
         }

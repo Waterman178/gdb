@@ -1101,7 +1101,7 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
      (Eg: an array whose bounds are not set yet).  */
   ada_ensure_varsize_limit (deref_val->type ());
 
-  if (value_lazy (deref_val))
+  if (deref_val->lazy ())
     value_fetch_lazy (deref_val);
 
   val_print (deref_val->type (),

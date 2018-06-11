@@ -233,7 +233,7 @@ fetch_subexp_value (struct expression *exp, int *pc, struct value **valp,
      have a non-lazy previous value to compare with.  */
   if (result != NULL)
     {
-      if (!value_lazy (result))
+      if (!result->lazy ())
 	*valp = result;
       else
 	{
@@ -3256,7 +3256,7 @@ evaluate_subexp_for_cast (expression *exp, int *pos,
       /* Don't allow e.g. '&(int)var_with_no_debug_info'.  */
       if (VALUE_LVAL (val) == lval_memory)
 	{
-	  if (value_lazy (val))
+	  if (val->lazy ())
 	    value_fetch_lazy (val);
 	  VALUE_LVAL (val) = not_lval;
 	}

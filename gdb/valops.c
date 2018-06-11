@@ -1252,7 +1252,7 @@ value_assign (struct value *toval, struct value *fromval)
      information, but its contents are updated from FROMVAL.  This
      implies the returned value is not lazy, even if TOVAL was.  */
   val = value_copy (toval);
-  set_value_lazy (val, 0);
+  val->set_lazy (0);
   memcpy (value_contents_raw (val), value_contents (fromval),
 	  TYPE_LENGTH (type));
 
@@ -1316,7 +1316,7 @@ address_of_variable (struct symbol *var, const struct block *b)
   val = value_of_variable (var, b);
   type = val->type ();
 
-  if ((VALUE_LVAL (val) == lval_memory && value_lazy (val))
+  if ((VALUE_LVAL (val) == lval_memory && val->lazy ())
       || TYPE_CODE (type) == TYPE_CODE_FUNC)
     {
       CORE_ADDR addr = value_address (val);
@@ -3844,7 +3844,7 @@ value_slice (struct value *array, int lowbound, int length)
 				    slice_range_type);
     TYPE_CODE (slice_type) = TYPE_CODE (array_type);
 
-    if (VALUE_LVAL (array) == lval_memory && value_lazy (array))
+    if (VALUE_LVAL (array) == lval_memory && array->lazy ())
       slice = allocate_value_lazy (slice_type);
     else
       {

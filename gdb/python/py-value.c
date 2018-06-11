@@ -994,7 +994,7 @@ valpy_get_is_lazy (PyObject *self, void *closure)
 
   TRY
     {
-      opt = value_lazy (value);
+      opt = value->lazy ();
     }
   CATCH (except, RETURN_MASK_ALL)
     {
@@ -1016,7 +1016,7 @@ valpy_fetch_lazy (PyObject *self, PyObject *args)
 
   TRY
     {
-      if (value_lazy (value))
+      if (value->lazy ())
 	value_fetch_lazy (value);
     }
   CATCH (except, RETURN_MASK_ALL)
