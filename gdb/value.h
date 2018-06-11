@@ -303,11 +303,11 @@ extern struct value *allocate_computed_value (struct type *type,
 /* Helper function to check the validity of some bits of a value.
 
    If TYPE represents some aggregate type (e.g., a structure), return 1.
-   
+
    Otherwise, any of the bytes starting at OFFSET and extending for
    TYPE_LENGTH(TYPE) bytes are invalid, print a message to STREAM and
    return 0.  The checking is done using FUNCS.
-   
+
    Otherwise, return 1.  */
 
 extern int valprint_check_validity (struct ui_file *stream, struct type *type,
@@ -470,10 +470,11 @@ extern struct frame_id *deprecated_value_next_frame_id_hack (struct value *);
 #define VALUE_NEXT_FRAME_ID(val) (*deprecated_value_next_frame_id_hack (val))
 
 /* Frame ID of frame to which a register value is relative.  This is
-   similar to VALUE_NEXT_FRAME_ID, above, but may not be assigned to. 
+   similar to VALUE_NEXT_FRAME_ID, above, but may not be assigned to.
    Note that VALUE_FRAME_ID effectively undoes the "next" operation
    that was performed during the assignment to VALUE_NEXT_FRAME_ID.  */
-#define VALUE_FRAME_ID(val) (get_prev_frame_id_by_id (VALUE_NEXT_FRAME_ID (val)))
+#define VALUE_FRAME_ID(val) \
+  (get_prev_frame_id_by_id (VALUE_NEXT_FRAME_ID (val)))
 
 /* Register number if the value is from a register.  */
 extern int *deprecated_value_regnum_hack (struct value *);
@@ -492,10 +493,11 @@ extern struct value *coerce_ref_if_computed (const struct value *arg);
 
    It is a common implementation for coerce_ref and value_ind.  */
 
-extern struct value * readjust_indirect_value_type (struct value *value,
-						    struct type *enc_type,
-						    const struct type *original_type,
-						    const struct value *original_val);
+extern struct value *readjust_indirect_value_type
+    (struct value *value,
+     struct type *enc_type,
+     const struct type *original_type,
+     const struct value *original_val);
 
 /* Convert a REF to the object referenced.  */
 
@@ -649,9 +651,11 @@ extern CORE_ADDR unpack_pointer (struct type *type, const gdb_byte *valaddr);
 extern LONGEST unpack_field_as_long (struct type *type,
 				     const gdb_byte *valaddr,
 				     int fieldno);
-extern int unpack_value_field_as_long (struct type *type, const gdb_byte *valaddr,
-				LONGEST embedded_offset, int fieldno,
-				const struct value *val, LONGEST *result);
+extern int unpack_value_field_as_long (struct type *type,
+				       const gdb_byte *valaddr,
+				       LONGEST embedded_offset, int fieldno,
+				       const struct value *val,
+				       LONGEST *result);
 
 extern void unpack_value_bitfield (struct value *dest_val,
 				   LONGEST bitpos, LONGEST bitsize,
@@ -1152,11 +1156,12 @@ extern struct value *value_subscripted_rvalue (struct value *array,
 
 /* User function handler.  */
 
-typedef struct value *(*internal_function_fn) (struct gdbarch *gdbarch,
-					       const struct language_defn *language,
-					       void *cookie,
-					       int argc,
-					       struct value **argv);
+typedef struct value *(*internal_function_fn)
+    (struct gdbarch *gdbarch,
+     const struct language_defn *language,
+     void *cookie,
+     int argc,
+     struct value **argv);
 
 void add_internal_function (const char *name, const char *doc,
 			    internal_function_fn handler,
