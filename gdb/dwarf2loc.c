@@ -1793,7 +1793,7 @@ rw_pieced_value (struct value *v, struct value *from)
   bits_to_skip = 8 * value_offset (v);
   if (v->bitsize ())
     {
-      bits_to_skip += (8 * value_offset (value_parent (v))
+      bits_to_skip += (8 * value_offset (v->parent ())
 		       + v->bitpos ());
       if (from != NULL
 	  && (gdbarch_byte_order (get_type_arch (from->type ()))
