@@ -2870,7 +2870,7 @@ ada_value_ptr_subscript (struct value *arr, int arity, struct value **ind)
   int k;
   struct value *array_ind = ada_value_ind (arr);
   struct type *type
-    = check_typedef (value_enclosing_type (array_ind));
+    = check_typedef (array_ind->enclosing_type ());
 
   if (TYPE_CODE (type) == TYPE_CODE_ARRAY
       && TYPE_FIELD_BITSIZE (type, 0) > 0)
@@ -3134,7 +3134,7 @@ ada_array_bound (struct value *arr, int n, int which)
 
   if (TYPE_CODE (check_typedef (arr->type ())) == TYPE_CODE_PTR)
     arr = value_ind (arr);
-  arr_type = value_enclosing_type (arr);
+  arr_type = arr->enclosing_type ();
 
   if (ada_is_constrained_packed_array_type (arr_type))
     return ada_array_bound (decode_constrained_packed_array (arr), n, which);
@@ -3158,7 +3158,7 @@ ada_array_length (struct value *arr, int n)
 
   if (TYPE_CODE (check_typedef (arr->type ())) == TYPE_CODE_PTR)
     arr = value_ind (arr);
-  arr_type = value_enclosing_type (arr);
+  arr_type = arr->enclosing_type ();
 
   if (ada_is_constrained_packed_array_type (arr_type))
     return ada_array_length (decode_constrained_packed_array (arr), n);

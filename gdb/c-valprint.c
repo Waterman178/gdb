@@ -676,7 +676,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 			    full ? "" : _(" [incomplete object]"));
 	  /* Print out object: enclosing type is same as real_type if
 	     full.  */
-	  val_print (value_enclosing_type (val),
+	  val_print (val->enclosing_type (),
 		     0,
 		     value_address (val), stream, 0,
 		     val, &opts, current_language);
@@ -684,12 +684,12 @@ c_value_print (struct value *val, struct ui_file *stream,
           /* Note: When we look up RTTI entries, we don't get any
              information on const or volatile attributes.  */
 	}
-      else if (type != check_typedef (value_enclosing_type (val)))
+      else if (type != check_typedef (val->enclosing_type ()))
 	{
 	  /* No RTTI information, so let's do our best.  */
 	  fprintf_filtered (stream, "(%s ?) ",
-			    TYPE_NAME (value_enclosing_type (val)));
-	  val_print (value_enclosing_type (val),
+			    TYPE_NAME (val->enclosing_type ()));
+	  val_print (val->enclosing_type (),
 		     0,
 		     value_address (val), stream, 0,
 		     val, &opts, current_language);

@@ -119,7 +119,7 @@ vax_store_arguments (struct regcache *regcache, int nargs,
   /* Push arguments in reverse order.  */
   for (i = nargs - 1; i >= 0; i--)
     {
-      int len = TYPE_LENGTH (value_enclosing_type (args[i]));
+      int len = TYPE_LENGTH (args[i]->enclosing_type ());
 
       sp -= (len + 3) & ~3;
       count += (len + 3) / 4;

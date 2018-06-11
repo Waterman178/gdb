@@ -1782,7 +1782,7 @@ rw_pieced_value (struct value *v, struct value *from)
     }
   else
     {
-      if (v->type () != value_enclosing_type (v))
+      if (v->type () != v->enclosing_type ())
 	internal_error (__FILE__, __LINE__,
 			_("Should not be able to create a lazy value with "
 			  "an enclosing type"));

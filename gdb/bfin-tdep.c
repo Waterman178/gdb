@@ -508,7 +508,7 @@ bfin_push_dummy_call (struct gdbarch *gdbarch,
 
   for (i = nargs - 1; i >= 0; i--)
     {
-      struct type *value_type = value_enclosing_type (args[i]);
+      struct type *value_type = args[i]->enclosing_type ();
 
       total_len += (TYPE_LENGTH (value_type) + 3) & ~3;
     }
@@ -524,7 +524,7 @@ bfin_push_dummy_call (struct gdbarch *gdbarch,
 
   for (i = nargs - 1; i >= 0; i--)
     {
-      struct type *value_type = value_enclosing_type (args[i]);
+      struct type *value_type = args[i]->enclosing_type ();
       struct type *arg_type = check_typedef (value_type);
       int container_len = (TYPE_LENGTH (value_type) + 3) & ~3;
 

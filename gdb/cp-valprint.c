@@ -659,7 +659,7 @@ cp_print_static_field (struct type *type,
       addr = value_address (val);
       obstack_grow (&dont_print_statmem_obstack, (char *) &addr,
 		    sizeof (CORE_ADDR));
-      cp_print_value_fields (type, value_enclosing_type (val),
+      cp_print_value_fields (type, val->enclosing_type (),
 			     value_embedded_offset (val), addr,
 			     stream, recurse, val,
 			     options, NULL, 1);

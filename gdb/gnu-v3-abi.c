@@ -364,7 +364,7 @@ gnuv3_rtti_type (struct value *value,
 
   if (full_p)
     *full_p = (- offset_to_top == value_embedded_offset (value)
-               && (TYPE_LENGTH (value_enclosing_type (value))
+               && (TYPE_LENGTH (value->enclosing_type ())
                    >= TYPE_LENGTH (run_time_type)));
   if (top_p)
     *top_p = - offset_to_top;

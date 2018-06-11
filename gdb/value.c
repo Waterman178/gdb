@@ -212,7 +212,7 @@ value_entirely_covered_by_range_vector (struct value *value,
 
       if (t.offset == 0
 	  && t.length == (TARGET_CHAR_BIT
-			  * TYPE_LENGTH (value_enclosing_type (value))))
+			  * TYPE_LENGTH (value->enclosing_type ())))
 	return 1;
     }
 
@@ -882,12 +882,6 @@ value_contents_all_raw (struct value *value)
   return value->m_contents.get ();
 }
 
-struct type *
-value_enclosing_type (const struct value *value)
-{
-  return value->m_enclosing_type;
-}
-
 /* Look at value.h for description.  */
 
 struct type *
@@ -925,7 +919,7 @@ value_actual_type (struct value *value, int resolve_simple_types,
         {
           if (real_type_found)
             *real_type_found = 1;
-          result = value_enclosing_type (value);
+          result = value->enclosing_type ();
         }
     }
 
@@ -1383,7 +1377,7 @@ value_release_to_mark (const struct value *mark)
 struct value *
 value_copy (struct value *arg)
 {
-  struct type *encl_type = value_enclosing_type (arg);
+  struct type *encl_type = arg->enclosing_type ();
   struct value *val;
 
   if (value_lazy (arg))
@@ -1403,7 +1397,7 @@ value_copy (struct value *arg)
   if (!value_lazy (val))
     {
       memcpy (value_contents_all_raw (val), value_contents_all_raw (arg),
-	      TYPE_LENGTH (value_enclosing_type (arg)));
+	      TYPE_LENGTH (arg->enclosing_type ()));
 
     }
   val->m_unavailable = arg->m_unavailable;
@@ -1429,12 +1423,12 @@ struct value *
 make_cv_value (int cnst, int voltl, struct value *v)
 {
   struct type *val_type = v->type ();
-  struct type *enclosing_type = value_enclosing_type (v);
+  struct type *enclosing_type = v->enclosing_type ();
   struct value *cv_val = value_copy (v);
 
   cv_val->deprecated_set_type (
 			     make_cv_type (cnst, voltl, val_type, NULL));
-  set_value_enclosing_type (cv_val,
+  cv_val->set_enclosing_type (
 			    make_cv_type (cnst, voltl, enclosing_type, NULL));
 
   return cv_val;
@@ -1447,7 +1441,7 @@ value_non_lval (struct value *arg)
 {
   if (VALUE_LVAL (arg) != not_lval)
     {
-      struct type *enc_type = value_enclosing_type (arg);
+      struct type *enc_type = arg->enclosing_type ();
       struct value *val = allocate_value (enc_type);
 
       memcpy (value_contents_all_raw (val), value_contents_all (arg),
@@ -2592,17 +2586,16 @@ value_static_field (struct type *type, int fieldno)
    data.  */
 
 void
-set_value_enclosing_type (struct value *val, struct type *new_encl_type)
+value::set_enclosing_type (struct type *new_encl_type)
 {
-  if (TYPE_LENGTH (new_encl_type) > TYPE_LENGTH (value_enclosing_type (val)))
+  if (TYPE_LENGTH (new_encl_type) > TYPE_LENGTH (m_enclosing_type))
     {
       check_type_length_before_alloc (new_encl_type);
-      val->m_contents
-	.reset ((gdb_byte *) xrealloc (val->m_contents.release (),
-				       TYPE_LENGTH (new_encl_type)));
+      m_contents.reset ((gdb_byte *) xrealloc (m_contents.release (),
+					       TYPE_LENGTH (new_encl_type)));
     }
 
-  val->m_enclosing_type = new_encl_type;
+  m_enclosing_type = new_encl_type;
 }
 
 /* Given a value ARG1 (offset by OFFSET bytes)
@@ -2682,12 +2675,12 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 	boffset = TYPE_FIELD_BITPOS (arg_type, fieldno) / 8;
 
       if (value_lazy (arg1))
-	v = allocate_value_lazy (value_enclosing_type (arg1));
+	v = allocate_value_lazy (arg1->enclosing_type ());
       else
 	{
-	  v = allocate_value (value_enclosing_type (arg1));
+	  v = allocate_value (arg1->enclosing_type ());
 	  value_contents_copy_raw (v, 0, arg1, 0,
-				   TYPE_LENGTH (value_enclosing_type (arg1)));
+				   TYPE_LENGTH (arg1->enclosing_type ()));
 	}
       v->m_type = type;
       v->m_offset = arg1->offset ();
@@ -3334,7 +3327,7 @@ readjust_indirect_value_type (struct value *value, struct type *enc_type,
   value->deprecated_set_type (TYPE_TARGET_TYPE (original_type));
 
   /* Add embedding info.  */
-  set_value_enclosing_type (value, enc_type);
+  value->set_enclosing_type (enc_type);
   set_value_embedded_offset (value, value_pointed_to_offset (original_value));
 
   /* We may be pointing to an object of some derived type.  */
@@ -3355,7 +3348,7 @@ coerce_ref (struct value *arg)
   if (!TYPE_IS_REFERENCE (value_type_arg_tmp))
     return arg;
 
-  enc_type = check_typedef (value_enclosing_type (arg));
+  enc_type = check_typedef (arg->enclosing_type ());
   enc_type = TYPE_TARGET_TYPE (enc_type);
 
   retval = value_at_lazy (enc_type,
@@ -3469,7 +3462,7 @@ value_fetch_lazy_memory (struct value *val)
   gdb_assert (VALUE_LVAL (val) == lval_memory);
 
   CORE_ADDR addr = value_address (val);
-  struct type *type = check_typedef (value_enclosing_type (val));
+  struct type *type = check_typedef (val->enclosing_type ());
 
   if (TYPE_LENGTH (type))
       read_value_memory (val, 0, value_stack (val),

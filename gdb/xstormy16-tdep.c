@@ -252,7 +252,7 @@ xstormy16_push_dummy_call (struct gdbarch *gdbarch,
      would fit in the remaining unused registers.  */
   for (i = 0; i < nargs && argreg <= E_LST_ARG_REGNUM; i++)
     {
-      typelen = TYPE_LENGTH (value_enclosing_type (args[i]));
+      typelen = TYPE_LENGTH (args[i]->enclosing_type ());
       if (typelen > E_MAX_RETTYPE_SIZE (argreg))
 	break;
 
@@ -277,7 +277,7 @@ xstormy16_push_dummy_call (struct gdbarch *gdbarch,
     {
       const gdb_byte *bytes = value_contents (args[j]);
 
-      typelen = TYPE_LENGTH (value_enclosing_type (args[j]));
+      typelen = TYPE_LENGTH (args[j]->enclosing_type ());
       slacklen = typelen & 1;
       gdb::byte_vector val (typelen + slacklen);
       memcpy (val.data (), bytes, typelen);
