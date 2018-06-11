@@ -889,17 +889,6 @@ set_value_bitpos (struct value *value, LONGEST bit)
   value->m_bitpos = bit;
 }
 
-LONGEST
-value_bitsize (const struct value *value)
-{
-  return value->m_bitsize;
-}
-void
-set_value_bitsize (struct value *value, LONGEST bit)
-{
-  value->m_bitsize = bit;
-}
-
 struct value *
 value_parent (const struct value *value)
 {
@@ -3498,7 +3487,7 @@ value_initialized (const struct value *val)
 static void
 value_fetch_lazy_bitfield (struct value *val)
 {
-  gdb_assert (value_bitsize (val) != 0);
+  gdb_assert (val->bitsize () != 0);
 
   /* To read a lazy bitfield, read the entire enclosing value.  This
      prevents reading the same block of (possibly volatile) memory once
@@ -3511,7 +3500,7 @@ value_fetch_lazy_bitfield (struct value *val)
   if (value_lazy (parent))
     value_fetch_lazy (parent);
 
-  unpack_value_bitfield (val, value_bitpos (val), value_bitsize (val),
+  unpack_value_bitfield (val, value_bitpos (val), val->bitsize (),
 			 value_contents_for_printing (parent),
 			 value_offset (val), parent);
 }
@@ -3670,7 +3659,7 @@ value_fetch_lazy (struct value *val)
      value.  */
   gdb_assert (val->m_optimized_out.empty ());
   gdb_assert (val->m_unavailable.empty ());
-  if (value_bitsize (val))
+  if (val->bitsize ())
     value_fetch_lazy_bitfield (val);
   else if (VALUE_LVAL (val) == lval_memory)
     value_fetch_lazy_memory (val);

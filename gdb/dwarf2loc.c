@@ -1791,7 +1791,7 @@ rw_pieced_value (struct value *v, struct value *from)
     }
 
   bits_to_skip = 8 * value_offset (v);
-  if (value_bitsize (v))
+  if (v->bitsize ())
     {
       bits_to_skip += (8 * value_offset (value_parent (v))
 		       + value_bitpos (v));
@@ -1801,10 +1801,10 @@ rw_pieced_value (struct value *v, struct value *from)
 	{
 	  /* Use the least significant bits of FROM.  */
 	  max_offset = 8 * TYPE_LENGTH (from->type ());
-	  offset = max_offset - value_bitsize (v);
+	  offset = max_offset - v->bitsize ();
 	}
       else
-	max_offset = value_bitsize (v);
+	max_offset = v->bitsize ();
     }
   else
     max_offset = 8 * TYPE_LENGTH (v->type ());
@@ -2070,7 +2070,7 @@ check_pieced_synthetic_pointer (const struct value *value, LONGEST bit_offset,
   int i;
 
   bit_offset += 8 * value_offset (value);
-  if (value_bitsize (value))
+  if (value->bitsize ())
     bit_offset += value_bitpos (value);
 
   for (i = 0; i < c->pieces.size () && bit_length > 0; i++)
@@ -2190,7 +2190,7 @@ indirect_pieced_value (struct value *value)
 
   bit_length = 8 * TYPE_LENGTH (type);
   bit_offset = 8 * value_offset (value);
-  if (value_bitsize (value))
+  if (value->bitsize ())
     bit_offset += value_bitpos (value);
 
   for (i = 0; i < c->pieces.size () && bit_length > 0; i++)

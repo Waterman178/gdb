@@ -176,6 +176,18 @@ struct value
     m_type = type;
   }
 
+  /* Only used for bitfields; number of bits contained in them.  */
+
+  LONGEST bitsize () const
+  {
+    return m_bitsize;
+  }
+
+  void set_bitsize (LONGEST bit)
+  {
+    m_bitsize = bit;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -342,11 +354,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-/* Only used for bitfields; number of bits contained in them.  */
-
-extern LONGEST value_bitsize (const struct value *);
-extern void set_value_bitsize (struct value *, LONGEST bit);
 
 /* Only used for bitfields; position of start of field.  For
    gdbarch_bits_big_endian=0 targets, it is the position of the LSB.  For
