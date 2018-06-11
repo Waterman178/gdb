@@ -1214,7 +1214,7 @@ mn10300_push_dummy_call (struct gdbarch *gdbarch,
   regs_used = struct_return ? 1 : 0;
   for (len = 0, argnum = 0; argnum < nargs; argnum++)
     {
-      arg_len = (TYPE_LENGTH (value_type (args[argnum])) + 3) & ~3;
+      arg_len = (TYPE_LENGTH (args[argnum]->type ()) + 3) & ~3;
       while (regs_used < 2 && arg_len > 0)
 	{
 	  regs_used++;
@@ -1238,8 +1238,8 @@ mn10300_push_dummy_call (struct gdbarch *gdbarch,
   for (argnum = 0; argnum < nargs; argnum++)
     {
       /* FIXME what about structs?  Unions?  */
-      if (TYPE_CODE (value_type (*args)) == TYPE_CODE_STRUCT
-	  && TYPE_LENGTH (value_type (*args)) > 8)
+      if (TYPE_CODE ((*args)->type ()) == TYPE_CODE_STRUCT
+	  && TYPE_LENGTH ((*args)->type ()) > 8)
 	{
 	  /* Change to pointer-to-type.  */
 	  arg_len = push_size;
@@ -1250,7 +1250,7 @@ mn10300_push_dummy_call (struct gdbarch *gdbarch,
 	}
       else
 	{
-	  arg_len = TYPE_LENGTH (value_type (*args));
+	  arg_len = TYPE_LENGTH ((*args)->type ());
 	  val = value_contents (*args);
 	}
 

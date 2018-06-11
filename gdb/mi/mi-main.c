@@ -1143,7 +1143,7 @@ output_register (struct frame_info *frame, int regnum, int format,
 
   get_formatted_print_options (&opts, format);
   opts.deref_ref = 1;
-  val_print (value_type (val),
+  val_print (val->type (),
 	     value_embedded_offset (val), 0,
 	     &stb, 0, val, &opts, current_language);
   uiout->field_stream ("value", stb);
@@ -2491,8 +2491,8 @@ print_variable_or_computed (const char *expression, enum print_values values)
   switch (values)
     {
     case PRINT_SIMPLE_VALUES:
-      type = check_typedef (value_type (val));
-      type_print (value_type (val), "", &stb, -1);
+      type = check_typedef (val->type ());
+      type_print (val->type (), "", &stb, -1);
       uiout->field_stream ("type", stb);
       if (TYPE_CODE (type) != TYPE_CODE_ARRAY
 	  && TYPE_CODE (type) != TYPE_CODE_STRUCT

@@ -66,7 +66,7 @@ ppc_sysv_abi_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 {
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
   enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
-  int opencl_abi = ppc_sysv_use_opencl_abi (value_type (function));
+  int opencl_abi = ppc_sysv_use_opencl_abi (function->type ());
   ULONGEST saved_sp;
   int argspace = 0;		/* 0 is an initial wrong guess.  */
   int write_pass;
@@ -119,7 +119,7 @@ ppc_sysv_abi_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       for (argno = 0; argno < nargs; argno++)
 	{
 	  struct value *arg = args[argno];
-	  struct type *type = check_typedef (value_type (arg));
+	  struct type *type = check_typedef (arg->type ());
 	  int len = TYPE_LENGTH (type);
 	  const bfd_byte *val = value_contents (arg);
 
@@ -1005,7 +1005,7 @@ ppc_sysv_abi_return_value (struct gdbarch *gdbarch, struct value *function,
 			   gdb_byte *readbuf, const gdb_byte *writebuf)
 {
   return do_ppc_sysv_return_value (gdbarch,
-				   function ? value_type (function) : NULL,
+				   function ? function->type () : NULL,
 				   valtype, regcache, readbuf, writebuf, 0);
 }
 
@@ -1017,7 +1017,7 @@ ppc_sysv_abi_broken_return_value (struct gdbarch *gdbarch,
 				  gdb_byte *readbuf, const gdb_byte *writebuf)
 {
   return do_ppc_sysv_return_value (gdbarch,
-				   function ? value_type (function) : NULL,
+				   function ? function->type () : NULL,
 				   valtype, regcache, readbuf, writebuf, 1);
 }
 
@@ -1545,7 +1545,7 @@ ppc64_sysv_abi_push_dummy_call (struct gdbarch *gdbarch,
   CORE_ADDR func_addr = find_function_addr (function, NULL);
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
   enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
-  int opencl_abi = ppc_sysv_use_opencl_abi (value_type (function));
+  int opencl_abi = ppc_sysv_use_opencl_abi (function->type ());
   ULONGEST back_chain;
   /* See for-loop comment below.  */
   int write_pass;
@@ -1630,7 +1630,7 @@ ppc64_sysv_abi_push_dummy_call (struct gdbarch *gdbarch,
       for (argno = 0; argno < nargs; argno++)
 	{
 	  struct value *arg = args[argno];
-	  struct type *type = check_typedef (value_type (arg));
+	  struct type *type = check_typedef (arg->type ());
 	  const bfd_byte *val = value_contents (arg);
 
 	  if (TYPE_CODE (type) == TYPE_CODE_COMPLEX)
@@ -1699,7 +1699,7 @@ ppc64_sysv_abi_push_dummy_call (struct gdbarch *gdbarch,
      the pointer itself identifies the descriptor.  */
   if (tdep->elf_abi == POWERPC_ELF_V1)
     {
-      struct type *ftype = check_typedef (value_type (function));
+      struct type *ftype = check_typedef (function->type ());
       CORE_ADDR desc_addr = value_as_address (function);
 
       if (TYPE_CODE (ftype) == TYPE_CODE_PTR
@@ -1904,7 +1904,7 @@ ppc64_sysv_abi_return_value (struct gdbarch *gdbarch, struct value *function,
 			     gdb_byte *readbuf, const gdb_byte *writebuf)
 {
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
-  struct type *func_type = function ? value_type (function) : NULL;
+  struct type *func_type = function ? function->type () : NULL;
   int opencl_abi = func_type? ppc_sysv_use_opencl_abi (func_type) : 0;
   struct type *eltype;
   int nelt, i, ok;

@@ -168,8 +168,8 @@ static void
 lval_func_read (struct value *v)
 {
   struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
-  struct type *type = check_typedef (value_type (v));
-  struct type *eltype = TYPE_TARGET_TYPE (check_typedef (value_type (c->val)));
+  struct type *type = check_typedef (v->type ());
+  struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
   LONGEST offset = value_offset (v);
   LONGEST elsize = TYPE_LENGTH (eltype);
   int n, i, j = 0;
@@ -197,8 +197,8 @@ lval_func_write (struct value *v, struct value *fromval)
 {
   struct value *mark = value_mark ();
   struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
-  struct type *type = check_typedef (value_type (v));
-  struct type *eltype = TYPE_TARGET_TYPE (check_typedef (value_type (c->val)));
+  struct type *type = check_typedef (v->type ());
+  struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
   LONGEST offset = value_offset (v);
   LONGEST elsize = TYPE_LENGTH (eltype);
   int n, i, j = 0;
@@ -246,7 +246,7 @@ lval_func_check_synthetic_pointer (const struct value *v,
   struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
   /* Size of the target type in bits.  */
   int elsize =
-      TYPE_LENGTH (TYPE_TARGET_TYPE (check_typedef (value_type (c->val)))) * 8;
+      TYPE_LENGTH (TYPE_TARGET_TYPE (check_typedef (c->val->type ()))) * 8;
   int startrest = offset % elsize;
   int start = offset / elsize;
   int endrest = (offset + length) % elsize;
@@ -317,7 +317,7 @@ static struct value *
 create_value (struct gdbarch *gdbarch, struct value *val, enum noside noside,
 	      int *indices, int n)
 {
-  struct type *type = check_typedef (value_type (val));
+  struct type *type = check_typedef (val->type ());
   struct type *elm_type = TYPE_TARGET_TYPE (type);
   struct value *ret;
 
@@ -385,7 +385,7 @@ opencl_component_ref (struct expression *exp, struct value *val, char *comps,
   int indices[16], i;
   int dst_len;
 
-  if (!get_array_bounds (check_typedef (value_type (val)), &lowb, &highb))
+  if (!get_array_bounds (check_typedef (val->type ()), &lowb, &highb))
     error (_("Could not determine the vector bounds"));
 
   src_len = highb - lowb + 1;
@@ -492,7 +492,7 @@ opencl_component_ref (struct expression *exp, struct value *val, char *comps,
 static struct value *
 opencl_logical_not (struct expression *exp, struct value *arg)
 {
-  struct type *type = check_typedef (value_type (arg));
+  struct type *type = check_typedef (arg->type ());
   struct type *rettype;
   struct value *ret;
 
@@ -582,8 +582,8 @@ vector_relop (struct expression *exp, struct value *val1, struct value *val2,
   int t1_is_vec, t2_is_vec, i;
   LONGEST lowb1, lowb2, highb1, highb2;
 
-  type1 = check_typedef (value_type (val1));
-  type2 = check_typedef (value_type (val2));
+  type1 = check_typedef (val1->type ());
+  type2 = check_typedef (val2->type ());
 
   t1_is_vec = (TYPE_CODE (type1) == TYPE_CODE_ARRAY && TYPE_VECTOR (type1));
   t2_is_vec = (TYPE_CODE (type2) == TYPE_CODE_ARRAY && TYPE_VECTOR (type2));
@@ -633,7 +633,7 @@ vector_relop (struct expression *exp, struct value *val1, struct value *val2,
 static struct value *
 opencl_value_cast (struct type *type, struct value *arg)
 {
-  if (type != value_type (arg))
+  if (type != arg->type ())
     {
       /* Casting scalar to vector is a special case for OpenCL, scalar
 	 is cast to element type of vector then replicated into each
@@ -647,10 +647,10 @@ opencl_value_cast (struct type *type, struct value *arg)
       to_type = check_typedef (type);
 
       code1 = TYPE_CODE (to_type);
-      code2 = TYPE_CODE (check_typedef (value_type (arg)));
+      code2 = TYPE_CODE (check_typedef (arg->type ()));
 
       if (code2 == TYPE_CODE_REF)
-	code2 = TYPE_CODE (check_typedef (value_type (coerce_ref (arg))));
+	code2 = TYPE_CODE (check_typedef (coerce_ref (arg)->type ()));
 
       scalar = (code2 == TYPE_CODE_INT || code2 == TYPE_CODE_BOOL
 		|| code2 == TYPE_CODE_CHAR || code2 == TYPE_CODE_FLT
@@ -684,8 +684,8 @@ opencl_relop (struct expression *exp, struct value *arg1, struct value *arg2,
 	      enum exp_opcode op)
 {
   struct value *val;
-  struct type *type1 = check_typedef (value_type (arg1));
-  struct type *type2 = check_typedef (value_type (arg2));
+  struct type *type1 = check_typedef (arg1->type ());
+  struct type *type2 = check_typedef (arg2->type ());
   int t1_is_vec = (TYPE_CODE (type1) == TYPE_CODE_ARRAY
 		   && TYPE_VECTOR (type1));
   int t2_is_vec = (TYPE_CODE (type2) == TYPE_CODE_ARRAY
@@ -739,7 +739,7 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
     case BINOP_ASSIGN:
       (*pos)++;
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      type1 = value_type (arg1);
+      type1 = arg1->type ();
       arg2 = evaluate_subexp (type1, exp, pos, noside);
 
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
@@ -765,7 +765,7 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
     case UNOP_CAST_TYPE:
       (*pos)++;
       arg1 = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type1 = value_type (arg1);
+      type1 = arg1->type ();
       arg1 = evaluate_subexp (type1, exp, pos, noside);
 
       if (noside == EVAL_SKIP)
@@ -784,7 +784,7 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
     case BINOP_LEQ:
       (*pos)++;
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
 
       if (noside == EVAL_SKIP)
 	return value_from_longest (builtin_type (exp->gdbarch)->
@@ -828,8 +828,8 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
 	  arg2 = evaluate_subexp (NULL_TYPE, exp, pos,
 				  EVAL_AVOID_SIDE_EFFECTS);
 	  *pos = oldpos;
-	  type1 = check_typedef (value_type (arg1));
-	  type2 = check_typedef (value_type (arg2));
+	  type1 = check_typedef (arg1->type ());
+	  type2 = check_typedef (arg2->type ());
 
 	  if ((TYPE_CODE (type1) == TYPE_CODE_ARRAY && TYPE_VECTOR (type1))
 	      || (TYPE_CODE (type2) == TYPE_CODE_ARRAY && TYPE_VECTOR (type2)))
@@ -866,7 +866,7 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
     case TERNOP_COND:
       (*pos)++;
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      type1 = check_typedef (value_type (arg1));
+      type1 = check_typedef (arg1->type ());
       if (TYPE_CODE (type1) == TYPE_CODE_ARRAY && TYPE_VECTOR (type1))
 	{
 	  struct value *arg3, *tmp, *ret;
@@ -876,8 +876,8 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
 
 	  arg2 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
 	  arg3 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-	  type2 = check_typedef (value_type (arg2));
-	  type3 = check_typedef (value_type (arg3));
+	  type2 = check_typedef (arg2->type ());
+	  type3 = check_typedef (arg3->type ());
 	  t2_is_vec
 	    = TYPE_CODE (type2) == TYPE_CODE_ARRAY && TYPE_VECTOR (type2);
 	  t3_is_vec
@@ -887,12 +887,12 @@ evaluate_subexp_opencl (struct type *expect_type, struct expression *exp,
 	  if (t2_is_vec || !t3_is_vec)
 	    {
 	      arg3 = opencl_value_cast (type2, arg3);
-	      type3 = value_type (arg3);
+	      type3 = arg3->type ();
 	    }
 	  else if (!t2_is_vec || t3_is_vec)
 	    {
 	      arg2 = opencl_value_cast (type3, arg2);
-	      type2 = value_type (arg2);
+	      type2 = arg2->type ();
 	    }
 	  else if (!t2_is_vec || !t3_is_vec)
 	    {
@@ -963,7 +963,7 @@ Cannot perform conditional operation on vectors with different sizes"));
 
 	(*pos) += 3 + BYTES_TO_EXP_ELEM (tem + 1);
 	arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-	type1 = check_typedef (value_type (arg1));
+	type1 = check_typedef (arg1->type ());
 
 	if (noside == EVAL_SKIP)
 	  {
@@ -982,7 +982,7 @@ Cannot perform conditional operation on vectors with different sizes"));
 						"structure");
 
 	    if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	      v = value_zero (value_type (v), VALUE_LVAL (v));
+	      v = value_zero (v->type (), VALUE_LVAL (v));
 	    return v;
 	  }
       }

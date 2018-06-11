@@ -4244,7 +4244,7 @@ linespec_parse_variable (struct linespec_state *self, const char *variable)
       sscanf ((variable[1] == '$') ? variable + 2 : variable + 1, "%d", &index);
       val_history
 	= access_value_history ((variable[1] == '$') ? -index : index);
-      if (TYPE_CODE (value_type (val_history)) != TYPE_CODE_INT)
+      if (TYPE_CODE (val_history->type ()) != TYPE_CODE_INT)
 	error (_("History values used in line "
 		 "specs must have integer values."));
       offset.offset = value_as_long (val_history);

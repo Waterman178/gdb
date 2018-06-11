@@ -530,7 +530,7 @@ exp	:	VARIABLE
 			     mark = value_mark ();
  			     val = value_of_internalvar (parse_gdbarch (pstate),
  							 intvar);
- 			     current_type = value_type (val);
+ 			     current_type = val->type ();
 			     value_release_to_mark (mark);
  			   }
  			}
@@ -593,7 +593,7 @@ exp	:	THIS
 			  this_val
 			    = value_of_this_silent (parse_language (pstate));
 			  if (this_val)
-			    this_type = value_type (this_val);
+			    this_type = this_val->type ();
 			  else
 			    this_type = NULL;
 			  if (this_type)
@@ -733,7 +733,7 @@ variable:	name_not_typename
 			      this_val
 				= value_of_this_silent (parse_language (pstate));
 			      if (this_val)
-				this_type = value_type (this_val);
+				this_type = this_val->type ();
 			      else
 				this_type = NULL;
 			      if (this_type)

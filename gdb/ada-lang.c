@@ -670,7 +670,7 @@ static struct value *
 coerce_unspec_val_to_type (struct value *val, struct type *type)
 {
   type = ada_check_typedef (type);
-  if (value_type (val) == type)
+  if (val->type () == type)
     return val;
   else
     {
@@ -681,7 +681,7 @@ coerce_unspec_val_to_type (struct value *val, struct type *type)
       ada_ensure_varsize_limit (type);
 
       if (value_lazy (val)
-          || TYPE_LENGTH (type) > TYPE_LENGTH (value_type (val)))
+          || TYPE_LENGTH (type) > TYPE_LENGTH (val->type ()))
 	result = allocate_value_lazy (type);
       else
 	{
@@ -857,7 +857,7 @@ get_base_type (struct type *type)
 struct value *
 ada_get_decoded_value (struct value *value)
 {
-  struct type *type = ada_check_typedef (value_type (value));
+  struct type *type = ada_check_typedef (value->type ());
 
   if (ada_is_array_descriptor_type (type)
       || (ada_is_constrained_packed_array_type (type)
@@ -1634,7 +1634,7 @@ thin_descriptor_type (struct type *type)
 static struct value *
 thin_data_pntr (struct value *val)
 {
-  struct type *type = ada_check_typedef (value_type (val));
+  struct type *type = ada_check_typedef (val->type ());
   struct type *data_type = desc_data_target_type (thin_descriptor_type (type));
 
   data_type = lookup_pointer_type (data_type);
@@ -1691,7 +1691,7 @@ desc_bounds_type (struct type *type)
 static struct value *
 desc_bounds (struct value *arr)
 {
-  struct type *type = ada_check_typedef (value_type (arr));
+  struct type *type = ada_check_typedef (arr->type ());
 
   if (is_thin_pntr (type))
     {
@@ -1719,7 +1719,7 @@ desc_bounds (struct value *arr)
     {
       struct value *p_bounds = value_struct_elt (&arr, NULL, "P_BOUNDS", NULL,
 					       _("Bad GNAT array descriptor"));
-      struct type *p_bounds_type = value_type (p_bounds);
+      struct type *p_bounds_type = p_bounds->type ();
 
       if (p_bounds_type
 	  && TYPE_CODE (p_bounds_type) == TYPE_CODE_PTR)
@@ -1794,7 +1794,7 @@ desc_data_target_type (struct type *type)
 static struct value *
 desc_data (struct value *arr)
 {
-  struct type *type = value_type (arr);
+  struct type *type = arr->type ();
 
   if (is_thin_pntr (type))
     return thin_data_pntr (arr);
@@ -1975,20 +1975,20 @@ ada_is_bogus_array_descriptor (struct type *type)
 struct type *
 ada_type_of_array (struct value *arr, int bounds)
 {
-  if (ada_is_constrained_packed_array_type (value_type (arr)))
-    return decode_constrained_packed_array_type (value_type (arr));
+  if (ada_is_constrained_packed_array_type (arr->type ()))
+    return decode_constrained_packed_array_type (arr->type ());
 
-  if (!ada_is_array_descriptor_type (value_type (arr)))
-    return value_type (arr);
+  if (!ada_is_array_descriptor_type (arr->type ()))
+    return arr->type ();
 
   if (!bounds)
     {
       struct type *array_type =
-	ada_check_typedef (desc_data_target_type (value_type (arr)));
+	ada_check_typedef (desc_data_target_type (arr->type ()));
 
-      if (ada_is_unconstrained_packed_array_type (value_type (arr)))
+      if (ada_is_unconstrained_packed_array_type (arr->type ()))
 	TYPE_FIELD_BITSIZE (array_type, 0) =
-	  decode_packed_array_bitsize (value_type (arr));
+	  decode_packed_array_bitsize (arr->type ());
       
       return array_type;
     }
@@ -1998,29 +1998,29 @@ ada_type_of_array (struct value *arr, int bounds)
       int arity;
       struct value *descriptor;
 
-      elt_type = ada_array_element_type (value_type (arr), -1);
-      arity = ada_array_arity (value_type (arr));
+      elt_type = ada_array_element_type (arr->type (), -1);
+      arity = ada_array_arity (arr->type ());
 
       if (elt_type == NULL || arity == 0)
-        return ada_check_typedef (value_type (arr));
+        return ada_check_typedef (arr->type ());
 
       descriptor = desc_bounds (arr);
       if (value_as_long (descriptor) == 0)
         return NULL;
       while (arity > 0)
         {
-          struct type *range_type = alloc_type_copy (value_type (arr));
-          struct type *array_type = alloc_type_copy (value_type (arr));
+          struct type *range_type = alloc_type_copy (arr->type ());
+          struct type *array_type = alloc_type_copy (arr->type ());
           struct value *low = desc_one_bound (descriptor, arity, 0);
           struct value *high = desc_one_bound (descriptor, arity, 1);
 
           arity -= 1;
-          create_static_range_type (range_type, value_type (low),
+          create_static_range_type (range_type, low->type (),
 				    longest_to_int (value_as_long (low)),
 				    longest_to_int (value_as_long (high)));
           elt_type = create_array_type (array_type, elt_type, range_type);
 
-	  if (ada_is_unconstrained_packed_array_type (value_type (arr)))
+	  if (ada_is_unconstrained_packed_array_type (arr->type ()))
 	    {
 	      /* We need to store the element packed bitsize, as well as
 	         recompute the array size, because it was previously
@@ -2029,7 +2029,7 @@ ada_type_of_array (struct value *arr, int bounds)
 	      LONGEST hi = value_as_long (high);
 
 	      TYPE_FIELD_BITSIZE (elt_type, 0) =
-		decode_packed_array_bitsize (value_type (arr));
+		decode_packed_array_bitsize (arr->type ());
 	      /* If the array has no element, then the size is already
 	         zero, and does not need to be recomputed.  */
 	      if (lo < hi)
@@ -2054,7 +2054,7 @@ ada_type_of_array (struct value *arr, int bounds)
 struct value *
 ada_coerce_to_simple_array_ptr (struct value *arr)
 {
-  if (ada_is_array_descriptor_type (value_type (arr)))
+  if (ada_is_array_descriptor_type (arr->type ()))
     {
       struct type *arrType = ada_type_of_array (arr, 1);
 
@@ -2062,7 +2062,7 @@ ada_coerce_to_simple_array_ptr (struct value *arr)
         return NULL;
       return value_cast (arrType, value_copy (desc_data (arr)));
     }
-  else if (ada_is_constrained_packed_array_type (value_type (arr)))
+  else if (ada_is_constrained_packed_array_type (arr->type ()))
     return decode_constrained_packed_array (arr);
   else
     return arr;
@@ -2075,16 +2075,16 @@ ada_coerce_to_simple_array_ptr (struct value *arr)
 struct value *
 ada_coerce_to_simple_array (struct value *arr)
 {
-  if (ada_is_array_descriptor_type (value_type (arr)))
+  if (ada_is_array_descriptor_type (arr->type ()))
     {
       struct value *arrVal = ada_coerce_to_simple_array_ptr (arr);
 
       if (arrVal == NULL)
         error (_("Bounds unavailable for null array pointer."));
-      ada_ensure_varsize_limit (TYPE_TARGET_TYPE (value_type (arrVal)));
+      ada_ensure_varsize_limit (TYPE_TARGET_TYPE (arrVal->type ()));
       return value_ind (arrVal);
     }
-  else if (ada_is_constrained_packed_array_type (value_type (arr)))
+  else if (ada_is_constrained_packed_array_type (arr->type ()))
     return decode_constrained_packed_array (arr);
   else
     return arr;
@@ -2302,18 +2302,18 @@ decode_constrained_packed_array (struct value *arr)
      and "value_ind" routines to perform the dereferencing, as opposed
      to using "ada_coerce_ref" or "ada_value_ind".  */
   arr = coerce_ref (arr);
-  if (TYPE_CODE (ada_check_typedef (value_type (arr))) == TYPE_CODE_PTR)
+  if (TYPE_CODE (ada_check_typedef (arr->type ())) == TYPE_CODE_PTR)
     arr = value_ind (arr);
 
-  type = decode_constrained_packed_array_type (value_type (arr));
+  type = decode_constrained_packed_array_type (arr->type ());
   if (type == NULL)
     {
       error (_("can't unpack array"));
       return NULL;
     }
 
-  if (gdbarch_bits_big_endian (get_type_arch (value_type (arr)))
-      && ada_is_modular_type (value_type (arr)))
+  if (gdbarch_bits_big_endian (get_type_arch (arr->type ()))
+      && ada_is_modular_type (arr->type ()))
     {
        /* This is a (right-justified) modular type representing a packed
  	 array with no wrapper.  In order to interpret the value through
@@ -2322,14 +2322,14 @@ decode_constrained_packed_array (struct value *arr)
       int bit_size, bit_pos;
       ULONGEST mod;
 
-      mod = ada_modulus (value_type (arr)) - 1;
+      mod = ada_modulus (arr->type ()) - 1;
       bit_size = 0;
       while (mod > 0)
 	{
 	  bit_size += 1;
 	  mod >>= 1;
 	}
-      bit_pos = HOST_CHAR_BIT * TYPE_LENGTH (value_type (arr)) - bit_size;
+      bit_pos = HOST_CHAR_BIT * TYPE_LENGTH (arr->type ()) - bit_size;
       arr = ada_value_primitive_packed_val (arr, NULL,
 					    bit_pos / HOST_CHAR_BIT,
 					    bit_pos % HOST_CHAR_BIT,
@@ -2355,7 +2355,7 @@ value_subscript_packed (struct value *arr, int arity, struct value **ind)
 
   bits = 0;
   elt_total_bit_offset = 0;
-  elt_type = ada_check_typedef (value_type (arr));
+  elt_type = ada_check_typedef (arr->type ());
   for (i = 0; i < arity; i += 1)
     {
       if (TYPE_CODE (elt_type) != TYPE_CODE_ARRAY
@@ -2732,15 +2732,15 @@ move_bits (gdb_byte *target, int targ_offset, const gdb_byte *source,
 static struct value *
 ada_value_assign (struct value *toval, struct value *fromval)
 {
-  struct type *type = value_type (toval);
+  struct type *type = toval->type ();
   int bits = value_bitsize (toval);
 
   toval = ada_coerce_ref (toval);
   fromval = ada_coerce_ref (fromval);
 
-  if (ada_is_direct_array_type (value_type (toval)))
+  if (ada_is_direct_array_type (toval->type ()))
     toval = ada_coerce_to_simple_array (toval);
-  if (ada_is_direct_array_type (value_type (fromval)))
+  if (ada_is_direct_array_type (fromval->type ()))
     fromval = ada_coerce_to_simple_array (fromval);
 
   if (!deprecated_value_modifiable (toval))
@@ -2764,7 +2764,7 @@ ada_value_assign (struct value *toval, struct value *fromval)
       read_memory (to_addr, buffer, len);
       from_size = value_bitsize (fromval);
       if (from_size == 0)
-	from_size = TYPE_LENGTH (value_type (fromval)) * TARGET_CHAR_BIT;
+	from_size = TYPE_LENGTH (fromval->type ()) * TARGET_CHAR_BIT;
       if (gdbarch_bits_big_endian (get_type_arch (type)))
         move_bits (buffer, value_bitpos (toval),
 		   value_contents (fromval), from_size - bits, bits, 1);
@@ -2806,18 +2806,18 @@ value_assign_to_component (struct value *container, struct value *component,
     value_bitpos (component) - value_bitpos (container);
   int bits;
 
-  val = value_cast (value_type (component), val);
+  val = value_cast (component->type (), val);
 
   if (value_bitsize (component) == 0)
-    bits = TARGET_CHAR_BIT * TYPE_LENGTH (value_type (component));
+    bits = TARGET_CHAR_BIT * TYPE_LENGTH (component->type ());
   else
     bits = value_bitsize (component);
 
-  if (gdbarch_bits_big_endian (get_type_arch (value_type (container))))
+  if (gdbarch_bits_big_endian (get_type_arch (container->type ())))
     move_bits (value_contents_writeable (container) + offset_in_container,
 	       value_bitpos (container) + bit_offset_in_container,
 	       value_contents (val),
-	       TYPE_LENGTH (value_type (component)) * TARGET_CHAR_BIT - bits,
+	       TYPE_LENGTH (component->type ()) * TARGET_CHAR_BIT - bits,
 	       bits, 1);
   else
     move_bits (value_contents_writeable (container) + offset_in_container,
@@ -2838,7 +2838,7 @@ ada_value_subscript (struct value *arr, int arity, struct value **ind)
 
   elt = ada_coerce_to_simple_array (arr);
 
-  elt_type = ada_check_typedef (value_type (elt));
+  elt_type = ada_check_typedef (elt->type ());
   if (TYPE_CODE (elt_type) == TYPE_CODE_ARRAY
       && TYPE_FIELD_BITSIZE (elt_type, 0) > 0)
     return value_subscript_packed (elt, arity, ind);
@@ -2932,7 +2932,7 @@ ada_value_slice_from_ptr (struct value *array_ptr, struct type *type,
 static struct value *
 ada_value_slice (struct value *array, int low, int high)
 {
-  struct type *type = ada_check_typedef (value_type (array));
+  struct type *type = ada_check_typedef (array->type ());
   struct type *base_index_type = TYPE_TARGET_TYPE (TYPE_INDEX_TYPE (type));
   struct type *index_type
     = create_static_range_type (NULL, TYPE_INDEX_TYPE (type), low, high);
@@ -3132,7 +3132,7 @@ ada_array_bound (struct value *arr, int n, int which)
 {
   struct type *arr_type;
 
-  if (TYPE_CODE (check_typedef (value_type (arr))) == TYPE_CODE_PTR)
+  if (TYPE_CODE (check_typedef (arr->type ())) == TYPE_CODE_PTR)
     arr = value_ind (arr);
   arr_type = value_enclosing_type (arr);
 
@@ -3156,7 +3156,7 @@ ada_array_length (struct value *arr, int n)
   struct type *arr_type, *index_type;
   int low, high;
 
-  if (TYPE_CODE (check_typedef (value_type (arr))) == TYPE_CODE_PTR)
+  if (TYPE_CODE (check_typedef (arr->type ())) == TYPE_CODE_PTR)
     arr = value_ind (arr);
   arr_type = value_enclosing_type (arr);
 
@@ -3329,7 +3329,7 @@ resolve_subexp (expression_up *expp, int *pos, int deprocedure_p,
         if (arg1 == NULL)
           resolve_subexp (expp, pos, 1, NULL);
         else
-          resolve_subexp (expp, pos, 1, value_type (arg1));
+          resolve_subexp (expp, pos, 1, arg1->type ());
         break;
       }
 
@@ -3693,7 +3693,7 @@ ada_args_match (struct symbol *func, struct value **actuals, int n_actuals)
         {
           struct type *ftype = ada_check_typedef (TYPE_FIELD_TYPE (func_type,
 								   i));
-          struct type *atype = ada_check_typedef (value_type (actuals[i]));
+          struct type *atype = ada_check_typedef (actuals[i]->type ());
 
           if (!ada_type_match (ftype, atype, 1))
             return 0;
@@ -4233,9 +4233,9 @@ static int
 possible_user_operator_p (enum exp_opcode op, struct value *args[])
 {
   struct type *type0 =
-    (args[0] == NULL) ? NULL : ada_check_typedef (value_type (args[0]));
+    (args[0] == NULL) ? NULL : ada_check_typedef (args[0]->type ());
   struct type *type1 =
-    (args[1] == NULL) ? NULL : ada_check_typedef (value_type (args[1]));
+    (args[1] == NULL) ? NULL : ada_check_typedef (args[1]->type ());
 
   if (type0 == NULL)
     return 0;
@@ -4462,7 +4462,7 @@ ensure_lval (struct value *val)
   if (VALUE_LVAL (val) == not_lval
       || VALUE_LVAL (val) == lval_internalvar)
     {
-      int len = TYPE_LENGTH (ada_check_typedef (value_type (val)));
+      int len = TYPE_LENGTH (ada_check_typedef (val->type ()));
       const CORE_ADDR addr =
         value_as_long (value_allocate_space_in_inferior (len));
 
@@ -4482,7 +4482,7 @@ ensure_lval (struct value *val)
 struct value *
 ada_convert_actual (struct value *actual, struct type *formal_type0)
 {
-  struct type *actual_type = ada_check_typedef (value_type (actual));
+  struct type *actual_type = ada_check_typedef (actual->type ());
   struct type *formal_type = ada_check_typedef (formal_type0);
   struct type *formal_target =
     TYPE_CODE (formal_type) == TYPE_CODE_PTR
@@ -4508,7 +4508,7 @@ ada_convert_actual (struct value *actual, struct type *formal_type0)
             {
               struct value *val;
 
-              actual_type = ada_check_typedef (value_type (actual));
+              actual_type = ada_check_typedef (actual->type ());
               val = allocate_value (actual_type);
               memcpy ((char *) value_contents_raw (val),
                       (char *) value_contents (actual),
@@ -4572,14 +4572,14 @@ make_array_descriptor (struct type *type, struct value *arr)
   struct value *bounds = allocate_value (bounds_type);
   int i;
 
-  for (i = ada_array_arity (ada_check_typedef (value_type (arr)));
+  for (i = ada_array_arity (ada_check_typedef (arr->type ()));
        i > 0; i -= 1)
     {
-      modify_field (value_type (bounds), value_contents_writeable (bounds),
+      modify_field (bounds->type (), value_contents_writeable (bounds),
 		    ada_array_bound (arr, i, 0),
 		    desc_bound_bitpos (bounds_type, i, 0),
 		    desc_bound_bitsize (bounds_type, i, 0));
-      modify_field (value_type (bounds), value_contents_writeable (bounds),
+      modify_field (bounds->type (), value_contents_writeable (bounds),
 		    ada_array_bound (arr, i, 1),
 		    desc_bound_bitpos (bounds_type, i, 1),
 		    desc_bound_bitsize (bounds_type, i, 1));
@@ -4587,14 +4587,14 @@ make_array_descriptor (struct type *type, struct value *arr)
 
   bounds = ensure_lval (bounds);
 
-  modify_field (value_type (descriptor),
+  modify_field (descriptor->type (),
 		value_contents_writeable (descriptor),
 		value_pointer (ensure_lval (arr),
 			       TYPE_FIELD_TYPE (desc_type, 0)),
 		fat_pntr_data_bitpos (desc_type),
 		fat_pntr_data_bitsize (desc_type));
 
-  modify_field (value_type (descriptor),
+  modify_field (descriptor->type (),
 		value_contents_writeable (descriptor),
 		value_pointer (bounds,
 			       TYPE_FIELD_TYPE (desc_type, 1)),
@@ -6628,7 +6628,7 @@ ada_is_tag_type (struct type *type)
 struct type *
 ada_tag_type (struct value *val)
 {
-  return ada_lookup_struct_elt_type (value_type (val), "_tag", 1, 0);
+  return ada_lookup_struct_elt_type (val->type (), "_tag", 1, 0);
 }
 
 /* Return 1 if TAG follows the old scheme for Ada tags (used for Ada 95,
@@ -6698,7 +6698,7 @@ ada_tag_value_at_base_address (struct value *obj)
   struct value *tag;
   CORE_ADDR base_address;
 
-  obj_type = value_type (obj);
+  obj_type = obj->type ();
 
   /* It is the responsability of the caller to deref pointers.  */
 
@@ -6861,7 +6861,7 @@ ada_tag_name (struct value *tag)
 {
   char *name = NULL;
 
-  if (!ada_is_tag_type (value_type (tag)))
+  if (!ada_is_tag_type (tag->type ()))
     return NULL;
 
   /* It is perfectly possible that an exception be raised while trying
@@ -7519,7 +7519,7 @@ ada_value_struct_elt (struct value *arg, const char *name, int no_err)
   struct value *v;
 
   v = NULL;
-  t1 = t = ada_check_typedef (value_type (arg));
+  t1 = t = ada_check_typedef (arg->type ());
   if (TYPE_CODE (t) == TYPE_CODE_REF)
     {
       t1 = TYPE_TARGET_TYPE (t);
@@ -7869,7 +7869,7 @@ ada_value_ind (struct value *val0)
 {
   struct value *val = value_ind (val0);
 
-  if (ada_is_tagged_type (value_type (val), 0))
+  if (ada_is_tagged_type (val->type (), 0))
     val = ada_tag_value_at_base_address (val);
 
   return ada_to_fixed_value (val);
@@ -7881,13 +7881,13 @@ ada_value_ind (struct value *val0)
 static struct value *
 ada_coerce_ref (struct value *val0)
 {
-  if (TYPE_CODE (value_type (val0)) == TYPE_CODE_REF)
+  if (TYPE_CODE (val0->type ()) == TYPE_CODE_REF)
     {
       struct value *val = val0;
 
       val = coerce_ref (val);
 
-      if (ada_is_tagged_type (value_type (val), 0))
+      if (ada_is_tagged_type (val->type (), 0))
 	val = ada_tag_value_at_base_address (val);
 
       return ada_to_fixed_value (val);
@@ -8268,7 +8268,7 @@ empty_record (struct type *templ)
    the value of type TYPE at VALADDR or ADDRESS (see comments at
    the beginning of this section) VAL according to GNAT conventions.
    DVAL0 should describe the (portion of a) record that contains any
-   necessary discriminants.  It should be NULL if value_type (VAL) is
+   necessary discriminants.  It should be NULL if VAL->type () is
    an outer-level type (i.e., as opposed to a branch of a variant.)  A
    variant field (unless unchecked) is replaced by a particular branch
    of the variant.
@@ -8358,7 +8358,7 @@ ada_template_to_fixed_record_type_1 (struct type *type,
 	      dval = value_from_contents_and_address_unresolved (rtype,
 								 valaddr,
 								 address);
-	      rtype = value_type (dval);
+	      rtype = dval->type ();
 	    }
           else
             dval = dval0;
@@ -8467,7 +8467,7 @@ ada_template_to_fixed_record_type_1 (struct type *type,
 	     that is currently being constructed.  */
 	  dval = value_from_contents_and_address_unresolved (rtype, valaddr,
 							     address);
-	  rtype = value_type (dval);
+	  rtype = dval->type ();
 	}
       else
         dval = dval0;
@@ -8629,7 +8629,7 @@ to_record_with_fixed_variant_part (struct type *type, const gdb_byte *valaddr,
   if (dval0 == NULL)
     {
       dval = value_from_contents_and_address (type, valaddr, address);
-      type = value_type (dval);
+      type = dval->type ();
     }
   else
     dval = dval0;
@@ -8747,11 +8747,11 @@ to_fixed_variant_branch_type (struct type *var_type0, const gdb_byte *valaddr,
   if (templ_type != NULL)
     var_type = templ_type;
 
-  if (is_unchecked_variant (var_type, value_type (dval)))
+  if (is_unchecked_variant (var_type, dval->type ()))
       return var_type0;
   which =
     ada_which_variant_applies (var_type,
-                               value_type (dval), value_contents (dval));
+                               dval->type (), value_contents (dval));
 
   if (which < 0)
     return empty_record (var_type);
@@ -9034,7 +9034,7 @@ ada_to_fixed_type_1 (struct type *type, const gdb_byte *valaddr,
 	      value_from_contents_and_address (fixed_record_type,
 					       valaddr,
 					       address);
-            fixed_record_type = value_type (obj);
+            fixed_record_type = obj->type ();
             if (real_type != NULL)
               return to_fixed_record_type
 		(real_type, NULL,
@@ -9308,7 +9308,7 @@ struct value *
 ada_to_fixed_value (struct value *val)
 {
   val = unwrap_value (val);
-  val = ada_to_fixed_value_create (value_type (val),
+  val = ada_to_fixed_value_create (val->type (),
 				      value_address (val),
 				      val);
   return val;
@@ -9352,7 +9352,7 @@ static LONGEST
 pos_atr (struct value *arg)
 {
   struct value *val = coerce_ref (arg);
-  struct type *type = value_type (val);
+  struct type *type = val->type ();
   LONGEST result;
 
   if (!discrete_type_p (type))
@@ -9377,7 +9377,7 @@ value_val_atr (struct type *type, struct value *arg)
 {
   if (!discrete_type_p (type))
     error (_("'VAL only defined on discrete types"));
-  if (!integer_type_p (value_type (arg)))
+  if (!integer_type_p (arg->type ()))
     error (_("'VAL requires integral argument"));
 
   if (TYPE_CODE (type) == TYPE_CODE_ENUM)
@@ -9634,12 +9634,12 @@ evaluate_subexp_type (struct expression *exp, int *pos)
 static struct value *
 unwrap_value (struct value *val)
 {
-  struct type *type = ada_check_typedef (value_type (val));
+  struct type *type = ada_check_typedef (val->type ());
 
   if (ada_is_aligner_type (type))
     {
       struct value *v = ada_value_struct_elt (val, "F", 0);
-      struct type *val_type = ada_check_typedef (value_type (v));
+      struct type *val_type = ada_check_typedef (v->type ());
 
       if (ada_type_name (val_type) == NULL)
         TYPE_NAME (val_type) = ada_type_name (type);
@@ -9668,8 +9668,8 @@ unwrap_value (struct value *val)
 static struct value *
 cast_from_fixed (struct type *type, struct value *arg)
 {
-  struct value *scale = ada_scaling_factor (value_type (arg));
-  arg = value_cast (value_type (scale), arg);
+  struct value *scale = ada_scaling_factor (arg->type ());
+  arg = value_cast (scale->type (), arg);
 
   arg = value_binop (arg, scale, BINOP_MUL);
   return value_cast (type, arg);
@@ -9678,14 +9678,14 @@ cast_from_fixed (struct type *type, struct value *arg)
 static struct value *
 cast_to_fixed (struct type *type, struct value *arg)
 {
-  if (type == value_type (arg))
+  if (type == arg->type ())
     return arg;
 
   struct value *scale = ada_scaling_factor (type);
-  if (ada_is_fixed_point_type (value_type (arg)))
-    arg = cast_from_fixed (value_type (scale), arg);
+  if (ada_is_fixed_point_type (arg->type ()))
+    arg = cast_from_fixed (scale->type (), arg);
   else
-    arg = value_cast (value_type (scale), arg);
+    arg = value_cast (scale->type (), arg);
 
   arg = value_binop (arg, scale, BINOP_DIV);
   return value_cast (type, arg);
@@ -9735,10 +9735,10 @@ ada_promote_array_of_integrals (struct type *type, struct value *val)
      of type's element.  */
   gdb_assert (TYPE_CODE (type) == TYPE_CODE_ARRAY);
   gdb_assert (is_integral_type (TYPE_TARGET_TYPE (type)));
-  gdb_assert (TYPE_CODE (value_type (val)) == TYPE_CODE_ARRAY);
-  gdb_assert (is_integral_type (TYPE_TARGET_TYPE (value_type (val))));
+  gdb_assert (TYPE_CODE (val->type ()) == TYPE_CODE_ARRAY);
+  gdb_assert (is_integral_type (TYPE_TARGET_TYPE (val->type ())));
   gdb_assert (TYPE_LENGTH (TYPE_TARGET_TYPE (type))
-	      > TYPE_LENGTH (TYPE_TARGET_TYPE (value_type (val))));
+	      > TYPE_LENGTH (TYPE_TARGET_TYPE (val->type ())));
 
   if (!get_array_bounds (type, &lo, &hi))
     error (_("unable to determine array bounds"));
@@ -9763,7 +9763,7 @@ ada_promote_array_of_integrals (struct type *type, struct value *val)
 static struct value *
 coerce_for_assign (struct type *type, struct value *val)
 {
-  struct type *type2 = value_type (val);
+  struct type *type2 = val->type ();
 
   if (type == type2)
     return val;
@@ -9775,7 +9775,7 @@ coerce_for_assign (struct type *type, struct value *val)
       && TYPE_CODE (type) == TYPE_CODE_ARRAY)
     {
       val = ada_value_ind (val);
-      type2 = value_type (val);
+      type2 = val->type ();
     }
 
   if (TYPE_CODE (type2) == TYPE_CODE_ARRAY
@@ -9811,8 +9811,8 @@ ada_value_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 
   arg1 = coerce_ref (arg1);
   arg2 = coerce_ref (arg2);
-  type1 = get_base_type (ada_check_typedef (value_type (arg1)));
-  type2 = get_base_type (ada_check_typedef (value_type (arg2)));
+  type1 = get_base_type (ada_check_typedef (arg1->type ()));
+  type2 = get_base_type (ada_check_typedef (arg2->type ()));
 
   if (TYPE_CODE (type1) != TYPE_CODE_INT
       || TYPE_CODE (type2) != TYPE_CODE_INT)
@@ -9855,7 +9855,7 @@ ada_value_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 
   val = allocate_value (type1);
   store_unsigned_integer (value_contents_raw (val),
-                          TYPE_LENGTH (value_type (val)),
+                          TYPE_LENGTH (val->type ()),
 			  gdbarch_byte_order (get_type_arch (type1)), v);
   return val;
 }
@@ -9863,8 +9863,8 @@ ada_value_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 static int
 ada_value_equal (struct value *arg1, struct value *arg2)
 {
-  if (ada_is_direct_array_type (value_type (arg1))
-      || ada_is_direct_array_type (value_type (arg2)))
+  if (ada_is_direct_array_type (arg1->type ())
+      || ada_is_direct_array_type (arg2->type ()))
     {
       struct type *arg1_type, *arg2_type;
 
@@ -9876,8 +9876,8 @@ ada_value_equal (struct value *arg1, struct value *arg2)
       arg1 = ada_coerce_to_simple_array (arg1);
       arg2 = ada_coerce_to_simple_array (arg2);
 
-      arg1_type = ada_check_typedef (value_type (arg1));
-      arg2_type = ada_check_typedef (value_type (arg2));
+      arg1_type = ada_check_typedef (arg1->type ());
+      arg2_type = ada_check_typedef (arg2->type ());
 
       if (TYPE_CODE (arg1_type) != TYPE_CODE_ARRAY
           || TYPE_CODE (arg2_type) != TYPE_CODE_ARRAY)
@@ -9932,7 +9932,7 @@ assign_component (struct value *container, struct value *lhs, LONGEST index,
 {
   struct value *mark = value_mark ();
   struct value *elt;
-  struct type *lhs_type = check_typedef (value_type (lhs));
+  struct type *lhs_type = check_typedef (lhs->type ());
 
   if (TYPE_CODE (lhs_type) == TYPE_CODE_ARRAY)
     {
@@ -9943,7 +9943,7 @@ assign_component (struct value *container, struct value *lhs, LONGEST index,
     }
   else
     {
-      elt = ada_index_struct_field (index, lhs, 0, value_type (lhs));
+      elt = ada_index_struct_field (index, lhs, 0, lhs->type ());
       elt = ada_to_fixed_value (elt);
     }
 
@@ -9987,17 +9987,17 @@ assign_aggregate (struct value *container,
     }
 
   container = ada_coerce_ref (container);
-  if (ada_is_direct_array_type (value_type (container)))
+  if (ada_is_direct_array_type (container->type ()))
     container = ada_coerce_to_simple_array (container);
   lhs = ada_coerce_ref (lhs);
   if (!deprecated_value_modifiable (lhs))
     error (_("Left operand of assignment is not a modifiable lvalue."));
 
-  lhs_type = check_typedef (value_type (lhs));
+  lhs_type = check_typedef (lhs->type ());
   if (ada_is_direct_array_type (lhs_type))
     {
       lhs = ada_coerce_to_simple_array (lhs);
-      lhs_type = check_typedef (value_type (lhs));
+      lhs_type = check_typedef (lhs->type ());
       low_index = TYPE_ARRAY_LOWER_BOUND_VALUE (lhs_type);
       high_index = TYPE_ARRAY_UPPER_BOUND_VALUE (lhs_type);
     }
@@ -10084,7 +10084,7 @@ aggregate_assign_from_choices (struct value *container,
   int j;
   int n_choices = longest_to_int (exp->elts[*pos+1].longconst);
   int choice_pos, expr_pc;
-  int is_array = ada_is_direct_array_type (value_type (lhs));
+  int is_array = ada_is_direct_array_type (lhs->type ());
 
   choice_pos = *pos += 3;
 
@@ -10130,7 +10130,7 @@ aggregate_assign_from_choices (struct value *container,
 	    }
 	  ada_evaluate_subexp (NULL, exp, &choice_pos, EVAL_SKIP);
 	  ind = 0;
-	  if (! find_struct_field (name, value_type (lhs), 0, 
+	  if (! find_struct_field (name, lhs->type (), 0, 
 				   NULL, NULL, NULL, NULL, &ind))
 	    error (_("Unknown component name: %s."), name);
 	  lower = upper = ind;
@@ -10227,13 +10227,13 @@ add_component_interval (LONGEST low, LONGEST high,
 static struct value *
 ada_value_cast (struct type *type, struct value *arg2)
 {
-  if (type == ada_check_typedef (value_type (arg2)))
+  if (type == ada_check_typedef (arg2->type ()))
     return arg2;
 
   if (ada_is_fixed_point_type (type))
     return (cast_to_fixed (type, arg2));
 
-  if (ada_is_fixed_point_type (value_type (arg2)))
+  if (ada_is_fixed_point_type (arg2->type ()))
     return cast_from_fixed (type, arg2);
 
   return value_cast (type, arg2);
@@ -10595,8 +10595,8 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
         result = evaluate_subexp_standard (expect_type, exp, pos, noside);
         /* The result type will have code OP_STRING, bashed there from 
            OP_ARRAY.  Bash it back.  */
-        if (TYPE_CODE (value_type (result)) == TYPE_CODE_STRING)
-          TYPE_CODE (value_type (result)) = TYPE_CODE_ARRAY;
+        if (TYPE_CODE (result->type ()) == TYPE_CODE_STRING)
+          TYPE_CODE (result->type ()) = TYPE_CODE_ARRAY;
         return result;
       }
 
@@ -10623,19 +10623,19 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
          except if the lhs of our assignment is a convenience variable.
          In the case of assigning to a convenience variable, the lhs
          should be exactly the result of the evaluation of the rhs.  */
-      type = value_type (arg1);
+      type = arg1->type ();
       if (VALUE_LVAL (arg1) == lval_internalvar)
          type = NULL;
       arg2 = evaluate_subexp (type, exp, pos, noside);
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
         return arg1;
-      if (ada_is_fixed_point_type (value_type (arg1)))
-        arg2 = cast_to_fixed (value_type (arg1), arg2);
-      else if (ada_is_fixed_point_type (value_type (arg2)))
+      if (ada_is_fixed_point_type (arg1->type ()))
+        arg2 = cast_to_fixed (arg1->type (), arg2);
+      else if (ada_is_fixed_point_type (arg2->type ()))
         error
           (_("Fixed-point values must be assigned to fixed-point variables"));
       else
-        arg2 = coerce_for_assign (value_type (arg1), arg2);
+        arg2 = coerce_for_assign (arg1->type (), arg2);
       return ada_value_assign (arg1, arg2);
 
     case BINOP_ADD:
@@ -10643,22 +10643,22 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       arg2 = evaluate_subexp_with_coercion (exp, pos, noside);
       if (noside == EVAL_SKIP)
         goto nosideret;
-      if (TYPE_CODE (value_type (arg1)) == TYPE_CODE_PTR)
+      if (TYPE_CODE (arg1->type ()) == TYPE_CODE_PTR)
         return (value_from_longest
-                 (value_type (arg1),
+                 (arg1->type (),
                   value_as_long (arg1) + value_as_long (arg2)));
-      if (TYPE_CODE (value_type (arg2)) == TYPE_CODE_PTR)
+      if (TYPE_CODE (arg2->type ()) == TYPE_CODE_PTR)
         return (value_from_longest
-                 (value_type (arg2),
+                 (arg2->type (),
                   value_as_long (arg1) + value_as_long (arg2)));
-      if ((ada_is_fixed_point_type (value_type (arg1))
-           || ada_is_fixed_point_type (value_type (arg2)))
-          && value_type (arg1) != value_type (arg2))
+      if ((ada_is_fixed_point_type (arg1->type ())
+           || ada_is_fixed_point_type (arg2->type ()))
+          && arg1->type () != arg2->type ())
         error (_("Operands of fixed-point addition must have the same type"));
       /* Do the addition, and cast the result to the type of the first
          argument.  We cannot cast the result to a reference type, so if
          ARG1 is a reference type, find its underlying type.  */
-      type = value_type (arg1);
+      type = arg1->type ();
       while (TYPE_CODE (type) == TYPE_CODE_REF)
         type = TYPE_TARGET_TYPE (type);
       binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
@@ -10669,23 +10669,23 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       arg2 = evaluate_subexp_with_coercion (exp, pos, noside);
       if (noside == EVAL_SKIP)
         goto nosideret;
-      if (TYPE_CODE (value_type (arg1)) == TYPE_CODE_PTR)
+      if (TYPE_CODE (arg1->type ()) == TYPE_CODE_PTR)
         return (value_from_longest
-                 (value_type (arg1),
+                 (arg1->type (),
                   value_as_long (arg1) - value_as_long (arg2)));
-      if (TYPE_CODE (value_type (arg2)) == TYPE_CODE_PTR)
+      if (TYPE_CODE (arg2->type ()) == TYPE_CODE_PTR)
         return (value_from_longest
-                 (value_type (arg2),
+                 (arg2->type (),
                   value_as_long (arg1) - value_as_long (arg2)));
-      if ((ada_is_fixed_point_type (value_type (arg1))
-           || ada_is_fixed_point_type (value_type (arg2)))
-          && value_type (arg1) != value_type (arg2))
+      if ((ada_is_fixed_point_type (arg1->type ())
+           || ada_is_fixed_point_type (arg2->type ()))
+          && arg1->type () != arg2->type ())
         error (_("Operands of fixed-point subtraction "
 		 "must have the same type"));
       /* Do the substraction, and cast the result to the type of the first
          argument.  We cannot cast the result to a reference type, so if
          ARG1 is a reference type, find its underlying type.  */
-      type = value_type (arg1);
+      type = arg1->type ();
       while (TYPE_CODE (type) == TYPE_CODE_REF)
         type = TYPE_TARGET_TYPE (type);
       binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
@@ -10702,14 +10702,14 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       else if (noside == EVAL_AVOID_SIDE_EFFECTS)
         {
           binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
-          return value_zero (value_type (arg1), not_lval);
+          return value_zero (arg1->type (), not_lval);
         }
       else
         {
           type = builtin_type (exp->gdbarch)->builtin_double;
-          if (ada_is_fixed_point_type (value_type (arg1)))
+          if (ada_is_fixed_point_type (arg1->type ()))
             arg1 = cast_from_fixed (type, arg1);
-          if (ada_is_fixed_point_type (value_type (arg2)))
+          if (ada_is_fixed_point_type (arg2->type ()))
             arg2 = cast_from_fixed (type, arg2);
           binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
           return ada_value_binop (arg1, arg2, op);
@@ -10718,7 +10718,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
     case BINOP_EQUAL:
     case BINOP_NOTEQUAL:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
         goto nosideret;
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
@@ -10737,8 +10737,8 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
       if (noside == EVAL_SKIP)
         goto nosideret;
-      else if (ada_is_fixed_point_type (value_type (arg1)))
-        return value_cast (value_type (arg1), value_neg (arg1));
+      else if (ada_is_fixed_point_type (arg1->type ()))
+        return value_cast (arg1->type (), value_neg (arg1));
       else
 	{
 	  unop_promote (exp->language_defn, exp->gdbarch, &arg1);
@@ -10767,7 +10767,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
         *pos = pc;
         val = evaluate_subexp_standard (expect_type, exp, pos, noside);
 
-        return value_cast (value_type (arg1), val);
+        return value_cast (arg1->type (), val);
       }
 
     case OP_VAR_VALUE:
@@ -10886,15 +10886,15 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
         }
 
       if (ada_is_constrained_packed_array_type
-	  (desc_base_type (value_type (argvec[0]))))
+	  (desc_base_type (argvec[0]->type ())))
         argvec[0] = ada_coerce_to_simple_array (argvec[0]);
-      else if (TYPE_CODE (value_type (argvec[0])) == TYPE_CODE_ARRAY
-               && TYPE_FIELD_BITSIZE (value_type (argvec[0]), 0) != 0)
+      else if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_ARRAY
+               && TYPE_FIELD_BITSIZE (argvec[0]->type (), 0) != 0)
         /* This is a packed array that has already been fixed, and
 	   therefore already coerced to a simple array.  Nothing further
 	   to do.  */
         ;
-      else if (TYPE_CODE (value_type (argvec[0])) == TYPE_CODE_REF)
+      else if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_REF)
 	{
 	  /* Make sure we dereference references so that all the code below
 	     feels like it's really handling the referenced value.  Wrapping
@@ -10902,11 +10902,11 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 	     well.  */
 	  argvec[0] = ada_to_fixed_value (coerce_ref (argvec[0]));
 	}
-      else if (TYPE_CODE (value_type (argvec[0])) == TYPE_CODE_ARRAY
+      else if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_ARRAY
 	       && VALUE_LVAL (argvec[0]) == lval_memory)
 	argvec[0] = value_addr (argvec[0]);
 
-      type = ada_check_typedef (value_type (argvec[0]));
+      type = ada_check_typedef (argvec[0]->type ());
 
       /* Ada allows us to implicitly dereference arrays when subscripting
 	 them.  So, if this is an array typedef (encoding use for array
@@ -10930,7 +10930,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
               break;
             default:
               error (_("cannot subscript or call something of type `%s'"),
-                     ada_type_name (value_type (argvec[0])));
+                     ada_type_name (argvec[0]->type ()));
               break;
             }
         }
@@ -11024,32 +11024,32 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 
         /* If this is a reference to an aligner type, then remove all
            the aligners.  */
-        if (TYPE_CODE (value_type (array)) == TYPE_CODE_REF
-            && ada_is_aligner_type (TYPE_TARGET_TYPE (value_type (array))))
-          TYPE_TARGET_TYPE (value_type (array)) =
-            ada_aligned_type (TYPE_TARGET_TYPE (value_type (array)));
+        if (TYPE_CODE (array->type ()) == TYPE_CODE_REF
+            && ada_is_aligner_type (TYPE_TARGET_TYPE (array->type ())))
+          TYPE_TARGET_TYPE (array->type ()) =
+            ada_aligned_type (TYPE_TARGET_TYPE (array->type ()));
 
-        if (ada_is_constrained_packed_array_type (value_type (array)))
+        if (ada_is_constrained_packed_array_type (array->type ()))
           error (_("cannot slice a packed array"));
 
         /* If this is a reference to an array or an array lvalue,
            convert to a pointer.  */
-        if (TYPE_CODE (value_type (array)) == TYPE_CODE_REF
-            || (TYPE_CODE (value_type (array)) == TYPE_CODE_ARRAY
+        if (TYPE_CODE (array->type ()) == TYPE_CODE_REF
+            || (TYPE_CODE (array->type ()) == TYPE_CODE_ARRAY
                 && VALUE_LVAL (array) == lval_memory))
           array = value_addr (array);
 
         if (noside == EVAL_AVOID_SIDE_EFFECTS
             && ada_is_array_descriptor_type (ada_check_typedef
-                                             (value_type (array))))
+                                             (array->type ())))
           return empty_array (ada_type_of_array (array, 0), low_bound);
 
         array = ada_coerce_to_simple_array_ptr (array);
 
         /* If we have more than one level of pointer indirection,
            dereference the value until we get only one level.  */
-        while (TYPE_CODE (value_type (array)) == TYPE_CODE_PTR
-               && (TYPE_CODE (TYPE_TARGET_TYPE (value_type (array)))
+        while (TYPE_CODE (array->type ()) == TYPE_CODE_PTR
+               && (TYPE_CODE (TYPE_TARGET_TYPE (array->type ()))
                      == TYPE_CODE_PTR))
           array = value_ind (array);
 
@@ -11057,13 +11057,13 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
            to avoid a SEGV when trying to get the index type or the target
            type later down the road if the debug info generated by
            the compiler is incorrect or incomplete.  */
-        if (!ada_is_simple_array_type (value_type (array)))
+        if (!ada_is_simple_array_type (array->type ()))
           error (_("cannot take slice of non-array"));
 
-        if (TYPE_CODE (ada_check_typedef (value_type (array)))
+        if (TYPE_CODE (ada_check_typedef (array->type ()))
             == TYPE_CODE_PTR)
           {
-            struct type *type0 = ada_check_typedef (value_type (array));
+            struct type *type0 = ada_check_typedef (array->type ());
 
             if (high_bound < low_bound || noside == EVAL_AVOID_SIDE_EFFECTS)
               return empty_array (TYPE_TARGET_TYPE (type0), low_bound);
@@ -11080,7 +11080,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
         else if (noside == EVAL_AVOID_SIDE_EFFECTS)
           return array;
         else if (high_bound < low_bound)
-          return empty_array (value_type (array), low_bound);
+          return empty_array (array->type (), low_bound);
         else
           return ada_value_slice (array, longest_to_int (low_bound),
 				  longest_to_int (high_bound));
@@ -11132,9 +11132,9 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 
       tem = longest_to_int (exp->elts[pc + 1].longconst);
 
-      type = ada_index_type (value_type (arg2), tem, "range");
+      type = ada_index_type (arg2->type (), tem, "range");
       if (!type)
-	type = value_type (arg1);
+	type = arg1->type ();
 
       arg3 = value_from_longest (type, ada_array_bound (arg2, tem, 1));
       arg2 = value_from_longest (type, ada_array_bound (arg2, tem, 0));
@@ -11197,14 +11197,14 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
           {
             arg1 = ada_coerce_ref (arg1);
 
-            if (ada_is_constrained_packed_array_type (value_type (arg1)))
+            if (ada_is_constrained_packed_array_type (arg1->type ()))
               arg1 = ada_coerce_to_simple_array (arg1);
 
             if (op == OP_ATR_LENGTH)
 	      type = builtin_type (exp->gdbarch)->builtin_int;
 	    else
 	      {
-		type = ada_index_type (value_type (arg1), tem,
+		type = ada_index_type (arg1->type (), tem,
 				       ada_attribute_name (op));
 		if (type == NULL)
 		  type = builtin_type (exp->gdbarch)->builtin_int;
@@ -11309,7 +11309,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       if (noside == EVAL_SKIP)
         goto nosideret;
       else if (noside == EVAL_AVOID_SIDE_EFFECTS)
-        return value_zero (value_type (arg1), not_lval);
+        return value_zero (arg1->type (), not_lval);
       else
 	{
 	  binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
@@ -11346,7 +11346,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 
     case OP_ATR_SIZE:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      type = value_type (arg1);
+      type = arg1->type ();
 
       /* If the argument is a reference, then dereference its type, since
          the user is really asking for the size of the actual object,
@@ -11379,12 +11379,12 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       if (noside == EVAL_SKIP)
         goto nosideret;
       else if (noside == EVAL_AVOID_SIDE_EFFECTS)
-        return value_zero (value_type (arg1), not_lval);
+        return value_zero (arg1->type (), not_lval);
       else
 	{
 	  /* For integer exponentiation operations,
 	     only promote the first argument.  */
-	  if (is_integral_type (value_type (arg2)))
+	  if (is_integral_type (arg2->type ()))
 	    unop_promote (exp->language_defn, exp->gdbarch, &arg1);
 	  else
 	    binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
@@ -11404,7 +11404,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       if (noside == EVAL_SKIP)
         goto nosideret;
       unop_promote (exp->language_defn, exp->gdbarch, &arg1);
-      if (value_less (arg1, value_zero (value_type (arg1), not_lval)))
+      if (value_less (arg1, value_zero (arg1->type (), not_lval)))
         return value_neg (arg1);
       else
         return arg1;
@@ -11414,7 +11414,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
       if (noside == EVAL_SKIP)
         goto nosideret;
-      type = ada_check_typedef (value_type (arg1));
+      type = ada_check_typedef (arg1->type ());
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
         {
           if (ada_is_array_descriptor_type (type))
@@ -11442,7 +11442,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 		{
 		  arg1 = evaluate_subexp (NULL_TYPE, exp, &preeval_pos,
 					  EVAL_NORMAL);
-		  type = value_type (ada_value_ind (arg1));
+		  type = ada_value_ind (arg1)->type ();
 		}
 	      else
 		{
@@ -11470,7 +11470,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
             error (_("Attempt to take contents of a non-pointer value."));
         }
       arg1 = ada_coerce_ref (arg1);     /* FIXME: What is this for??  */
-      type = ada_check_typedef (value_type (arg1));
+      type = ada_check_typedef (arg1->type ());
 
       if (TYPE_CODE (type) == TYPE_CODE_INT)
           /* GDB allows dereferencing an int.  If we were given
@@ -11500,7 +11500,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
         goto nosideret;
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
         {
-          struct type *type1 = value_type (arg1);
+          struct type *type1 = arg1->type ();
 
           if (ada_is_tagged_type (type1, 1))
             {
@@ -11520,7 +11520,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 					       &exp->elts[pc + 2].string,
 					       0);
 		  arg1 = unwrap_value (arg1);
-		  type = value_type (ada_to_fixed_value (arg1));
+		  type = ada_to_fixed_value (arg1)->type ();
 		}
             }
           else
@@ -11719,7 +11719,7 @@ scan_discrim_bound (const char *str, int k, struct value *dval, LONGEST * px,
       k = pend - str;
     }
 
-  bound_val = ada_search_struct_field (bound, dval, 0, value_type (dval));
+  bound_val = ada_search_struct_field (bound, dval, 0, dval->type ());
   if (bound_val == NULL)
     return 0;
 
@@ -12321,7 +12321,7 @@ ada_exception_message_1 (void)
 
   e_msg_val = ada_coerce_to_simple_array (e_msg_val);
   gdb_assert (e_msg_val != NULL);
-  e_msg_len = TYPE_LENGTH (value_type (e_msg_val));
+  e_msg_len = TYPE_LENGTH (e_msg_val->type ());
 
   /* If the message string is empty, then treat it as if there was
      no exception message.  */

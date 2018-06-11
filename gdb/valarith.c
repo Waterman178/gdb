@@ -82,7 +82,7 @@ value_ptradd (struct value *arg1, LONGEST arg2)
   struct value *result;
 
   arg1 = coerce_array (arg1);
-  valptrtype = check_typedef (value_type (arg1));
+  valptrtype = check_typedef (arg1->type ());
   sz = find_size_for_pointer_math (valptrtype);
 
   result = value_from_pointer (valptrtype,
@@ -103,8 +103,8 @@ value_ptrdiff (struct value *arg1, struct value *arg2)
 
   arg1 = coerce_array (arg1);
   arg2 = coerce_array (arg2);
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
 
   gdb_assert (TYPE_CODE (type1) == TYPE_CODE_PTR);
   gdb_assert (TYPE_CODE (type2) == TYPE_CODE_PTR);
@@ -143,7 +143,7 @@ value_subscript (struct value *array, LONGEST index)
   struct type *tarray;
 
   array = coerce_ref (array);
-  tarray = check_typedef (value_type (array));
+  tarray = check_typedef (array->type ());
 
   if (TYPE_CODE (tarray) == TYPE_CODE_ARRAY
       || TYPE_CODE (tarray) == TYPE_CODE_STRING)
@@ -184,7 +184,7 @@ value_subscript (struct value *array, LONGEST index)
 struct value *
 value_subscripted_rvalue (struct value *array, LONGEST index, int lowerbound)
 {
-  struct type *array_type = check_typedef (value_type (array));
+  struct type *array_type = check_typedef (array->type ());
   struct type *elt_type = check_typedef (TYPE_TARGET_TYPE (array_type));
   ULONGEST elt_size = type_length_units (elt_type);
   ULONGEST elt_offs = elt_size * (index - lowerbound);
@@ -247,7 +247,7 @@ int
 binop_user_defined_p (enum exp_opcode op,
 		      struct value *arg1, struct value *arg2)
 {
-  return binop_types_user_defined_p (op, value_type (arg1), value_type (arg2));
+  return binop_types_user_defined_p (op, arg1->type (), arg2->type ());
 }
 
 /* Check to see if argument is a structure.  This is called so
@@ -263,7 +263,7 @@ unop_user_defined_p (enum exp_opcode op, struct value *arg1)
 
   if (op == UNOP_ADDR)
     return 0;
-  type1 = check_typedef (value_type (arg1));
+  type1 = check_typedef (arg1->type ());
   if (TYPE_IS_REFERENCE (type1))
     type1 = check_typedef (TYPE_TARGET_TYPE (type1));
   return TYPE_CODE (type1) == TYPE_CODE_STRUCT;
@@ -350,7 +350,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
   /* now we know that what we have to do is construct our
      arg vector and find the right function to call it with.  */
 
-  if (TYPE_CODE (check_typedef (value_type (arg1))) != TYPE_CODE_STRUCT)
+  if (TYPE_CODE (check_typedef (arg1->type ())) != TYPE_CODE_STRUCT)
     error (_("Can't do that binary op on that type"));	/* FIXME be explicit */
 
   argvec = (struct value **) alloca (sizeof (struct value *) * 4);
@@ -476,7 +476,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
 	  argvec[1] = argvec[0];
 	  argvec++;
 	}
-      if (TYPE_CODE (value_type (argvec[0])) == TYPE_CODE_XMETHOD)
+      if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_XMETHOD)
 	{
 	  /* Static xmethods are not supported yet.  */
 	  gdb_assert (static_memfuncp == 0);
@@ -496,7 +496,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
 	  struct type *return_type;
 
 	  return_type
-	    = TYPE_TARGET_TYPE (check_typedef (value_type (argvec[0])));
+	    = TYPE_TARGET_TYPE (check_typedef (argvec[0]->type ()));
 	  return value_zero (return_type, VALUE_LVAL (arg1));
 	}
       return call_function_by_hand (argvec[0], NULL, 2 - static_memfuncp,
@@ -518,7 +518,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
 struct value *
 value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
 {
-  struct gdbarch *gdbarch = get_type_arch (value_type (arg1));
+  struct gdbarch *gdbarch = get_type_arch (arg1->type ());
   struct value **argvec;
   char *ptr;
   char tstr[13], mangle_tstr[13];
@@ -529,7 +529,7 @@ value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
   /* now we know that what we have to do is construct our
      arg vector and find the right function to call it with.  */
 
-  if (TYPE_CODE (check_typedef (value_type (arg1))) != TYPE_CODE_STRUCT)
+  if (TYPE_CODE (check_typedef (arg1->type ())) != TYPE_CODE_STRUCT)
     error (_("Can't do that unary op on that type"));	/* FIXME be explicit */
 
   argvec = (struct value **) alloca (sizeof (struct value *) * 4);
@@ -595,7 +595,7 @@ value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
 	  nargs --;
 	  argvec++;
 	}
-      if (TYPE_CODE (value_type (argvec[0])) == TYPE_CODE_XMETHOD)
+      if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_XMETHOD)
 	{
 	  /* Static xmethods are not supported yet.  */
 	  gdb_assert (static_memfuncp == 0);
@@ -615,7 +615,7 @@ value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
 	  struct type *return_type;
 
 	  return_type
-	    = TYPE_TARGET_TYPE (check_typedef (value_type (argvec[0])));
+	    = TYPE_TARGET_TYPE (check_typedef (argvec[0]->type ()));
 	  return value_zero (return_type, VALUE_LVAL (arg1));
 	}
       return call_function_by_hand (argvec[0], NULL, nargs, argvec + 1);
@@ -656,8 +656,8 @@ value_concat (struct value *arg1, struct value *arg2)
   int inval1len, inval2len;
   int count, idx;
   char inchar;
-  struct type *type1 = check_typedef (value_type (arg1));
-  struct type *type2 = check_typedef (value_type (arg2));
+  struct type *type1 = check_typedef (arg1->type ());
+  struct type *type2 = check_typedef (arg2->type ());
   struct type *char_type;
 
   /* First figure out if we are dealing with two values to be concatenated
@@ -849,8 +849,8 @@ value_args_as_target_float (struct value *arg1, struct value *arg2,
 {
   struct type *type1, *type2;
 
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
 
   /* At least one of the arguments must be of floating-point type.  */
   gdb_assert (is_floating_type (type1) || is_floating_type (type2));
@@ -917,8 +917,8 @@ scalar_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
   arg1 = coerce_ref (arg1);
   arg2 = coerce_ref (arg2);
 
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
 
   if ((!is_floating_value (arg1) && !is_integral_type (type1))
       || (!is_floating_value (arg2) && !is_integral_type (type2)))
@@ -1137,7 +1137,7 @@ scalar_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 
 	  val = allocate_value (result_type);
 	  store_unsigned_integer (value_contents_raw (val),
-				  TYPE_LENGTH (value_type (val)),
+				  TYPE_LENGTH (val->type ()),
 				  gdbarch_byte_order
 				    (get_type_arch (result_type)),
 				  v);
@@ -1267,7 +1267,7 @@ scalar_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 
 	  val = allocate_value (result_type);
 	  store_signed_integer (value_contents_raw (val),
-				TYPE_LENGTH (value_type (val)),
+				TYPE_LENGTH (val->type ()),
 				gdbarch_byte_order
 				  (get_type_arch (result_type)),
 				v);
@@ -1303,7 +1303,7 @@ value_vector_widen (struct value *scalar_value, struct type *vector_type)
   eltype = check_typedef (TYPE_TARGET_TYPE (vector_type));
   elval = value_cast (eltype, scalar_value);
 
-  scalar_type = check_typedef (value_type (scalar_value));
+  scalar_type = check_typedef (scalar_value->type ());
 
   /* If we reduced the length of the scalar then check we didn't loose any
      important bits.  */
@@ -1331,8 +1331,8 @@ vector_binop (struct value *val1, struct value *val2, enum exp_opcode op)
   int t1_is_vec, t2_is_vec, elsize, i;
   LONGEST low_bound1, high_bound1, low_bound2, high_bound2;
 
-  type1 = check_typedef (value_type (val1));
-  type2 = check_typedef (value_type (val2));
+  type1 = check_typedef (val1->type ());
+  type2 = check_typedef (val2->type ());
 
   t1_is_vec = (TYPE_CODE (type1) == TYPE_CODE_ARRAY
 	       && TYPE_VECTOR (type1)) ? 1 : 0;
@@ -1377,8 +1377,8 @@ struct value *
 value_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
 {
   struct value *val;
-  struct type *type1 = check_typedef (value_type (arg1));
-  struct type *type2 = check_typedef (value_type (arg2));
+  struct type *type1 = check_typedef (arg1->type ());
+  struct type *type2 = check_typedef (arg2->type ());
   int t1_is_vec = (TYPE_CODE (type1) == TYPE_CODE_ARRAY
 		   && TYPE_VECTOR (type1));
   int t2_is_vec = (TYPE_CODE (type2) == TYPE_CODE_ARRAY
@@ -1418,7 +1418,7 @@ value_logical_not (struct value *arg1)
   struct type *type1;
 
   arg1 = coerce_array (arg1);
-  type1 = check_typedef (value_type (arg1));
+  type1 = check_typedef (arg1->type ());
 
   if (is_floating_value (arg1))
     return target_float_is_zero (value_contents (arg1), type1);
@@ -1441,8 +1441,8 @@ value_logical_not (struct value *arg1)
 static int
 value_strcmp (struct value *arg1, struct value *arg2)
 {
-  int len1 = TYPE_LENGTH (value_type (arg1));
-  int len2 = TYPE_LENGTH (value_type (arg2));
+  int len1 = TYPE_LENGTH (arg1->type ());
+  int len2 = TYPE_LENGTH (arg2->type ());
   const gdb_byte *s1 = value_contents (arg1);
   const gdb_byte *s2 = value_contents (arg2);
   int i, len = len1 < len2 ? len1 : len2;
@@ -1482,8 +1482,8 @@ value_equal (struct value *arg1, struct value *arg2)
   arg1 = coerce_array (arg1);
   arg2 = coerce_array (arg2);
 
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
   code1 = TYPE_CODE (type1);
   code2 = TYPE_CODE (type2);
   is_int1 = is_integral_type (type1);
@@ -1548,8 +1548,8 @@ value_equal_contents (struct value *arg1, struct value *arg2)
 {
   struct type *type1, *type2;
 
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
 
   return (TYPE_CODE (type1) == TYPE_CODE (type2)
 	  && TYPE_LENGTH (type1) == TYPE_LENGTH (type2)
@@ -1571,8 +1571,8 @@ value_less (struct value *arg1, struct value *arg2)
   arg1 = coerce_array (arg1);
   arg2 = coerce_array (arg2);
 
-  type1 = check_typedef (value_type (arg1));
-  type2 = check_typedef (value_type (arg2));
+  type1 = check_typedef (arg1->type ());
+  type2 = check_typedef (arg2->type ());
   code1 = TYPE_CODE (type1);
   code2 = TYPE_CODE (type2);
   is_int1 = is_integral_type (type1);
@@ -1622,7 +1622,7 @@ value_pos (struct value *arg1)
   struct type *type;
 
   arg1 = coerce_ref (arg1);
-  type = check_typedef (value_type (arg1));
+  type = check_typedef (arg1->type ());
 
   if (is_integral_type (type) || is_floating_value (arg1)
       || (TYPE_CODE (type) == TYPE_CODE_ARRAY && TYPE_VECTOR (type)))
@@ -1640,7 +1640,7 @@ value_neg (struct value *arg1)
   struct type *type;
 
   arg1 = coerce_ref (arg1);
-  type = check_typedef (value_type (arg1));
+  type = check_typedef (arg1->type ());
 
   if (is_integral_type (type) || is_floating_type (type))
     return value_binop (value_from_longest (type, 0), arg1, BINOP_SUB);
@@ -1676,7 +1676,7 @@ value_complement (struct value *arg1)
   struct value *val;
 
   arg1 = coerce_ref (arg1);
-  type = check_typedef (value_type (arg1));
+  type = check_typedef (arg1->type ());
 
   if (is_integral_type (type))
     val = value_from_longest (type, ~value_as_long (arg1));
@@ -1734,8 +1734,8 @@ int
 value_in (struct value *element, struct value *set)
 {
   int member;
-  struct type *settype = check_typedef (value_type (set));
-  struct type *eltype = check_typedef (value_type (element));
+  struct type *settype = check_typedef (set->type ());
+  struct type *eltype = check_typedef (element->type ());
 
   if (TYPE_CODE (eltype) == TYPE_CODE_RANGE)
     eltype = TYPE_TARGET_TYPE (eltype);

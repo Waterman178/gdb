@@ -275,7 +275,7 @@ print_frame_arg (const struct frame_arg *arg)
 		 because our standard indentation here is 4 spaces, and
 		 val_print indents 2 for each recurse.  */ 
 
-	      annotate_arg_value (value_type (arg->val));
+	      annotate_arg_value (arg->val->type ());
 
 	      /* Use the appropriate language to display our symbol, unless the
 		 user forced the language to a specific language.  */
@@ -389,7 +389,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
 
 	  if (val && entryval && !current_uiout->is_mi_like_p ())
 	    {
-	      struct type *type = value_type (val);
+	      struct type *type = val->type ();
 
 	      if (value_lazy (val))
 		value_fetch_lazy (val);
@@ -412,7 +412,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
 		      val_deref = coerce_ref (val);
 		      if (value_lazy (val_deref))
 			value_fetch_lazy (val_deref);
-		      type_deref = value_type (val_deref);
+		      type_deref = val_deref->type ();
 
 		      entryval_deref = coerce_ref (entryval);
 		      if (value_lazy (entryval_deref))
@@ -2339,7 +2339,7 @@ return_command (const char *retval_exp, int from_tty)
 	    error (_("Return value type not available for selected "
 		     "stack frame.\n"
 		     "Please use an explicit cast of the value to return."));
-	  return_type = value_type (return_value);
+	  return_type = return_value->type ();
 	}
       return_type = check_typedef (return_type);
       return_value = value_cast (return_type, return_value);
@@ -2402,7 +2402,7 @@ return_command (const char *retval_exp, int from_tty)
   /* Store RETURN_VALUE in the just-returned register set.  */
   if (return_value != NULL)
     {
-      struct type *return_type = value_type (return_value);
+      struct type *return_type = return_value->type ();
       struct gdbarch *gdbarch = get_current_regcache ()->arch ();
 
       gdb_assert (rv_conv != RETURN_VALUE_STRUCT_CONVENTION

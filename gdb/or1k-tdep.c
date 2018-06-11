@@ -607,7 +607,7 @@ or1k_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
   int bpa = (gdbarch_tdep (gdbarch))->bytes_per_address;
   int bpw = (gdbarch_tdep (gdbarch))->bytes_per_word;
-  struct type *func_type = value_type (function);
+  struct type *func_type = function->type ();
 
   /* Return address */
   regcache_cooked_write_unsigned (regcache, OR1K_LR_REGNUM, bp_addr);
@@ -631,7 +631,7 @@ or1k_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       gdb_byte valbuf[sizeof (ULONGEST)];
 
       struct value *arg = args[argnum];
-      struct type *arg_type = check_typedef (value_type (arg));
+      struct type *arg_type = check_typedef (arg->type ());
       int len = TYPE_LENGTH (arg_type);
       enum type_code typecode = TYPE_CODE (arg_type);
 
@@ -721,7 +721,7 @@ or1k_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   for (argnum = first_stack_arg; argnum < nargs; argnum++)
     {
       struct value *arg = args[argnum];
-      struct type *arg_type = check_typedef (value_type (arg));
+      struct type *arg_type = check_typedef (arg->type ());
       int len = TYPE_LENGTH (arg_type);
       enum type_code typecode = TYPE_CODE (arg_type);
 
@@ -753,7 +753,7 @@ or1k_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       gdb_byte valbuf[sizeof (ULONGEST)];
 
       struct value *arg = args[argnum];
-      struct type *arg_type = check_typedef (value_type (arg));
+      struct type *arg_type = check_typedef (arg->type ());
       int len = TYPE_LENGTH (arg_type);
       enum type_code typecode = TYPE_CODE (arg_type);
       /* The EABI passes structures that do not fit in a register by

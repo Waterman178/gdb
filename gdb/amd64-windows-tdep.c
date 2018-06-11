@@ -110,9 +110,9 @@ amd64_windows_adjust_args_passed_by_pointer (struct value **args,
   int i;
 
   for (i = 0; i < nargs; i++)
-    if (amd64_windows_passed_by_pointer (value_type (args[i])))
+    if (amd64_windows_passed_by_pointer (args[i]->type ()))
       {
-	struct type *type = value_type (args[i]);
+	struct type *type = args[i]->type ();
 	const gdb_byte *valbuf = value_contents (args[i]);
 	const int len = TYPE_LENGTH (type);
 
@@ -138,7 +138,7 @@ static void
 amd64_windows_store_arg_in_reg (struct regcache *regcache,
 				struct value *arg, int regno)
 {
-  struct type *type = value_type (arg);
+  struct type *type = arg->type ();
   const gdb_byte *valbuf = value_contents (arg);
   gdb_byte buf[8];
 
@@ -185,7 +185,7 @@ amd64_windows_push_arguments (struct regcache *regcache, int nargs,
 
   for (i = 0; i < nargs; i++)
     {
-      struct type *type = value_type (args[i]);
+      struct type *type = args[i]->type ();
       int len = TYPE_LENGTH (type);
       int on_stack_p = 1;
 
@@ -228,7 +228,7 @@ amd64_windows_push_arguments (struct regcache *regcache, int nargs,
   /* Write out the arguments to the stack.  */
   for (i = 0; i < num_stack_args; i++)
     {
-      struct type *type = value_type (stack_args[i]);
+      struct type *type = stack_args[i]->type ();
       const gdb_byte *valbuf = value_contents (stack_args[i]);
 
       write_memory (sp + element * 8, valbuf, TYPE_LENGTH (type));

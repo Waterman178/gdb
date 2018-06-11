@@ -1716,7 +1716,7 @@ gen_repeat (struct expression *exp, union exp_element **pc,
     if (!v)
       error (_("Right operand of `@' must be a "
 	       "constant, in agent expressions."));
-    if (TYPE_CODE (value_type (v)) != TYPE_CODE_INT)
+    if (TYPE_CODE (v->type ()) != TYPE_CODE_INT)
       error (_("Right operand of `@' must be an integer."));
     length = value_as_long (v);
     if (length <= 0)
@@ -1820,7 +1820,7 @@ gen_expr (struct expression *exp, union exp_element **pc,
       {
 	ax_const_l (ax, value_as_long (v));
 	value->kind = axs_rvalue;
-	value->type = check_typedef (value_type (v));
+	value->type = check_typedef (v->type ());
 	return;
       }
   }
@@ -2095,7 +2095,7 @@ gen_expr (struct expression *exp, union exp_element **pc,
 	++*pc;
 	offset = *pc - exp->elts;
 	val = evaluate_subexp (NULL, exp, &offset, EVAL_AVOID_SIDE_EFFECTS);
-	type = value_type (val);
+	type = val->type ();
 	*pc = &exp->elts[offset];
 	gen_expr_for_cast (exp, pc, ax, value, type);
       }
@@ -2128,7 +2128,7 @@ gen_expr (struct expression *exp, union exp_element **pc,
 	++*pc;
 	offset = *pc - exp->elts;
 	val = evaluate_subexp (NULL, exp, &offset, EVAL_AVOID_SIDE_EFFECTS);
-	type = value_type (val);
+	type = val->type ();
 	*pc = &exp->elts[offset];
 
 	gen_expr (exp, pc, ax, value);

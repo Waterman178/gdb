@@ -659,7 +659,7 @@ iq2000_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   /* First determine how much stack space we will need.  */
   for (i = 0, argreg = E_1ST_ARGREG + (struct_return != 0); i < nargs; i++)
     {
-      type = value_type (args[i]);
+      type = args[i]->type ();
       typelen = TYPE_LENGTH (type);
       if (typelen <= 4)
         {
@@ -725,7 +725,7 @@ iq2000_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
   for (i = 0; i < nargs; i++)
     {
-      type = value_type (args[i]);
+      type = args[i]->type ();
       typelen = TYPE_LENGTH (type);
       val = value_contents (args[i]);
       if (typelen <= 4)

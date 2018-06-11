@@ -219,12 +219,12 @@ val_print_packed_array_elements (struct type *type, const gdb_byte *valaddr,
 					       (i * bitsize) / HOST_CHAR_BIT,
 					       (i * bitsize) % HOST_CHAR_BIT,
 					       bitsize, elttype);
-	  if (TYPE_LENGTH (check_typedef (value_type (v0)))
-	      != TYPE_LENGTH (check_typedef (value_type (v1))))
+	  if (TYPE_LENGTH (check_typedef (v0->type ()))
+	      != TYPE_LENGTH (check_typedef (v1->type ())))
 	    break;
 	  if (!value_contents_eq (v0, value_embedded_offset (v0),
 				  v1, value_embedded_offset (v1),
-				  TYPE_LENGTH (check_typedef (value_type (v0)))))
+				  TYPE_LENGTH (check_typedef (v0->type ()))))
 	    break;
 	}
 
@@ -787,7 +787,7 @@ ada_val_print_gnat_array (struct type *type, const gdb_byte *valaddr,
       fprintf_filtered (stream, "0x0");
     }
   else
-    val_print (value_type (val),
+    val_print (val->type (),
 	       value_embedded_offset (val), value_address (val),
 	       stream, recurse, val, options, language);
   value_free_to_mark (mark);
@@ -835,12 +835,12 @@ ada_val_print_num (struct type *type, const gdb_byte *valaddr,
     {
       struct value *scale = ada_scaling_factor (type);
       struct value *v = value_from_contents (type, valaddr + offset_aligned);
-      v = value_cast (value_type (scale), v);
+      v = value_cast (scale->type (), v);
       v = value_binop (v, scale, BINOP_MUL);
 
       const char *fmt = TYPE_LENGTH (type) < 4 ? "%.11g" : "%.17g";
       std::string str
-	= target_float_to_string (value_contents (v), value_type (v), fmt);
+	= target_float_to_string (value_contents (v), v->type (), fmt);
       fputs_filtered (str.c_str (), stream);
       return;
     }
@@ -1074,7 +1074,7 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
   deref_val = coerce_ref_if_computed (original_value);
   if (deref_val)
     {
-      if (ada_is_tagged_type (value_type (deref_val), 1))
+      if (ada_is_tagged_type (deref_val->type (), 1))
 	deref_val = ada_tag_value_at_base_address (deref_val);
 
       common_val_print (deref_val, stream, recurse + 1, options,
@@ -1092,19 +1092,19 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
   deref_val
     = ada_value_ind (value_from_pointer (lookup_pointer_type (elttype),
 					 deref_val_int));
-  if (ada_is_tagged_type (value_type (deref_val), 1))
+  if (ada_is_tagged_type (deref_val->type (), 1))
     deref_val = ada_tag_value_at_base_address (deref_val);
 
   /* Make sure that the object does not have an unreasonable size
      before trying to print it.  This can happen for instance with
      references to dynamic objects whose contents is uninitialized
      (Eg: an array whose bounds are not set yet).  */
-  ada_ensure_varsize_limit (value_type (deref_val));
+  ada_ensure_varsize_limit (deref_val->type ());
 
   if (value_lazy (deref_val))
     value_fetch_lazy (deref_val);
 
-  val_print (value_type (deref_val),
+  val_print (deref_val->type (),
 	     value_embedded_offset (deref_val),
 	     value_address (deref_val), stream, recurse + 1,
 	     deref_val, options, language);

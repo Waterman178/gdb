@@ -423,7 +423,7 @@ void
 pascal_value_print (struct value *val, struct ui_file *stream,
 		    const struct value_print_options *options)
 {
-  struct type *type = value_type (val);
+  struct type *type = val->type ();
   struct value_print_options opts = *options;
 
   opts.deref_ref = 1;
@@ -841,7 +841,7 @@ pascal_object_print_static_field (struct value *val,
 				  int recurse,
 				  const struct value_print_options *options)
 {
-  struct type *type = value_type (val);
+  struct type *type = val->type ();
   struct value_print_options opts;
 
   if (value_entirely_optimized_out (val))

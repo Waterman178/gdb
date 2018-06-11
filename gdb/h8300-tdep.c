@@ -648,7 +648,7 @@ h8300_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   /* Now make sure there's space on the stack for the arguments.  We
      may over-allocate a little here, but that won't hurt anything.  */
   for (argument = 0; argument < nargs; argument++)
-    stack_alloc += align_up (TYPE_LENGTH (value_type (args[argument])),
+    stack_alloc += align_up (TYPE_LENGTH (args[argument]->type ()),
 			     wordsize);
   sp -= stack_alloc;
 
@@ -662,7 +662,7 @@ h8300_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
   for (argument = 0; argument < nargs; argument++)
     {
-      struct type *type = value_type (args[argument]);
+      struct type *type = args[argument]->type ();
       int len = TYPE_LENGTH (type);
       char *contents = (char *) value_contents (args[argument]);
 

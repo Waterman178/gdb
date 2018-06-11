@@ -44,7 +44,7 @@ get_number_trailer (const char **pp, int trailer)
 
       if (val)	/* Value history reference */
 	{
-	  if (TYPE_CODE (value_type (val)) == TYPE_CODE_INT)
+	  if (TYPE_CODE (val->type ()) == TYPE_CODE_INT)
 	    retval = value_as_long (val);
 	  else
 	    {

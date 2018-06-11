@@ -1429,7 +1429,7 @@ spu_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   for (i = 0; i < nargs; i++)
     {
       struct value *arg = args[i];
-      struct type *type = check_typedef (value_type (arg));
+      struct type *type = check_typedef (arg->type ());
       const gdb_byte *contents = value_contents (arg);
       int n_regs = align_up (TYPE_LENGTH (type), 16) / 16;
 
@@ -1453,7 +1453,7 @@ spu_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       /* Allocate all required stack size.  */
       for (i = stack_arg; i < nargs; i++)
 	{
-	  struct type *type = check_typedef (value_type (args[i]));
+	  struct type *type = check_typedef (args[i]->type ());
 	  sp -= align_up (TYPE_LENGTH (type), 16);
 	}
 
@@ -1462,7 +1462,7 @@ spu_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       for (i = stack_arg; i < nargs; i++)
 	{
 	  struct value *arg = args[i];
-	  struct type *type = check_typedef (value_type (arg));
+	  struct type *type = check_typedef (arg->type ());
 	  int len = TYPE_LENGTH (type);
 	  int preferred_slot;
 	  
@@ -1511,7 +1511,7 @@ spu_return_value (struct gdbarch *gdbarch, struct value *function,
 		  struct type *type, struct regcache *regcache,
 		  gdb_byte *out, const gdb_byte *in)
 {
-  struct type *func_type = function ? value_type (function) : NULL;
+  struct type *func_type = function ? function->type () : NULL;
   enum return_value_convention rvc;
   int opencl_vector = 0;
 

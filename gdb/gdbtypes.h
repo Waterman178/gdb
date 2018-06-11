@@ -1287,7 +1287,7 @@ extern void allocate_gnat_aux_type (struct type *);
 /* * Note that if thistype is a TYPEDEF type, you have to call check_typedef.
    But check_typedef does set the TYPE_LENGTH of the TYPEDEF type,
    so you only have to call check_typedef once.  Since allocate_value
-   calls check_typedef, TYPE_LENGTH (VALUE_TYPE (X)) is safe.  */
+   calls check_typedef, TYPE_LENGTH (X->type ()) is safe.  */
 #define TYPE_LENGTH(thistype) (thistype)->length
 
 /* * Return the alignment of the type in target addressable memory

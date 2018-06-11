@@ -1347,7 +1347,7 @@ dwarf_entry_parameter_to_value (struct call_site_parameter *parameter,
 static struct value *
 entry_data_value_coerce_ref (const struct value *value)
 {
-  struct type *checked_type = check_typedef (value_type (value));
+  struct type *checked_type = check_typedef (value->type ());
   struct value *target_val;
 
   if (!TYPE_IS_REFERENCE (checked_type))
@@ -1773,7 +1773,7 @@ rw_pieced_value (struct value *v, struct value *from)
     = (struct piece_closure *) value_computed_closure (v);
   gdb::byte_vector buffer;
   int bits_big_endian
-    = gdbarch_bits_big_endian (get_type_arch (value_type (v)));
+    = gdbarch_bits_big_endian (get_type_arch (v->type ()));
 
   if (from != NULL)
     {
@@ -1782,7 +1782,7 @@ rw_pieced_value (struct value *v, struct value *from)
     }
   else
     {
-      if (value_type (v) != value_enclosing_type (v))
+      if (v->type () != value_enclosing_type (v))
 	internal_error (__FILE__, __LINE__,
 			_("Should not be able to create a lazy value with "
 			  "an enclosing type"));
@@ -1796,18 +1796,18 @@ rw_pieced_value (struct value *v, struct value *from)
       bits_to_skip += (8 * value_offset (value_parent (v))
 		       + value_bitpos (v));
       if (from != NULL
-	  && (gdbarch_byte_order (get_type_arch (value_type (from)))
+	  && (gdbarch_byte_order (get_type_arch (from->type ()))
 	      == BFD_ENDIAN_BIG))
 	{
 	  /* Use the least significant bits of FROM.  */
-	  max_offset = 8 * TYPE_LENGTH (value_type (from));
+	  max_offset = 8 * TYPE_LENGTH (from->type ());
 	  offset = max_offset - value_bitsize (v);
 	}
       else
 	max_offset = value_bitsize (v);
     }
   else
-    max_offset = 8 * TYPE_LENGTH (value_type (v));
+    max_offset = 8 * TYPE_LENGTH (v->type ());
 
   /* Advance to the first non-skipped piece.  */
   for (i = 0; i < c->pieces.size () && bits_to_skip >= c->pieces[i].size; i++)
@@ -1978,7 +1978,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	    struct objfile *objfile = dwarf2_per_cu_objfile (c->per_cu);
 	    struct gdbarch *objfile_gdbarch = get_objfile_arch (objfile);
 	    ULONGEST stack_value_size_bits
-	      = 8 * TYPE_LENGTH (value_type (p->v.value));
+	      = 8 * TYPE_LENGTH (p->v.value->type ());
 
 	    /* Use zeroes if piece reaches beyond stack value.  */
 	    if (p->offset + p->size > stack_value_size_bits)
@@ -2184,7 +2184,7 @@ indirect_pieced_value (struct value *value)
   LONGEST byte_offset;
   enum bfd_endian byte_order;
 
-  type = check_typedef (value_type (value));
+  type = check_typedef (value->type ());
   if (TYPE_CODE (type) != TYPE_CODE_PTR)
     return NULL;
 
@@ -2251,7 +2251,7 @@ indirect_pieced_value (struct value *value)
 static struct value *
 coerce_pieced_ref (const struct value *value)
 {
-  struct type *type = check_typedef (value_type (value));
+  struct type *type = check_typedef (value->type ());
 
   if (value_bits_synthetic_pointer (value, value_embedded_offset (value),
 				    TARGET_CHAR_BIT * TYPE_LENGTH (type)))
@@ -2471,7 +2471,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	case DWARF_VALUE_STACK:
 	  {
 	    struct value *value = ctx.fetch (0);
-	    size_t n = TYPE_LENGTH (value_type (value));
+	    size_t n = TYPE_LENGTH (value->type ());
 	    size_t len = TYPE_LENGTH (subobj_type);
 	    size_t max = TYPE_LENGTH (type);
 	    struct gdbarch *objfile_gdbarch = get_objfile_arch (objfile);

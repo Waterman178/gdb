@@ -793,7 +793,7 @@ rx_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   CORE_ADDR cfa;
   int num_register_candidate_args;
 
-  struct type *func_type = value_type (function);
+  struct type *func_type = function->type ();
 
   /* Dereference function pointer types.  */
   while (TYPE_CODE (func_type) == TYPE_CODE_PTR)
@@ -851,7 +851,7 @@ rx_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	{
 	  struct value *arg = args[i];
 	  const gdb_byte *arg_bits = value_contents_all (arg);
-	  struct type *arg_type = check_typedef (value_type (arg));
+	  struct type *arg_type = check_typedef (arg->type ());
 	  ULONGEST arg_size = TYPE_LENGTH (arg_type);
 
 	  if (i == 0 && struct_addr != 0 && !struct_return

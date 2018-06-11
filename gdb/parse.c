@@ -1317,7 +1317,7 @@ parse_expression_for_completion (const char *string,
      propagate.  */
   val = evaluate_subexpression_type (exp.get (), subexp);
 
-  return value_type (val);
+  return val->type ();
 }
 
 /* A post-parser that does nothing.  */

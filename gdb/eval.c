@@ -288,7 +288,7 @@ evaluate_struct_tuple (struct value *struct_val,
 		       struct expression *exp,
 		       int *pos, enum noside noside, int nargs)
 {
-  struct type *struct_type = check_typedef (value_type (struct_val));
+  struct type *struct_type = check_typedef (struct_val->type ());
   struct type *field_type;
   int fieldno = -1;
 
@@ -327,7 +327,7 @@ evaluate_struct_tuple (struct value *struct_val,
       /* Now actually set the field in struct_val.  */
 
       /* Assign val to field fieldno.  */
-      if (value_type (val) != field_type)
+      if (val->type () != field_type)
 	val = value_cast (field_type, val);
 
       bitsize = TYPE_FIELD_BITSIZE (struct_type, fieldno);
@@ -338,7 +338,7 @@ evaluate_struct_tuple (struct value *struct_val,
 		      value_as_long (val), bitpos % 8, bitsize);
       else
 	memcpy (addr, value_contents (val),
-		TYPE_LENGTH (value_type (val)));
+		TYPE_LENGTH (val->type ()));
 
     }
   return struct_val;
@@ -356,7 +356,7 @@ init_array_element (struct value *array, struct value *element,
 		    enum noside noside, LONGEST low_bound, LONGEST high_bound)
 {
   LONGEST index;
-  int element_size = TYPE_LENGTH (value_type (element));
+  int element_size = TYPE_LENGTH (element->type ());
 
   if (exp->elts[*pos].opcode == BINOP_COMMA)
     {
@@ -383,7 +383,7 @@ value_f90_subarray (struct value *array,
 {
   int pc = (*pos) + 1;
   LONGEST low_bound, high_bound;
-  struct type *range = check_typedef (TYPE_INDEX_TYPE (value_type (array)));
+  struct type *range = check_typedef (TYPE_INDEX_TYPE (array->type ()));
   enum range_type range_type
     = (enum range_type) longest_to_int (exp->elts[pc].longconst);
  
@@ -415,7 +415,7 @@ unop_promote (const struct language_defn *language, struct gdbarch *gdbarch,
   struct type *type1;
 
   *arg1 = coerce_ref (*arg1);
-  type1 = check_typedef (value_type (*arg1));
+  type1 = check_typedef ((*arg1)->type ());
 
   if (is_integral_type (type1))
     {
@@ -452,8 +452,8 @@ binop_promote (const struct language_defn *language, struct gdbarch *gdbarch,
   *arg1 = coerce_ref (*arg1);
   *arg2 = coerce_ref (*arg2);
 
-  type1 = check_typedef (value_type (*arg1));
-  type2 = check_typedef (value_type (*arg2));
+  type1 = check_typedef ((*arg1)->type ());
+  type2 = check_typedef ((*arg2)->type ());
 
   if ((TYPE_CODE (type1) != TYPE_CODE_FLT
        && TYPE_CODE (type1) != TYPE_CODE_DECFLOAT
@@ -772,7 +772,7 @@ eval_call (expression *exp, enum noside noside,
 	 call an error.  This can happen if somebody tries to turn
 	 a variable into a function call.  */
 
-      type *ftype = value_type (argvec[0]);
+      type *ftype = argvec[0]->type ();
 
       if (TYPE_CODE (ftype) == TYPE_CODE_INTERNAL_FUNCTION)
 	{
@@ -817,7 +817,7 @@ eval_call (expression *exp, enum noside noside,
 	error (_("Expression of type other than "
 		 "\"Function returning ...\" used as function"));
     }
-  switch (TYPE_CODE (value_type (argvec[0])))
+  switch (TYPE_CODE (argvec[0]->type ()))
     {
     case TYPE_CODE_INTERNAL_FUNCTION:
       return call_internal_function (exp->gdbarch, exp->language_defn,
@@ -875,7 +875,7 @@ evaluate_funcall (type *expect_type, expression *exp, int *pos,
 
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
 
-      type *a1_type = check_typedef (value_type (arg1));
+      type *a1_type = check_typedef (arg1->type ());
       if (noside == EVAL_SKIP)
 	tem = 1;  /* Set it to the right arg index so that all
 		     arguments can also be skipped.  */
@@ -1054,7 +1054,7 @@ evaluate_funcall (type *expect_type, expression *exp, int *pos,
 	    }
 
 	  argvec[0] = evaluate_subexp_with_coercion (exp, pos, noside);
-	  type *type = value_type (argvec[0]);
+	  type *type = argvec[0]->type ();
 	  if (type && TYPE_CODE (type) == TYPE_CODE_PTR)
 	    type = TYPE_TARGET_TYPE (type);
 	  if (type && TYPE_CODE (type) == TYPE_CODE_FUNC)
@@ -1162,7 +1162,7 @@ evaluate_funcall (type *expect_type, expression *exp, int *pos,
 	     the ``this'' pointer if necessary, so modify argvec[1] to
 	     reflect any ``this'' changes.  */
 	  arg2
-	    = value_from_longest (lookup_pointer_type(value_type (temp)),
+	    = value_from_longest (lookup_pointer_type(temp->type ()),
 				  value_address (temp)
 				  + value_embedded_offset (temp));
 	  argvec[1] = arg2;	/* the ``this'' pointer */
@@ -1303,7 +1303,7 @@ evaluate_subexp_standard (struct type *expect_type,
 					      exp->elts[pc + 1].objfile,
 					      msymbol);
 
-	type = value_type (val);
+	type = val->type ();
 	if (TYPE_CODE (type) == TYPE_CODE_ERROR
 	    && (noside != EVAL_AVOID_SIDE_EFFECTS || pc != 0))
 	  error_unknown_type (MSYMBOL_PRINT_NAME (msymbol));
@@ -1449,7 +1449,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      int index_pc = 0;
 
 	      element = evaluate_subexp (element_type, exp, pos, noside);
-	      if (value_type (element) != element_type)
+	      if (element->type () != element_type)
 		element = value_cast (element_type, element);
 	      if (index_pc)
 		{
@@ -1499,7 +1499,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      struct value *elem_val;
 
 	      elem_val = evaluate_subexp (element_type, exp, pos, noside);
-	      range_low_type = range_high_type = value_type (elem_val);
+	      range_low_type = range_high_type = elem_val->type ();
 	      range_low = range_high = value_as_long (elem_val);
 
 	      /* Check types of elements to avoid mixture of elements from
@@ -1801,7 +1801,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	
 	if (method)
 	  {
-	    if (TYPE_CODE (value_type (method)) != TYPE_CODE_FUNC)
+	    if (TYPE_CODE (method->type ()) != TYPE_CODE_FUNC)
 	      error (_("method address has symbol information "
 		       "with non-function type; skipping"));
 
@@ -1813,11 +1813,11 @@ evaluate_subexp_standard (struct type *expect_type,
 	       function descriptors.  */
 	    if (struct_return)
 	      called_method
-		= value_from_pointer (lookup_pointer_type (value_type (method)),
+		= value_from_pointer (lookup_pointer_type (method->type ()),
 				      value_as_address (msg_send_stret));
 	    else
 	      called_method
-		= value_from_pointer (lookup_pointer_type (value_type (method)),
+		= value_from_pointer (lookup_pointer_type (method->type ()),
 				      value_as_address (msg_send));
 	  }
 	else
@@ -1841,7 +1841,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	       it's opinion (ie. through "whatis"), it won't offer
 	       it.  */
 
-	    struct type *type = value_type (called_method);
+	    struct type *type = called_method->type ();
 
 	    if (type && TYPE_CODE (type) == TYPE_CODE_PTR)
 	      type = TYPE_TARGET_TYPE (type);
@@ -1875,7 +1875,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	  {
 	    /* Function objc_msg_lookup returns a pointer.  */
 	    deprecated_set_value_type (argvec[0],
-				       lookup_pointer_type (lookup_function_type (value_type (argvec[0]))));
+				       lookup_pointer_type (lookup_function_type (argvec[0]->type ())));
 	    argvec[0]
 	      = call_function_by_hand (argvec[0], NULL, nargs + 2, argvec + 1);
 	  }
@@ -1902,7 +1902,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
       /* First determine the type code we are dealing with.  */
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      type = check_typedef (value_type (arg1));
+      type = check_typedef (arg1->type ());
       code = TYPE_CODE (type);
 
       if (code == TYPE_CODE_PTR)
@@ -1918,7 +1918,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      || TYPE_CODE (target_type) == TYPE_CODE_FUNC)
 	    {
 	      arg1 = value_ind (arg1);
-	      type = check_typedef (value_type (arg1));
+	      type = check_typedef (arg1->type ());
 	      code = TYPE_CODE (type);
 	    }
 	} 
@@ -1978,7 +1978,7 @@ evaluate_subexp_standard (struct type *expect_type,
       arg3 = value_struct_elt (&arg1, NULL, &exp->elts[pc + 2].string,
 			       NULL, "structure");
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	arg3 = value_zero (value_type (arg3), VALUE_LVAL (arg3));
+	arg3 = value_zero (arg3->type (), VALUE_LVAL (arg3));
       return arg3;
 
     case STRUCTOP_PTR:
@@ -2014,7 +2014,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	 with rtti type in order to continue on with successful
 	 lookup of member / method only available in the rtti type.  */
       {
-        struct type *type = value_type (arg1);
+        struct type *type = arg1->type ();
         struct type *real_type;
         int full, using_enc;
         LONGEST top;
@@ -2034,7 +2034,7 @@ evaluate_subexp_standard (struct type *expect_type,
       arg3 = value_struct_elt (&arg1, NULL, &exp->elts[pc + 2].string,
 			       NULL, "structure pointer");
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	arg3 = value_zero (value_type (arg3), VALUE_LVAL (arg3));
+	arg3 = value_zero (arg3->type (), VALUE_LVAL (arg3));
       return arg3;
 
     case STRUCTOP_MEMBER:
@@ -2049,7 +2049,7 @@ evaluate_subexp_standard (struct type *expect_type,
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
 
-      type = check_typedef (value_type (arg2));
+      type = check_typedef (arg2->type ());
       switch (TYPE_CODE (type))
 	{
 	case TYPE_CODE_METHODPTR:
@@ -2058,7 +2058,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	  else
 	    {
 	      arg2 = cplus_method_ptr_to_value (&arg1, arg2);
-	      gdb_assert (TYPE_CODE (value_type (arg2)) == TYPE_CODE_PTR);
+	      gdb_assert (TYPE_CODE (arg2->type ()) == TYPE_CODE_PTR);
 	      return value_ind (arg2);
 	    }
 
@@ -2104,7 +2104,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_ASSIGN:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
 
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
 	return arg1;
@@ -2116,19 +2116,19 @@ evaluate_subexp_standard (struct type *expect_type,
     case BINOP_ASSIGN_MODIFY:
       (*pos) += 2;
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
 	return arg1;
       op = exp->elts[pc + 1].opcode;
       if (binop_user_defined_p (op, arg1, arg2))
 	return value_x_binop (arg1, arg2, BINOP_ASSIGN_MODIFY, op, noside);
       else if (op == BINOP_ADD && ptrmath_type_p (exp->language_defn,
-						  value_type (arg1))
-	       && is_integral_type (value_type (arg2)))
+						  arg1->type ())
+	       && is_integral_type (arg2->type ()))
 	arg2 = value_ptradd (arg1, value_as_long (arg2));
       else if (op == BINOP_SUB && ptrmath_type_p (exp->language_defn,
-						  value_type (arg1))
-	       && is_integral_type (value_type (arg2)))
+						  arg1->type ())
+	       && is_integral_type (arg2->type ()))
 	arg2 = value_ptradd (arg1, - value_as_long (arg2));
       else
 	{
@@ -2137,7 +2137,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	  /* For shift and integer exponentiation operations,
 	     only promote the first argument.  */
 	  if ((op == BINOP_LSH || op == BINOP_RSH || op == BINOP_EXP)
-	      && is_integral_type (value_type (arg2)))
+	      && is_integral_type (arg2->type ()))
 	    unop_promote (exp->language_defn, exp->gdbarch, &tmp);
 	  else
 	    binop_promote (exp->language_defn, exp->gdbarch, &tmp, &arg2);
@@ -2153,11 +2153,11 @@ evaluate_subexp_standard (struct type *expect_type,
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
 	return value_x_binop (arg1, arg2, op, OP_NULL, noside);
-      else if (ptrmath_type_p (exp->language_defn, value_type (arg1))
-	       && is_integral_type (value_type (arg2)))
+      else if (ptrmath_type_p (exp->language_defn, arg1->type ())
+	       && is_integral_type (arg2->type ()))
 	return value_ptradd (arg1, value_as_long (arg2));
-      else if (ptrmath_type_p (exp->language_defn, value_type (arg2))
-	       && is_integral_type (value_type (arg1)))
+      else if (ptrmath_type_p (exp->language_defn, arg2->type ())
+	       && is_integral_type (arg1->type ()))
 	return value_ptradd (arg2, value_as_long (arg1));
       else
 	{
@@ -2172,15 +2172,15 @@ evaluate_subexp_standard (struct type *expect_type,
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
 	return value_x_binop (arg1, arg2, op, OP_NULL, noside);
-      else if (ptrmath_type_p (exp->language_defn, value_type (arg1))
-	       && ptrmath_type_p (exp->language_defn, value_type (arg2)))
+      else if (ptrmath_type_p (exp->language_defn, arg1->type ())
+	       && ptrmath_type_p (exp->language_defn, arg2->type ()))
 	{
 	  /* FIXME -- should be ptrdiff_t */
 	  type = builtin_type (exp->gdbarch)->builtin_long;
 	  return value_from_longest (type, value_ptrdiff (arg1, arg2));
 	}
-      else if (ptrmath_type_p (exp->language_defn, value_type (arg1))
-	       && is_integral_type (value_type (arg2)))
+      else if (ptrmath_type_p (exp->language_defn, arg1->type ())
+	       && is_integral_type (arg2->type ()))
 	return value_ptradd (arg1, - value_as_long (arg2));
       else
 	{
@@ -2222,7 +2222,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	    {
 	      struct value *v_one, *retval;
 
-	      v_one = value_one (value_type (arg2));
+	      v_one = value_one (arg2->type ());
 	      binop_promote (exp->language_defn, exp->gdbarch, &arg1, &v_one);
 	      retval = value_binop (arg1, v_one, op);
 	      return retval;
@@ -2232,7 +2232,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      /* For shift and integer exponentiation operations,
 		 only promote the first argument.  */
 	      if ((op == BINOP_LSH || op == BINOP_RSH || op == BINOP_EXP)
-		  && is_integral_type (value_type (arg2)))
+		  && is_integral_type (arg2->type ()))
 		unop_promote (exp->language_defn, exp->gdbarch, &arg1);
 	      else
 		binop_promote (exp->language_defn, exp->gdbarch, &arg1, &arg2);
@@ -2255,7 +2255,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	     then report this as an error.  */
 
 	  arg1 = coerce_ref (arg1);
-	  type = check_typedef (value_type (arg1));
+	  type = check_typedef (arg1->type ());
 	  if (TYPE_CODE (type) != TYPE_CODE_ARRAY
 	      && TYPE_CODE (type) != TYPE_CODE_PTR)
 	    {
@@ -2292,7 +2292,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	         type (like a plain int variable for example), then report this
 	         as an error.  */
 
-	      type = TYPE_TARGET_TYPE (check_typedef (value_type (arg1)));
+	      type = TYPE_TARGET_TYPE (check_typedef (arg1->type ()));
 	      if (type != NULL)
 		{
 		  arg1 = value_zero (type, VALUE_LVAL (arg1));
@@ -2302,7 +2302,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      else
 		{
 		  error (_("cannot subscript something of type `%s'"),
-			 TYPE_NAME (value_type (arg1)));
+			 TYPE_NAME (arg1->type ()));
 		}
 	    }
 
@@ -2313,7 +2313,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	  else
 	    {
 	      arg1 = coerce_ref (arg1);
-	      type = check_typedef (value_type (arg1));
+	      type = check_typedef (arg1->type ());
 
 	      switch (TYPE_CODE (type))
 		{
@@ -2367,7 +2367,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	/* Internal type of array is arranged right to left.  */
 	for (i = nargs; i > 0; i--)
 	  {
-	    struct type *array_type = check_typedef (value_type (array));
+	    struct type *array_type = check_typedef (array->type ());
 	    LONGEST index = subscript_array[i - 1];
 
 	    array = value_subscripted_rvalue (array, index,
@@ -2433,7 +2433,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_EQUAL:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2450,7 +2450,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_NOTEQUAL:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2467,7 +2467,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_LESS:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2484,7 +2484,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_GTR:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2501,7 +2501,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_GEQ:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2518,7 +2518,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case BINOP_LEQ:
       arg1 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
-      arg2 = evaluate_subexp (value_type (arg1), exp, pos, noside);
+      arg2 = evaluate_subexp (arg1->type (), exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
       if (binop_user_defined_p (op, arg1, arg2))
@@ -2538,13 +2538,13 @@ evaluate_subexp_standard (struct type *expect_type,
       arg2 = evaluate_subexp (NULL_TYPE, exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
-      type = check_typedef (value_type (arg2));
+      type = check_typedef (arg2->type ());
       if (TYPE_CODE (type) != TYPE_CODE_INT
           && TYPE_CODE (type) != TYPE_CODE_ENUM)
 	error (_("Non-integral right operand for \"@\" operator."));
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
 	{
-	  return allocate_repeat_value (value_type (arg1),
+	  return allocate_repeat_value (arg1->type (),
 				     longest_to_int (value_as_long (arg2)));
 	}
       else
@@ -2608,7 +2608,7 @@ evaluate_subexp_standard (struct type *expect_type,
       if (expect_type && TYPE_CODE (expect_type) == TYPE_CODE_PTR)
 	expect_type = TYPE_TARGET_TYPE (check_typedef (expect_type));
       arg1 = evaluate_subexp (expect_type, exp, pos, noside);
-      type = check_typedef (value_type (arg1));
+      type = check_typedef (arg1->type ());
       if (TYPE_CODE (type) == TYPE_CODE_METHODPTR
 	  || TYPE_CODE (type) == TYPE_CODE_MEMBERPTR)
 	error (_("Attempt to dereference pointer "
@@ -2619,7 +2619,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	return value_x_unop (arg1, op, noside);
       else if (noside == EVAL_AVOID_SIDE_EFFECTS)
 	{
-	  type = check_typedef (value_type (arg1));
+	  type = check_typedef (arg1->type ());
 	  if (TYPE_CODE (type) == TYPE_CODE_PTR
 	      || TYPE_IS_REFERENCE (type)
 	  /* In C you can dereference an array to get the 1st elt.  */
@@ -2671,8 +2671,8 @@ evaluate_subexp_standard (struct type *expect_type,
     case UNOP_ALIGNOF:
       {
 	struct type *type
-	  = value_type (evaluate_subexp (NULL_TYPE, exp, pos,
-					 EVAL_AVOID_SIDE_EFFECTS));
+	  = evaluate_subexp (NULL_TYPE, exp, pos,
+					 EVAL_AVOID_SIDE_EFFECTS)->type ();
 	/* FIXME: This should be size_t.  */
 	struct type *size_type = builtin_type (exp->gdbarch)->builtin_int;
 	ULONGEST align = type_align (type);
@@ -2688,12 +2688,12 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case UNOP_CAST_TYPE:
       arg1 = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (arg1);
+      type = arg1->type ();
       return evaluate_subexp_for_cast (exp, pos, noside, type);
 
     case UNOP_DYNAMIC_CAST:
       arg1 = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (arg1);
+      type = arg1->type ();
       arg1 = evaluate_subexp (type, exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
@@ -2701,7 +2701,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case UNOP_REINTERPRET_CAST:
       arg1 = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (arg1);
+      type = arg1->type ();
       arg1 = evaluate_subexp (type, exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
@@ -2720,7 +2720,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
     case UNOP_MEMVAL_TYPE:
       arg1 = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (arg1);
+      type = arg1->type ();
       arg1 = evaluate_subexp (expect_type, exp, pos, noside);
       if (noside == EVAL_SKIP)
 	return eval_skip_value (exp);
@@ -2739,13 +2739,13 @@ evaluate_subexp_standard (struct type *expect_type,
 	}
       else
 	{
-	  if (ptrmath_type_p (exp->language_defn, value_type (arg1)))
+	  if (ptrmath_type_p (exp->language_defn, arg1->type ()))
 	    arg2 = value_ptradd (arg1, 1);
 	  else
 	    {
 	      struct value *tmp = arg1;
 
-	      arg2 = value_one (value_type (arg1));
+	      arg2 = value_one (arg1->type ());
 	      binop_promote (exp->language_defn, exp->gdbarch, &tmp, &arg2);
 	      arg2 = value_binop (tmp, arg2, BINOP_ADD);
 	    }
@@ -2763,13 +2763,13 @@ evaluate_subexp_standard (struct type *expect_type,
 	}
       else
 	{
-	  if (ptrmath_type_p (exp->language_defn, value_type (arg1)))
+	  if (ptrmath_type_p (exp->language_defn, arg1->type ()))
 	    arg2 = value_ptradd (arg1, -1);
 	  else
 	    {
 	      struct value *tmp = arg1;
 
-	      arg2 = value_one (value_type (arg1));
+	      arg2 = value_one (arg1->type ());
 	      binop_promote (exp->language_defn, exp->gdbarch, &tmp, &arg2);
 	      arg2 = value_binop (tmp, arg2, BINOP_SUB);
 	    }
@@ -2789,13 +2789,13 @@ evaluate_subexp_standard (struct type *expect_type,
 	{
 	  arg3 = value_non_lval (arg1);
 
-	  if (ptrmath_type_p (exp->language_defn, value_type (arg1)))
+	  if (ptrmath_type_p (exp->language_defn, arg1->type ()))
 	    arg2 = value_ptradd (arg1, 1);
 	  else
 	    {
 	      struct value *tmp = arg1;
 
-	      arg2 = value_one (value_type (arg1));
+	      arg2 = value_one (arg1->type ());
 	      binop_promote (exp->language_defn, exp->gdbarch, &tmp, &arg2);
 	      arg2 = value_binop (tmp, arg2, BINOP_ADD);
 	    }
@@ -2816,13 +2816,13 @@ evaluate_subexp_standard (struct type *expect_type,
 	{
 	  arg3 = value_non_lval (arg1);
 
-	  if (ptrmath_type_p (exp->language_defn, value_type (arg1)))
+	  if (ptrmath_type_p (exp->language_defn, arg1->type ()))
 	    arg2 = value_ptradd (arg1, -1);
 	  else
 	    {
 	      struct value *tmp = arg1;
 
-	      arg2 = value_one (value_type (arg1));
+	      arg2 = value_one (arg1->type ());
 	      binop_promote (exp->language_defn, exp->gdbarch, &tmp, &arg2);
 	      arg2 = value_binop (tmp, arg2, BINOP_SUB);
 	    }
@@ -2871,7 +2871,7 @@ evaluate_subexp_standard (struct type *expect_type,
 		  || sub_op == STRUCTOP_PTR
 		  || sub_op == OP_SCOPE))
 	    {
-	      struct type *type = value_type (result);
+	      struct type *type = result->type ();
 
 	      if (!TYPE_IS_REFERENCE (type))
 		{
@@ -2965,7 +2965,7 @@ evaluate_subexp_for_address (struct expression *exp, int *pos,
 
 	(*pos) += 1;
 	x = evaluate_subexp (NULL_TYPE, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-	type = value_type (x);
+	type = x->type ();
 	return value_cast (lookup_pointer_type (type),
 			   evaluate_subexp (NULL_TYPE, exp, pos, noside));
       }
@@ -3005,7 +3005,7 @@ evaluate_subexp_for_address (struct expression *exp, int *pos,
 					      exp->elts[pc + 2].msymbol);
 	if (noside == EVAL_AVOID_SIDE_EFFECTS)
 	  {
-	    struct type *type = lookup_pointer_type (value_type (val));
+	    struct type *type = lookup_pointer_type (val->type ());
 	    return value_zero (type, not_lval);
 	  }
 	else
@@ -3028,13 +3028,13 @@ evaluate_subexp_for_address (struct expression *exp, int *pos,
     default_case_after_eval:
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
 	{
-	  struct type *type = check_typedef (value_type (x));
+	  struct type *type = check_typedef (x->type ());
 
 	  if (TYPE_IS_REFERENCE (type))
 	    return value_zero (lookup_pointer_type (TYPE_TARGET_TYPE (type)),
 			       not_lval);
 	  else if (VALUE_LVAL (x) == lval_memory || value_must_coerce_to_target (x))
-	    return value_zero (lookup_pointer_type (value_type (x)),
+	    return value_zero (lookup_pointer_type (x->type ()),
 			       not_lval);
 	  else
 	    error (_("Attempt to take address of "
@@ -3118,14 +3118,14 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
     case UNOP_IND:
       (*pos)++;
       val = evaluate_subexp (NULL_TYPE, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = check_typedef (value_type (val));
+      type = check_typedef (val->type ());
       if (TYPE_CODE (type) != TYPE_CODE_PTR
 	  && !TYPE_IS_REFERENCE (type)
 	  && TYPE_CODE (type) != TYPE_CODE_ARRAY)
 	error (_("Attempt to take contents of a non-pointer value."));
       type = TYPE_TARGET_TYPE (type);
       if (is_dynamic_type (type))
-	type = value_type (value_ind (val));
+	type = value_ind (val)->type ();
       return value_from_longest (size_type, (LONGEST) TYPE_LENGTH (type));
 
     case UNOP_MEMVAL:
@@ -3136,7 +3136,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
     case UNOP_MEMVAL_TYPE:
       (*pos) += 1;
       val = evaluate_subexp (NULL, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (val);
+      type = val->type ();
       break;
 
     case OP_VAR_VALUE:
@@ -3144,7 +3144,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
       if (is_dynamic_type (type))
 	{
 	  val = evaluate_subexp (NULL_TYPE, exp, pos, EVAL_NORMAL);
-	  type = value_type (val);
+	  type = val->type ();
 	}
       else
 	(*pos) += 4;
@@ -3159,7 +3159,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
 					      exp->elts[pc + 1].objfile,
 					      msymbol);
 
-	type = value_type (val);
+	type = val->type ();
 	if (TYPE_CODE (type) == TYPE_CODE_ERROR)
 	  error_unknown_type (MSYMBOL_PRINT_NAME (msymbol));
 
@@ -3177,7 +3177,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
 	  int pc = (*pos) + 1;
 
 	  val = evaluate_subexp (NULL_TYPE, exp, &pc, EVAL_AVOID_SIDE_EFFECTS);
-	  type = check_typedef (value_type (val));
+	  type = check_typedef (val->type ());
 	  if (TYPE_CODE (type) == TYPE_CODE_ARRAY)
 	    {
 	      type = check_typedef (TYPE_TARGET_TYPE (type));
@@ -3190,7 +3190,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
 		    {
 		      val = evaluate_subexp (NULL_TYPE, exp, pos, EVAL_NORMAL);
 		      return value_from_longest
-			(size_type, (LONGEST) TYPE_LENGTH (value_type (val)));
+			(size_type, (LONGEST) TYPE_LENGTH (val->type ()));
 		    }
 		}
 	    }
@@ -3200,7 +3200,7 @@ evaluate_subexp_for_sizeof (struct expression *exp, int *pos,
 
     default:
       val = evaluate_subexp (NULL_TYPE, exp, pos, EVAL_AVOID_SIDE_EFFECTS);
-      type = value_type (val);
+      type = val->type ();
       break;
     }
 

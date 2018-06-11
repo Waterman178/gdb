@@ -65,7 +65,7 @@ ada_varobj_decode_var (struct value **value_ptr, struct type **type_ptr)
   if (*value_ptr)
     {
       *value_ptr = ada_get_decoded_value (*value_ptr);
-      *type_ptr = ada_check_typedef (value_type (*value_ptr));
+      *type_ptr = ada_check_typedef ((*value_ptr)->type ());
     }
   else
     *type_ptr = ada_get_decoded_type (*type_ptr);
@@ -102,7 +102,7 @@ ada_varobj_struct_elt (struct value *parent_value,
   if (parent_value)
     {
       value = value_field (parent_value, fieldno);
-      type = value_type (value);
+      type = value->type ();
     }
   else
     type = TYPE_FIELD_TYPE (parent_type, fieldno);
@@ -150,7 +150,7 @@ ada_varobj_ind (struct value *parent_value,
   if (parent_value)
     {
       value = ada_value_ind (parent_value);
-      type = value_type (value);
+      type = value->type ();
     }
   else
     type = TYPE_TARGET_TYPE (parent_type);
@@ -181,7 +181,7 @@ ada_varobj_simple_array_elt (struct value *parent_value,
 	value_from_longest (TYPE_INDEX_TYPE (parent_type), elt_index);
 
       value = ada_value_subscript (parent_value, 1, &index_value);
-      type = value_type (value);
+      type = value->type ();
     }
   else
     type = TYPE_TARGET_TYPE (parent_type);
@@ -219,7 +219,7 @@ ada_varobj_adjust_for_child_access (struct value **value,
   if (*value != NULL && ada_is_tagged_type (*type, 1))
     {
       *value = ada_tag_value_at_base_address (*value);
-      *type = value_type (*value);
+      *type = (*value)->type ();
     }
 }
 
@@ -933,7 +933,7 @@ static bool
 ada_value_is_changeable_p (const struct varobj *var)
 {
   struct type *type = (var->value != nullptr
-		       ? value_type (var->value.get ()) : var->type);
+		       ? var->value.get ()->type () : var->type);
 
   if (ada_is_array_descriptor_type (type)
       && TYPE_CODE (type) == TYPE_CODE_TYPEDEF)

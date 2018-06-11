@@ -3363,7 +3363,7 @@ is_unique_ancestor (struct type *base, struct value *val)
 {
   int offset = -1;
 
-  return is_unique_ancestor_worker (base, value_type (val), &offset,
+  return is_unique_ancestor_worker (base, val->type (), &offset,
 				    value_contents_for_printing (val),
 				    value_embedded_offset (val),
 				    value_address (val), val) == 1;
@@ -3484,7 +3484,7 @@ rank_function (struct type **parms, int nparms,
 
   /* Now rank all the parameters of the candidate function.  */
   for (i = 1; i <= min_len; i++)
-    bv->rank[i] = rank_one_type (parms[i - 1], value_type (args[i - 1]),
+    bv->rank[i] = rank_one_type (parms[i - 1], args[i - 1]->type (),
 				 args[i - 1]);
 
   /* If more arguments than parameters, add dummy entries.  */
@@ -3955,7 +3955,7 @@ rank_one_type (struct type *parm, struct type *arg, struct value *value)
 	case TYPE_CODE_FUNC:
 	  return rank_one_type (TYPE_TARGET_TYPE (parm), arg, NULL);
 	case TYPE_CODE_INT:
-	  if (value != NULL && TYPE_CODE (value_type (value)) == TYPE_CODE_INT)
+	  if (value != NULL && TYPE_CODE (value->type ()) == TYPE_CODE_INT)
 	    {
 	      if (value_as_long (value) == 0)
 		{

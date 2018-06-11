@@ -588,7 +588,7 @@ c_value_print (struct value *val, struct ui_file *stream,
   /* Preserve the original type before stripping typedefs.  We prefer
      to pass down the original type when possible, but for local
      checks it is better to look past the typedefs.  */
-  val_type = value_type (val);
+  val_type = val->type ();
   type = check_typedef (val_type);
 
   if (TYPE_CODE (type) == TYPE_CODE_PTR || TYPE_IS_REFERENCE (type))
@@ -643,7 +643,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 	  if (is_ref)
 	    {
 	      val = value_ref (value_ind (val), refcode);
-	      type = value_type (val);
+	      type = val->type ();
 	    }
 
 	  type_print (type, "", stream, -1);
@@ -654,7 +654,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 	{
 	  /* normal case */
 	  fprintf_filtered (stream, "(");
-	  type_print (value_type (val), "", stream, -1);
+	  type_print (val->type (), "", stream, -1);
 	  fprintf_filtered (stream, ") ");
 	}
     }

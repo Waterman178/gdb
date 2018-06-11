@@ -194,7 +194,7 @@ evaluate_subexp_modula2 (struct type *expect_type, struct expression *exp,
       else
 	{
 	  arg1 = coerce_ref (arg1);
-	  type = check_typedef (value_type (arg1));
+	  type = check_typedef (arg1->type ());
 
 	  if (m2_is_unbounded_array (type))
 	    {
@@ -206,7 +206,7 @@ evaluate_subexp_modula2 (struct type *expect_type, struct expression *exp,
 				       _("unbounded structure "
 					 "missing _m2_high field"));
 	  
-	      if (value_type (arg1) != type)
+	      if (arg1->type () != type)
 		arg1 = value_cast (type, arg1);
 	    }
 	}
@@ -223,7 +223,7 @@ evaluate_subexp_modula2 (struct type *expect_type, struct expression *exp,
          then report this as an error.  */
 
       arg1 = coerce_ref (arg1);
-      type = check_typedef (value_type (arg1));
+      type = check_typedef (arg1->type ());
 
       if (m2_is_unbounded_array (type))
 	{
@@ -240,10 +240,10 @@ evaluate_subexp_modula2 (struct type *expect_type, struct expression *exp,
 				   _("unbounded structure "
 				     "missing _m2_contents field"));
 	  
-	  if (value_type (arg1) != type)
+	  if (arg1->type () != type)
 	    arg1 = value_cast (type, arg1);
 
-	  check_typedef (value_type (arg1));
+	  check_typedef (arg1->type ());
 	  return value_ind (value_ptradd (arg1, value_as_long (arg2)));
 	}
       else

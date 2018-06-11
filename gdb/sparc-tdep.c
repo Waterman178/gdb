@@ -623,7 +623,7 @@ sparc32_store_arguments (struct regcache *regcache, int nargs,
 
   for (i = 0; i < nargs; i++)
     {
-      struct type *type = value_type (args[i]);
+      struct type *type = args[i]->type ();
       int len = TYPE_LENGTH (type);
 
       if (sparc_arg_by_memory_p (type))
@@ -667,7 +667,7 @@ sparc32_store_arguments (struct regcache *regcache, int nargs,
   for (i = 0; i < nargs; i++)
     {
       const bfd_byte *valbuf = value_contents (args[i]);
-      struct type *type = value_type (args[i]);
+      struct type *type = args[i]->type ();
       int len = TYPE_LENGTH (type);
       gdb_byte buf[4];
 

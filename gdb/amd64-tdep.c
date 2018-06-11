@@ -377,7 +377,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
 	    memcpy (buf, raw_buf + 1, 1);
 	  else
 	    mark_value_bytes_unavailable (result_value, 0,
-					  TYPE_LENGTH (value_type (result_value)));
+					  TYPE_LENGTH (result_value->type ()));
 	}
       else
 	{
@@ -386,7 +386,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
 	    memcpy (buf, raw_buf, 1);
 	  else
 	    mark_value_bytes_unavailable (result_value, 0,
-					  TYPE_LENGTH (value_type (result_value)));
+					  TYPE_LENGTH (result_value->type ()));
 	}
     }
   else if (i386_dword_regnum_p (gdbarch, regnum))
@@ -398,7 +398,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
 	memcpy (buf, raw_buf, 4);
       else
 	mark_value_bytes_unavailable (result_value, 0,
-				      TYPE_LENGTH (value_type (result_value)));
+				      TYPE_LENGTH (result_value->type ()));
     }
   else
     i386_pseudo_register_read_into_value (gdbarch, regcache, regnum,
@@ -890,7 +890,7 @@ amd64_push_arguments (struct regcache *regcache, int nargs,
 
   for (i = 0; i < nargs; i++)
     {
-      struct type *type = value_type (args[i]);
+      struct type *type = args[i]->type ();
       int len = TYPE_LENGTH (type);
       enum amd64_reg_class theclass[2];
       int needed_integer_regs = 0;
@@ -971,7 +971,7 @@ amd64_push_arguments (struct regcache *regcache, int nargs,
   /* Write out the arguments to the stack.  */
   for (i = 0; i < num_stack_args; i++)
     {
-      struct type *type = value_type (stack_args[i]);
+      struct type *type = stack_args[i]->type ();
       const gdb_byte *valbuf = value_contents (stack_args[i]);
       int len = TYPE_LENGTH (type);
 

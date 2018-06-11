@@ -3693,7 +3693,7 @@ arm_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
   /* Determine the type of this function and whether the VFP ABI
      applies.  */
-  ftype = check_typedef (value_type (function));
+  ftype = check_typedef (function->type ());
   if (TYPE_CODE (ftype) == TYPE_CODE_PTR)
     ftype = check_typedef (TYPE_TARGET_TYPE (ftype));
   use_vfp_abi = arm_vfp_abi_for_function (gdbarch, ftype);
@@ -3736,7 +3736,7 @@ arm_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       int vfp_base_count;
       int may_use_core_reg = 1;
 
-      arg_type = check_typedef (value_type (args[argnum]));
+      arg_type = check_typedef (args[argnum]->type ());
       len = TYPE_LENGTH (arg_type);
       target_type = TYPE_TARGET_TYPE (arg_type);
       typecode = TYPE_CODE (arg_type);
@@ -8180,7 +8180,7 @@ arm_return_value (struct gdbarch *gdbarch, struct value *function,
 		  gdb_byte *readbuf, const gdb_byte *writebuf)
 {
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
-  struct type *func_type = function ? value_type (function) : NULL;
+  struct type *func_type = function ? function->type () : NULL;
   enum arm_vfp_cprc_base_type vfp_base_type;
   int vfp_base_count;
 

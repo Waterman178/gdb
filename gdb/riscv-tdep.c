@@ -579,7 +579,7 @@ riscv_print_one_register_info (struct gdbarch *gdbarch,
 {
   const char *name = gdbarch_register_name (gdbarch, regnum);
   struct value *val = value_of_register (regnum, frame);
-  struct type *regtype = value_type (val);
+  struct type *regtype = val->type ();
   int print_raw_format;
   enum tab_stops { value_column_1 = 15 };
 
@@ -2051,7 +2051,7 @@ riscv_push_dummy_call (struct gdbarch *gdbarch,
       struct type *arg_type;
 
       arg_value = args[i];
-      arg_type = check_typedef (value_type (arg_value));
+      arg_type = check_typedef (arg_value->type ());
 
       riscv_arg_location (gdbarch, info, &call_info, arg_type);
 

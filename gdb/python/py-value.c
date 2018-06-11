@@ -210,7 +210,7 @@ valpy_referenced_value (PyObject *self, PyObject *args)
       scoped_value_mark free_values;
 
       self_val = ((value_object *) self)->value;
-      switch (TYPE_CODE (check_typedef (value_type (self_val))))
+      switch (TYPE_CODE (check_typedef (self_val->type ())))
         {
         case TYPE_CODE_PTR:
           res_val = value_ind (self_val);
@@ -333,7 +333,7 @@ valpy_get_type (PyObject *self, void *closure)
 
   if (!obj->type)
     {
-      obj->type = type_to_type_object (value_type (obj->value));
+      obj->type = type_to_type_object (obj->value->type ());
       if (!obj->type)
 	return NULL;
     }
@@ -360,7 +360,7 @@ valpy_get_dynamic_type (PyObject *self, void *closure)
       struct value *val = obj->value;
       scoped_value_mark free_values;
 
-      type = value_type (val);
+      type = val->type ();
       type = check_typedef (type);
 
       if (((TYPE_CODE (type) == TYPE_CODE_PTR) || TYPE_IS_REFERENCE (type))
@@ -449,7 +449,7 @@ valpy_lazy_string (PyObject *self, PyObject *args, PyObject *kw)
       struct type *type, *realtype;
       CORE_ADDR addr;
 
-      type = value_type (value);
+      type = value->type ();
       realtype = check_typedef (type);
 
       switch (TYPE_CODE (realtype))
@@ -654,7 +654,7 @@ value_has_field (struct value *v, PyObject *field)
 
   TRY
     {
-      val_type = value_type (v);
+      val_type = v->type ();
       val_type = check_typedef (val_type);
       if (TYPE_IS_REFERENCE (val_type) || TYPE_CODE (val_type) == TYPE_CODE_PTR)
       val_type = check_typedef (TYPE_TARGET_TYPE (val_type));
@@ -807,7 +807,7 @@ valpy_getitem (PyObject *self, PyObject *key)
 	{
 	  struct type *val_type;
 
-	  val_type = check_typedef (value_type (tmp));
+	  val_type = check_typedef (tmp->type ());
 	  if (TYPE_CODE (val_type) == TYPE_CODE_PTR)
 	    res_val = value_cast (lookup_pointer_type (base_class_type), tmp);
 	  else if (TYPE_CODE (val_type) == TYPE_CODE_REF)
@@ -833,7 +833,7 @@ valpy_getitem (PyObject *self, PyObject *key)
 	      struct type *type;
 
 	      tmp = coerce_ref (tmp);
-	      type = check_typedef (value_type (tmp));
+	      type = check_typedef (tmp->type ());
 	      if (TYPE_CODE (type) != TYPE_CODE_ARRAY
 		  && TYPE_CODE (type) != TYPE_CODE_PTR)
 		  error (_("Cannot subscript requested type."));
@@ -877,7 +877,7 @@ valpy_call (PyObject *self, PyObject *args, PyObject *keywords)
 
   TRY
     {
-      ftype = check_typedef (value_type (function));
+      ftype = check_typedef (function->type ());
     }
   CATCH (except, RETURN_MASK_ALL)
     {
@@ -1088,8 +1088,8 @@ valpy_binop_throw (enum valpy_opcode opcode, PyObject *self, PyObject *other)
     {
     case VALPY_ADD:
       {
-	struct type *ltype = value_type (arg1);
-	struct type *rtype = value_type (arg2);
+	struct type *ltype = arg1->type ();
+	struct type *rtype = arg2->type ();
 
 	ltype = check_typedef (ltype);
 	ltype = STRIP_REFERENCE (ltype);
@@ -1112,8 +1112,8 @@ valpy_binop_throw (enum valpy_opcode opcode, PyObject *self, PyObject *other)
       break;
     case VALPY_SUB:
       {
-	struct type *ltype = value_type (arg1);
-	struct type *rtype = value_type (arg2);
+	struct type *ltype = arg1->type ();
+	struct type *rtype = arg2->type ();
 
 	ltype = check_typedef (ltype);
 	ltype = STRIP_REFERENCE (ltype);
@@ -1285,7 +1285,7 @@ valpy_absolute (PyObject *self)
     {
       scoped_value_mark free_values;
 
-      if (value_less (value, value_zero (value_type (value), not_lval)))
+      if (value_less (value, value_zero (value->type (), not_lval)))
 	isabs = 0;
     }
   CATCH (except, RETURN_MASK_ALL)
@@ -1311,7 +1311,7 @@ valpy_nonzero (PyObject *self)
 
   TRY
     {
-      type = check_typedef (value_type (self_value->value));
+      type = check_typedef (self_value->value->type ());
 
       if (is_integral_type (type) || TYPE_CODE (type) == TYPE_CODE_PTR)
 	nonzero = !!value_as_long (self_value->value);
@@ -1496,7 +1496,7 @@ static PyObject *
 valpy_int (PyObject *self)
 {
   struct value *value = ((value_object *) self)->value;
-  struct type *type = value_type (value);
+  struct type *type = value->type ();
   LONGEST l = 0;
 
   TRY
@@ -1521,7 +1521,7 @@ static PyObject *
 valpy_long (PyObject *self)
 {
   struct value *value = ((value_object *) self)->value;
-  struct type *type = value_type (value);
+  struct type *type = value->type ();
   LONGEST l = 0;
 
   TRY
@@ -1551,7 +1551,7 @@ static PyObject *
 valpy_float (PyObject *self)
 {
   struct value *value = ((value_object *) self)->value;
-  struct type *type = value_type (value);
+  struct type *type = value->type ();
   double d = 0;
 
   TRY
@@ -1681,7 +1681,7 @@ convert_value_from_python (PyObject *obj)
 	    {
 	      value = allocate_value (builtin_type_pyfloat);
 	      target_float_from_host_double (value_contents_raw (value),
-					     value_type (value), d);
+					     value->type (), d);
 	    }
 	}
       else if (gdbpy_is_string (obj))
@@ -1763,7 +1763,7 @@ gdbpy_convenience_variable (PyObject *self, PyObject *args)
       if (var != NULL)
 	{
 	  res_val = value_of_internalvar (python_gdbarch, var);
-	  if (TYPE_CODE (value_type (res_val)) == TYPE_CODE_VOID)
+	  if (TYPE_CODE (res_val->type ()) == TYPE_CODE_VOID)
 	    res_val = NULL;
 	}
     }

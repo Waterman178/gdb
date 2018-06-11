@@ -1173,7 +1173,7 @@ m68hc11_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
     }
   else if (nargs > 0)
     {
-      type = value_type (args[0]);
+      type = args[0]->type ();
 
       /* First argument is passed in D and X registers.  */
       if (TYPE_LENGTH (type) <= 4)
@@ -1195,7 +1195,7 @@ m68hc11_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
   for (argnum = nargs - 1; argnum >= first_stack_argnum; argnum--)
     {
-      type = value_type (args[argnum]);
+      type = args[argnum]->type ();
 
       if (TYPE_LENGTH (type) & 1)
         {

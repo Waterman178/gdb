@@ -529,7 +529,7 @@ find_thread_by_handle (struct value *thread_handle, struct inferior *inf)
 {
   return target_thread_handle_to_thread_info
 	   (value_contents_all (thread_handle),
-	    TYPE_LENGTH (value_type (thread_handle)),
+	    TYPE_LENGTH (thread_handle->type ()),
 	    inf);
 }
 

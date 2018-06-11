@@ -1085,7 +1085,7 @@ value_check_printable (struct value *val, struct ui_file *stream,
 
   if (value_entirely_optimized_out (val))
     {
-      if (options->summary && !val_print_scalar_type_p (value_type (val)))
+      if (options->summary && !val_print_scalar_type_p (val->type ()))
 	fprintf_filtered (stream, "...");
       else
 	val_print_optimized_out (val, stream);
@@ -1094,27 +1094,27 @@ value_check_printable (struct value *val, struct ui_file *stream,
 
   if (value_entirely_unavailable (val))
     {
-      if (options->summary && !val_print_scalar_type_p (value_type (val)))
+      if (options->summary && !val_print_scalar_type_p (val->type ()))
 	fprintf_filtered (stream, "...");
       else
 	val_print_unavailable (stream);
       return 0;
     }
 
-  if (TYPE_CODE (value_type (val)) == TYPE_CODE_INTERNAL_FUNCTION)
+  if (TYPE_CODE (val->type ()) == TYPE_CODE_INTERNAL_FUNCTION)
     {
       fprintf_filtered (stream, _("<internal function %s>"),
 			value_internal_function_name (val));
       return 0;
     }
 
-  if (type_not_associated (value_type (val)))
+  if (type_not_associated (val->type ()))
     {
       val_print_not_associated (stream);
       return 0;
     }
 
-  if (type_not_allocated (value_type (val)))
+  if (type_not_allocated (val->type ()))
     {
       val_print_not_allocated (stream);
       return 0;
@@ -1147,7 +1147,7 @@ common_val_print (struct value *val, struct ui_file *stream, int recurse,
   if (value_lazy (val))
     value_fetch_lazy (val);
 
-  val_print (value_type (val),
+  val_print (val->type (),
 	     value_embedded_offset (val), value_address (val),
 	     stream, recurse,
 	     val, options, language);
@@ -1166,7 +1166,7 @@ value_print (struct value *val, struct ui_file *stream,
   if (!options->raw)
     {
       int r
-	= apply_ext_lang_val_pretty_printer (value_type (val),
+	= apply_ext_lang_val_pretty_printer (val->type (),
 					     value_embedded_offset (val),
 					     value_address (val),
 					     stream, 0,

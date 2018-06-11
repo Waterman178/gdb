@@ -1034,7 +1034,7 @@ v850_push_dummy_call (struct gdbarch *gdbarch,
 
   /* Now make space on the stack for the args.  */
   for (argnum = 0; argnum < nargs; argnum++)
-    len += ((TYPE_LENGTH (value_type (args[argnum])) + 3) & ~3);
+    len += ((TYPE_LENGTH (args[argnum]->type ()) + 3) & ~3);
   sp -= len + stack_offset;
 
   argreg = E_ARG0_REGNUM;
@@ -1051,9 +1051,9 @@ v850_push_dummy_call (struct gdbarch *gdbarch,
       gdb_byte *val;
       gdb_byte valbuf[v850_reg_size];
 
-      if (!v850_type_is_scalar (value_type (*args))
+      if (!v850_type_is_scalar ((*args)->type ())
          && gdbarch_tdep (gdbarch)->abi == V850_ABI_GCC
-	  && TYPE_LENGTH (value_type (*args)) > E_MAX_RETTYPE_SIZE_IN_REGS)
+	  && TYPE_LENGTH ((*args)->type ()) > E_MAX_RETTYPE_SIZE_IN_REGS)
 	{
 	  store_unsigned_integer (valbuf, 4, byte_order,
 				  value_address (*args));
@@ -1062,12 +1062,12 @@ v850_push_dummy_call (struct gdbarch *gdbarch,
 	}
       else
 	{
-	  len = TYPE_LENGTH (value_type (*args));
+	  len = TYPE_LENGTH ((*args)->type ());
 	  val = (gdb_byte *) value_contents (*args);
 	}
 
       if (gdbarch_tdep (gdbarch)->eight_byte_align
-          && v850_eight_byte_align_p (value_type (*args)))
+          && v850_eight_byte_align_p ((*args)->type ()))
         {
 	  if (argreg <= E_ARGLAST_REGNUM && (argreg & 1))
 	    argreg++;

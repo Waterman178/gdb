@@ -677,7 +677,7 @@ msp430_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   CORE_ADDR cfa;
   int code_model = gdbarch_tdep (gdbarch)->code_model;
 
-  struct type *func_type = value_type (function);
+  struct type *func_type = function->type ();
 
   /* Dereference function pointer types.  */
   while (TYPE_CODE (func_type) == TYPE_CODE_PTR)
@@ -711,7 +711,7 @@ msp430_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	{
 	  struct value *arg = args[i];
 	  const gdb_byte *arg_bits = value_contents_all (arg);
-	  struct type *arg_type = check_typedef (value_type (arg));
+	  struct type *arg_type = check_typedef (arg->type ());
 	  ULONGEST arg_size = TYPE_LENGTH (arg_type);
 	  int offset;
 	  int current_arg_on_stack;

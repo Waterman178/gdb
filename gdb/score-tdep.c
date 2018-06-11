@@ -527,7 +527,7 @@ score_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   struct_addr = align_down (struct_addr, 16);
   sp = align_down (sp, 16);
   for (argnum = 0; argnum < nargs; argnum++)
-    arglen += align_up (TYPE_LENGTH (value_type (args[argnum])),
+    arglen += align_up (TYPE_LENGTH (args[argnum]->type ()),
                         SCORE_REGSIZE);
   sp -= align_up (arglen, 16);
 
@@ -547,7 +547,7 @@ score_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   for (argnum = 0; argnum < nargs; argnum++)
     {
       struct value *arg = args[argnum];
-      struct type *arg_type = check_typedef (value_type (arg));
+      struct type *arg_type = check_typedef (arg->type ());
       enum type_code typecode = TYPE_CODE (arg_type);
       const gdb_byte *val = value_contents (arg);
       int downward_offset = 0;

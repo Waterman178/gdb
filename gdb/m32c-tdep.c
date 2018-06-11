@@ -2034,7 +2034,7 @@ m32c_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
   int num_prototyped_args = 0;
 
   {
-    struct type *func_type = value_type (function);
+    struct type *func_type = function->type ();
 
     /* Dereference function pointer types.  */
     if (TYPE_CODE (func_type) == TYPE_CODE_PTR)
@@ -2067,7 +2067,7 @@ m32c_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
     {
       struct value *arg = args[i];
       const gdb_byte *arg_bits = value_contents (arg);
-      struct type *arg_type = value_type (arg);
+      struct type *arg_type = arg->type ();
       ULONGEST arg_size = TYPE_LENGTH (arg_type);
 
       /* Can it go in r1 or r1l (for m16c) or r0 or r0l (for m32c)?  */

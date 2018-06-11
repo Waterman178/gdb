@@ -1438,7 +1438,7 @@ aarch64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
      Rather that change the target interface we call the language code
      directly ourselves.  */
 
-  func_type = check_typedef (value_type (function));
+  func_type = check_typedef (function->type ());
 
   /* Dereference function pointer types.  */
   if (TYPE_CODE (func_type) == TYPE_CODE_PTR)
@@ -1485,7 +1485,7 @@ aarch64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       struct type *arg_type;
       int len;
 
-      arg_type = check_typedef (value_type (arg));
+      arg_type = check_typedef (arg->type ());
       len = TYPE_LENGTH (arg_type);
 
       switch (TYPE_CODE (arg_type))
@@ -1550,7 +1550,7 @@ aarch64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 		      struct value *field =
 			value_primitive_field (arg, 0, i, arg_type);
 		      struct type *field_type =
-			check_typedef (value_type (field));
+			check_typedef (field->type ());
 
 		      pass_in_v_or_stack (gdbarch, regcache, &info,
 					  field_type, field);
@@ -2319,7 +2319,7 @@ aarch64_pseudo_read_value_1 (struct gdbarch *gdbarch,
 
   if (regcache->raw_read (v_regnum, reg_buf) != REG_VALID)
     mark_value_bytes_unavailable (result_value, 0,
-				  TYPE_LENGTH (value_type (result_value)));
+				  TYPE_LENGTH (result_value->type ()));
   else
     memcpy (value_contents_raw (result_value), reg_buf, regsize);
 

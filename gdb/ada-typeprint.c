@@ -366,12 +366,12 @@ print_fixed_point_type (struct type *type, struct ui_file *stream)
     {
       std::string str;
       str = target_float_to_string (value_contents (delta),
-				    value_type (delta), "%g");
+				    delta->type (), "%g");
       fprintf_filtered (stream, "delta %s", str.c_str());
       if (!value_equal (delta, small))
 	{
 	  str = target_float_to_string (value_contents (small),
-					value_type (small), "%g");
+					small->type (), "%g");
 	  fprintf_filtered (stream, " <'small = %s>", str.c_str());
 	}
     }

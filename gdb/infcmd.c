@@ -2299,7 +2299,7 @@ default_print_one_register_info (struct ui_file *file,
 				 const char *name,
 				 struct value *val)
 {
-  struct type *regtype = value_type (val);
+  struct type *regtype = val->type ();
   int print_raw_format;
   string_file format_stream;
   enum tab_stops

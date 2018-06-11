@@ -418,13 +418,13 @@ whatis_exp (const char *exp, int show)
 	     object or expression of that type.  Find that
 	     indirectly-named type.  */
 	  val = evaluate_type (expr.get ());
-	  type = value_type (val);
+	  type = val->type ();
 	}
     }
   else
     {
       val = access_value_history (0);
-      type = value_type (val);
+      type = val->type ();
     }
 
   get_user_print_options (&opts);
@@ -592,7 +592,7 @@ maintenance_print_type (const char *type_name, int from_tty)
 	  /* The user expression may name a type indirectly by naming an
 	     object of that type.  Find that indirectly named type.  */
 	  val = evaluate_type (expr.get ());
-	  type = value_type (val);
+	  type = val->type ();
 	}
       if (type != NULL)
 	{

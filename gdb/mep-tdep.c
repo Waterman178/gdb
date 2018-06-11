@@ -2239,7 +2239,7 @@ push_large_arguments (CORE_ADDR sp, int argc, struct value **argv,
 
   for (i = 0; i < argc; i++)
     {
-      unsigned arg_len = TYPE_LENGTH (value_type (argv[i]));
+      unsigned arg_len = TYPE_LENGTH (argv[i]->type ());
 
       if (arg_len > MEP_GPR_SIZE)
         {
@@ -2300,9 +2300,9 @@ mep_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       ULONGEST value;
 
       /* Arguments that fit in a GPR get expanded to fill the GPR.  */
-      if (TYPE_LENGTH (value_type (argv[i])) <= MEP_GPR_SIZE)
+      if (TYPE_LENGTH (argv[i]->type ()) <= MEP_GPR_SIZE)
         value = extract_unsigned_integer (value_contents (argv[i]),
-                                          TYPE_LENGTH (value_type (argv[i])),
+                                          TYPE_LENGTH (argv[i]->type ()),
 					  byte_order);
 
       /* Arguments too large to fit in a GPR get copied to the stack,

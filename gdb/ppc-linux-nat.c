@@ -1780,7 +1780,7 @@ check_condition (CORE_ADDR watch_addr, struct expression *cond,
 
       /* DATA_VALUE is the constant in RIGHT_VAL, but actually has
 	 the same type as the memory region referenced by LEFT_VAL.  */
-      *len = TYPE_LENGTH (check_typedef (value_type (left_val)));
+      *len = TYPE_LENGTH (check_typedef (left_val->type ()));
     }
   else if (num_accesses_left == 0 && num_accesses_right == 1
 	   && VALUE_LVAL (right_val) == lval_memory
@@ -1790,7 +1790,7 @@ check_condition (CORE_ADDR watch_addr, struct expression *cond,
 
       /* DATA_VALUE is the constant in LEFT_VAL, but actually has
 	 the same type as the memory region referenced by RIGHT_VAL.  */
-      *len = TYPE_LENGTH (check_typedef (value_type (right_val)));
+      *len = TYPE_LENGTH (check_typedef (right_val->type ()));
     }
   else
     return 0;

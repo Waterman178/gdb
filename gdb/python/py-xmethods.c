@@ -431,7 +431,7 @@ python_xmethod_worker::do_get_result_type (value *obj, value **args, int nargs,
       return EXT_LANG_RC_OK;
     }
 
-  obj_type = check_typedef (value_type (obj));
+  obj_type = check_typedef (obj->type ());
   this_type = check_typedef (type_object_to_type (m_this_type));
   if (TYPE_CODE (obj_type) == TYPE_CODE_PTR)
     {
@@ -516,7 +516,7 @@ python_xmethod_worker::invoke (struct value *obj, struct value **args,
   struct type *obj_type, *this_type;
   struct value *res = NULL;
 
-  obj_type = check_typedef (value_type (obj));
+  obj_type = check_typedef (obj->type ());
   this_type = check_typedef (type_object_to_type (m_this_type));
   if (TYPE_CODE (obj_type) == TYPE_CODE_PTR)
     {
