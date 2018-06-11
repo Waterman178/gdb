@@ -6339,7 +6339,7 @@ mips_print_register (struct ui_file *file, struct frame_info *frame,
 
   get_formatted_print_options (&opts, 'x');
   val_print_scalar_formatted (val->type (),
-			      value_embedded_offset (val),
+			      val->embedded_offset (),
 			      val,
 			      &opts, 0, file);
 }

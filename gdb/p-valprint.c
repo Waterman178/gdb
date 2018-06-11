@@ -878,7 +878,7 @@ pascal_object_print_static_field (struct value *val,
       type = check_typedef (type);
       pascal_object_print_value_fields (type,
 					value_contents_for_printing (val),
-					value_embedded_offset (val),
+					val->embedded_offset (),
 					addr,
 					stream, recurse,
 					val, options, NULL, 1);

@@ -222,8 +222,8 @@ val_print_packed_array_elements (struct type *type, const gdb_byte *valaddr,
 	  if (TYPE_LENGTH (check_typedef (v0->type ()))
 	      != TYPE_LENGTH (check_typedef (v1->type ())))
 	    break;
-	  if (!value_contents_eq (v0, value_embedded_offset (v0),
-				  v1, value_embedded_offset (v1),
+	  if (!value_contents_eq (v0, v0->embedded_offset (),
+				  v1, v1->embedded_offset (),
 				  TYPE_LENGTH (check_typedef (v0->type ()))))
 	    break;
 	}
@@ -234,7 +234,7 @@ val_print_packed_array_elements (struct type *type, const gdb_byte *valaddr,
 
 	  opts.deref_ref = 0;
 	  val_print (elttype,
-		     value_embedded_offset (v0), 0, stream,
+		     v0->embedded_offset (), 0, stream,
 		     recurse + 1, v0, &opts, current_language);
 	  annotate_elt_rep (i - i0);
 	  fprintf_filtered (stream, _(" <repeats %u times>"), i - i0);
@@ -265,7 +265,7 @@ val_print_packed_array_elements (struct type *type, const gdb_byte *valaddr,
 					   stream, options);
 		}
 	      val_print (elttype,
-			 value_embedded_offset (v0), 0, stream,
+			 v0->embedded_offset (), 0, stream,
 			 recurse + 1, v0, &opts, current_language);
 	      annotate_elt ();
 	    }
@@ -690,7 +690,7 @@ print_field_values (struct type *type, const gdb_byte *valaddr,
 	      opts = *options;
 	      opts.deref_ref = 0;
 	      val_print (TYPE_FIELD_TYPE (type, i),
-			 value_embedded_offset (v), 0,
+			 v->embedded_offset (), 0,
 			 stream, recurse + 1, v,
 			 &opts, language);
 	    }
@@ -788,7 +788,7 @@ ada_val_print_gnat_array (struct type *type, const gdb_byte *valaddr,
     }
   else
     val_print (val->type (),
-	       value_embedded_offset (val), value_address (val),
+	       val->embedded_offset (), value_address (val),
 	       stream, recurse, val, options, language);
   value_free_to_mark (mark);
 }
@@ -859,7 +859,7 @@ ada_val_print_num (struct type *type, const gdb_byte *valaddr,
 	  struct value *v = value_cast (target_type, v1);
 
 	  val_print (target_type,
-		     value_embedded_offset (v), 0, stream,
+		     v->embedded_offset (), 0, stream,
 		     recurse + 1, v, options, language);
 	}
       else
@@ -1105,7 +1105,7 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
     value_fetch_lazy (deref_val);
 
   val_print (deref_val->type (),
-	     value_embedded_offset (deref_val),
+	     deref_val->embedded_offset (),
 	     value_address (deref_val), stream, recurse + 1,
 	     deref_val, options, language);
 }
@@ -1264,6 +1264,6 @@ ada_value_print (struct value *val0, struct ui_file *stream,
   opts = *options;
   opts.deref_ref = 1;
   val_print (type,
-	     value_embedded_offset (val), address,
+	     val->embedded_offset (), address,
 	     stream, 0, val, &opts, current_language);
 }

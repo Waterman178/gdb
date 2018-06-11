@@ -499,7 +499,7 @@ list_arg_or_local (const struct frame_arg *arg, enum what_to_list what,
 	     to its representation.  */
 	  || (val_print_scalar_type_p (arg->val->type ())
 	      && !value_bytes_available (arg->val,
-					 value_embedded_offset (arg->val),
+					 arg->val->embedded_offset (),
 					 TYPE_LENGTH (arg->val->type ())))))
     return;
 

@@ -133,7 +133,7 @@ f77_print_array_1 (int nss, int ndimensions, struct type *type,
 	  fprintf_filtered (stream, "( ");
 	  f77_print_array_1 (nss + 1, ndimensions, subarray->type (),
 			     value_contents_for_printing (subarray),
-			     value_embedded_offset (subarray),
+			     subarray->embedded_offset (),
 			     value_address (subarray),
 			     stream, recurse, subarray, options, elts);
 	  offs += dim_size;
@@ -150,7 +150,7 @@ f77_print_array_1 (int nss, int ndimensions, struct type *type,
 	  struct value *elt = value_subscript ((struct value *)val, i);
 
 	  val_print (elt->type (),
-		     value_embedded_offset (elt),
+		     elt->embedded_offset (),
 		     value_address (elt), stream, recurse,
 		     elt, options, current_language);
 
@@ -339,7 +339,7 @@ f_val_print (struct type *type, int embedded_offset,
 		}
 
 	      val_print (field->type (),
-			 value_embedded_offset (field),
+			 field->embedded_offset (),
 			 value_address (field), stream, recurse + 1,
 			 field, options, current_language);
 

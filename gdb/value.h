@@ -303,6 +303,26 @@ struct value
 
   struct type *actual_type (int resolve_simple_types, int *real_type_found);
 
+  LONGEST pointed_to_offset () const
+  {
+    return m_pointed_to_offset;
+  }
+
+  void set_pointed_to_offset (LONGEST val)
+  {
+    m_pointed_to_offset = val;
+  }
+
+  LONGEST embedded_offset () const
+  {
+    return m_embedded_offset;
+  }
+
+  void set_embedded_offset (LONGEST val)
+  {
+    m_embedded_offset = val;
+  }
+
   /* Return the gdbarch associated with the value. */
   struct gdbarch *arch () const
   {
@@ -469,11 +489,6 @@ struct value
      different string representation and related error strings.  */
   std::vector<range> m_optimized_out;
 };
-
-extern LONGEST value_pointed_to_offset (const struct value *value);
-extern void set_value_pointed_to_offset (struct value *value, LONGEST val);
-extern LONGEST value_embedded_offset (const struct value *value);
-extern void set_value_embedded_offset (struct value *value, LONGEST val);
 
 /* For lval_computed values, this structure holds functions used to
    retrieve and set the value (or portions of the value).

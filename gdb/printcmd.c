@@ -318,7 +318,7 @@ print_formatted (struct value *val, int size,
     /* User specified format, so don't look to the type to tell us
        what to do.  */
     val_print_scalar_formatted (type,
-				value_embedded_offset (val),
+				val->embedded_offset (),
 				val,
 				options, size, stream);
 }

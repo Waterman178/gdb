@@ -1144,7 +1144,7 @@ output_register (struct frame_info *frame, int regnum, int format,
   get_formatted_print_options (&opts, format);
   opts.deref_ref = 1;
   val_print (val->type (),
-	     value_embedded_offset (val), 0,
+	     val->embedded_offset (), 0,
 	     &stb, 0, val, &opts, current_language);
   uiout->field_stream ("value", stb);
 }

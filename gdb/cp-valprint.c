@@ -660,7 +660,7 @@ cp_print_static_field (struct type *type,
       obstack_grow (&dont_print_statmem_obstack, (char *) &addr,
 		    sizeof (CORE_ADDR));
       cp_print_value_fields (type, val->enclosing_type (),
-			     value_embedded_offset (val), addr,
+			     val->embedded_offset (), addr,
 			     stream, recurse, val,
 			     options, NULL, 1);
       return;
@@ -696,7 +696,7 @@ cp_print_static_field (struct type *type,
   opts = *options;
   opts.deref_ref = 0;
   val_print (type,
-	     value_embedded_offset (val),
+	     val->embedded_offset (),
 	     value_address (val),
 	     stream, recurse, val,
 	     &opts, current_language);

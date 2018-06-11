@@ -2329,7 +2329,7 @@ default_print_one_register_info (struct ui_file *file,
       opts.deref_ref = 1;
 
       val_print (regtype,
-		 value_embedded_offset (val), 0,
+		 val->embedded_offset (), 0,
 		 &format_stream, 0, val, &opts, current_language);
 
       if (print_raw_format)
@@ -2349,7 +2349,7 @@ default_print_one_register_info (struct ui_file *file,
       get_formatted_print_options (&opts, 'x');
       opts.deref_ref = 1;
       val_print (regtype,
-		 value_embedded_offset (val), 0,
+		 val->embedded_offset (), 0,
 		 &format_stream, 0, val, &opts, current_language);
       /* If not a vector register, print it also according to its
 	 natural format.  */
@@ -2359,7 +2359,7 @@ default_print_one_register_info (struct ui_file *file,
 	  get_user_print_options (&opts);
 	  opts.deref_ref = 1;
 	  val_print (regtype,
-		     value_embedded_offset (val), 0,
+		     val->embedded_offset (), 0,
 		     &format_stream, 0, val, &opts, current_language);
 	}
     }

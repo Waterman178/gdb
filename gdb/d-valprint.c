@@ -64,7 +64,7 @@ dynamic_array_type (struct type *type,
       true_type = ival->type ();
 
       d_val_print (true_type,
-		   value_embedded_offset (ival), addr,
+		   ival->embedded_offset (), addr,
 		   stream, recurse + 1, ival, options);
       return 0;
     }

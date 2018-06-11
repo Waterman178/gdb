@@ -699,7 +699,7 @@ c_value_print (struct value *val, struct ui_file *stream,
     }
 
   val_print (val_type,
-	     value_embedded_offset (val),
+	     val->embedded_offset (),
 	     value_address (val),
 	     stream, 0,
 	     val, &opts, current_language);

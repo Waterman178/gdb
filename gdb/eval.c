@@ -1164,7 +1164,7 @@ evaluate_funcall (type *expect_type, expression *exp, int *pos,
 	  arg2
 	    = value_from_longest (lookup_pointer_type(temp->type ()),
 				  value_address (temp)
-				  + value_embedded_offset (temp));
+				  + temp->embedded_offset ());
 	  argvec[1] = arg2;	/* the ``this'' pointer */
 	}
 

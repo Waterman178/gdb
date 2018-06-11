@@ -179,7 +179,7 @@ m2_print_unbounded_array (struct type *type, const gdb_byte *valaddr,
   fprintf_filtered (stream, "{");  
   m2_print_array_contents (val->type (),
 			   value_contents_for_printing (val),
-			   value_embedded_offset (val), addr, stream,
+			   val->embedded_offset (), addr, stream,
 			   recurse, val, options, len);
   fprintf_filtered (stream, ", HIGH = %d}", (int) len);
 }
