@@ -1353,7 +1353,7 @@ entry_data_value_coerce_ref (const struct value *value)
   if (!TYPE_IS_REFERENCE (checked_type))
     return NULL;
 
-  target_val = (struct value *) value_computed_closure (value);
+  target_val = (struct value *) value->computed_closure ();
   value_incref (target_val);
   return target_val;
 }
@@ -1363,7 +1363,7 @@ entry_data_value_coerce_ref (const struct value *value)
 static void *
 entry_data_value_copy_closure (const struct value *v)
 {
-  struct value *target_val = (struct value *) value_computed_closure (v);
+  struct value *target_val = (struct value *) v->computed_closure ();
 
   value_incref (target_val);
   return target_val;
@@ -1374,7 +1374,7 @@ entry_data_value_copy_closure (const struct value *v)
 static void
 entry_data_value_free_closure (struct value *v)
 {
-  struct value *target_val = (struct value *) value_computed_closure (v);
+  struct value *target_val = (struct value *) v->computed_closure ();
 
   value_decref (target_val);
 }
@@ -1770,7 +1770,7 @@ rw_pieced_value (struct value *v, struct value *from)
   gdb_byte *v_contents;
   const gdb_byte *from_contents;
   struct piece_closure *c
-    = (struct piece_closure *) value_computed_closure (v);
+    = (struct piece_closure *) v->computed_closure ();
   gdb::byte_vector buffer;
   int bits_big_endian
     = gdbarch_bits_big_endian (get_type_arch (v->type ()));
@@ -2066,7 +2066,7 @@ check_pieced_synthetic_pointer (const struct value *value, LONGEST bit_offset,
 				int bit_length)
 {
   struct piece_closure *c
-    = (struct piece_closure *) value_computed_closure (value);
+    = (struct piece_closure *) value->computed_closure ();
   int i;
 
   bit_offset += 8 * value->offset ();
@@ -2175,7 +2175,7 @@ static struct value *
 indirect_pieced_value (struct value *value)
 {
   struct piece_closure *c
-    = (struct piece_closure *) value_computed_closure (value);
+    = (struct piece_closure *) value->computed_closure ();
   struct type *type;
   struct frame_info *frame;
   int i, bit_length;
@@ -2257,7 +2257,7 @@ coerce_pieced_ref (const struct value *value)
 				    TARGET_CHAR_BIT * TYPE_LENGTH (type)))
     {
       const struct piece_closure *closure
-	= (struct piece_closure *) value_computed_closure (value);
+	= (struct piece_closure *) value->computed_closure ();
       struct frame_info *frame
 	= get_selected_frame (_("No frame selected."));
 
@@ -2282,7 +2282,7 @@ static void *
 copy_pieced_value_closure (const struct value *v)
 {
   struct piece_closure *c
-    = (struct piece_closure *) value_computed_closure (v);
+    = (struct piece_closure *) v->computed_closure ();
   
   ++c->refc;
   return c;
@@ -2292,7 +2292,7 @@ static void
 free_pieced_value_closure (struct value *v)
 {
   struct piece_closure *c
-    = (struct piece_closure *) value_computed_closure (v);
+    = (struct piece_closure *) v->computed_closure ();
 
   --c->refc;
   if (c->refc == 0)

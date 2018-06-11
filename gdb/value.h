@@ -329,6 +329,25 @@ struct value
     return get_type_arch (type ());
   }
 
+  /* If this is lval_computed, return its lval_funcs structure.  */
+
+  const struct lval_funcs *computed_funcs () const
+  {
+    gdb_assert (m_lval == lval_computed);
+
+    return m_location.computed.funcs;
+  }
+
+  /* If this is lval_computed, return its closure.  The meaning of the
+     returned value depends on the functions used.  */
+
+  void *computed_closure () const
+  {
+    gdb_assert (m_lval == lval_computed);
+
+    return m_location.computed.closure;
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -567,15 +586,6 @@ extern int valprint_check_validity (struct ui_file *stream, struct type *type,
 				    const struct value *val);
 
 extern struct value *allocate_optimized_out_value (struct type *type);
-
-/* If VALUE is lval_computed, return its lval_funcs structure.  */
-
-extern const struct lval_funcs *value_computed_funcs (const struct value *);
-
-/* If VALUE is lval_computed, return its closure.  The meaning of the
-   returned value depends on the functions VALUE uses.  */
-
-extern void *value_computed_closure (const struct value *value);
 
 /* If zero, contents of this value are in the contents field.  If
    nonzero, contents are in inferior.  If the lval field is lval_memory,

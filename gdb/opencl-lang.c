@@ -167,7 +167,7 @@ allocate_lval_closure (int *indices, int n, struct value *val)
 static void
 lval_func_read (struct value *v)
 {
-  struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
+  struct lval_closure *c = (struct lval_closure *) v->computed_closure ();
   struct type *type = check_typedef (v->type ());
   struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
   LONGEST offset = v->offset ();
@@ -196,7 +196,7 @@ static void
 lval_func_write (struct value *v, struct value *fromval)
 {
   struct value *mark = value_mark ();
-  struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
+  struct lval_closure *c = (struct lval_closure *) v->computed_closure ();
   struct type *type = check_typedef (v->type ());
   struct type *eltype = TYPE_TARGET_TYPE (check_typedef (c->val->type ()));
   LONGEST offset = v->offset ();
@@ -243,7 +243,7 @@ static int
 lval_func_check_synthetic_pointer (const struct value *v,
 				   LONGEST offset, int length)
 {
-  struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
+  struct lval_closure *c = (struct lval_closure *) v->computed_closure ();
   /* Size of the target type in bits.  */
   int elsize =
       TYPE_LENGTH (TYPE_TARGET_TYPE (check_typedef (c->val->type ()))) * 8;
@@ -276,7 +276,7 @@ lval_func_check_synthetic_pointer (const struct value *v,
 static void *
 lval_func_copy_closure (const struct value *v)
 {
-  struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
+  struct lval_closure *c = (struct lval_closure *) v->computed_closure ();
 
   ++c->refc;
 
@@ -286,7 +286,7 @@ lval_func_copy_closure (const struct value *v)
 static void
 lval_func_free_closure (struct value *v)
 {
-  struct lval_closure *c = (struct lval_closure *) value_computed_closure (v);
+  struct lval_closure *c = (struct lval_closure *) v->computed_closure ();
 
   --c->refc;
 
