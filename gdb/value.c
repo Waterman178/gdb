@@ -3362,15 +3362,15 @@ value::fetch_lazy_bitfield ()
      per bitfield.  It would be even better to read only the containing
      word, but we have no way to record that just specific bits of a
      value have been fetched.  */
-  struct type *type = check_typedef (type ());
-  struct value *parent = parent ();
+  struct type *t = check_typedef (type ());
+  struct value *p = parent ();
 
-  if (parent->lazy ())
-    parent->fetch_lazy ();
+  if (p->lazy ())
+    p->fetch_lazy ();
 
-  unpack_value_bitfield (val, bitpos (), bitsize (),
-			 value_contents_for_printing (parent),
-			 offset (), parent);
+  unpack_value_bitfield (this, bitpos (), bitsize (),
+			 value_contents_for_printing (p),
+			 offset (), p);
 }
 
 /* Helper for value_fetch_lazy when the value is in memory.  */
@@ -3380,12 +3380,12 @@ value::fetch_lazy_memory ()
 {
   gdb_assert (m_lval == lval_memory);
 
-  CORE_ADDR addr = value_address (val);
+  CORE_ADDR addr = value_address (this);
   struct type *type = check_typedef (enclosing_type ());
 
   if (TYPE_LENGTH (type))
-      read_value_memory (val, 0, stack (),
-			 addr, value_contents_all_raw (val),
+      read_value_memory (this, 0, stack (),
+			 addr, value_contents_all_raw (this),
 			 type_length_units (type));
 }
 
@@ -3396,8 +3396,8 @@ value::fetch_lazy_register ()
 {
   struct frame_info *next_frame;
   int regnum;
-  struct type *type = check_typedef (type ());
-  struct value *new_val = val, *mark = value_mark ();
+  struct type *t = check_typedef (type ());
+  struct value *new_val = this, *mark = value_mark ();
 
   /* Offsets are not supported here; lazy register values must
      refer to the entire register.  */
@@ -3418,7 +3418,7 @@ value::fetch_lazy_register ()
 	 register values should have the register's natural type,
 	 so they do not apply.  */
       gdb_assert (!gdbarch_convert_register_p (get_frame_arch (next_frame),
-					       regnum, type));
+					       regnum, t));
 
       /* FRAME was obtained, above, via VALUE_NEXT_FRAME_ID.
 	 Since a "->next" operation was performed when setting
@@ -3453,9 +3453,9 @@ value::fetch_lazy_register ()
   /* Copy the contents and the unavailability/optimized-out
      meta-data from NEW_VAL to VAL.  */
   set_lazy (0);
-  value_contents_copy (val, embedded_offset (),
-		       new_val, new_embedded_offset (),
-		       type_length_units (type));
+  value_contents_copy (this, embedded_offset (),
+		       new_val, new_val->embedded_offset (),
+		       type_length_units (t));
 
   if (frame_debug)
     {
@@ -3463,8 +3463,8 @@ value::fetch_lazy_register ()
       struct frame_info *frame;
       /* VALUE_FRAME_ID is used here, instead of VALUE_NEXT_FRAME_ID,
 	 so that the frame level will be shown correctly.  */
-      frame = frame_find_by_id (VALUE_FRAME_ID (val));
-      regnum = VALUE_REGNUM (val);
+      frame = frame_find_by_id (VALUE_FRAME_ID (this));
+      regnum = VALUE_REGNUM (this);
       gdbarch = get_frame_arch (frame);
 
       fprintf_unfiltered (gdb_stdlog,
@@ -3521,7 +3521,7 @@ void
 value::fetch_lazy ()
 {
   gdb_assert (lazy ());
-  allocate_value_contents (val);
+  allocate_value_contents (this);
   /* A value is either lazy, or fully fetched.  The
      availability/validity is only established as we try to fetch a
      value.  */
@@ -3529,11 +3529,11 @@ value::fetch_lazy ()
   gdb_assert (m_unavailable.empty ());
   if (bitsize ())
     fetch_lazy_bitfield ();
-  else if (VALUE_LVAL (val) == lval_memory)
+  else if (m_lval == lval_memory)
     fetch_lazy_memory ();
-  else if (VALUE_LVAL (val) == lval_register)
+  else if (m_lval == lval_register)
     fetch_lazy_register ();
-  else if (VALUE_LVAL (val) == lval_computed
+  else if (m_lval == lval_computed
 	   && computed_funcs ()->read != NULL)
     computed_funcs ()->read (this);
   else
