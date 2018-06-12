@@ -623,7 +623,7 @@ do_compile_dwarf_expr_to_c (int indent, string_file &stream,
 	       SYMBOL_PRINT_NAME (sym));
 
       val = read_var_value (sym, NULL, frame);
-      if (VALUE_LVAL (val) != lval_memory)
+      if (val->lval () != lval_memory)
 	error (_("Symbol \"%s\" cannot be used for compilation evaluation "
 		 "as its address has not been found."),
 	       SYMBOL_PRINT_NAME (sym));

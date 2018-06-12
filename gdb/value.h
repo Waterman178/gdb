@@ -398,6 +398,21 @@ struct value
     m_initialized = val;
   }
 
+  /* While the following fields are per- VALUE .CONTENT .PIECE (i.e., a
+     single value might have multiple LVALs), this hacked interface is
+     limited to just the first PIECE.  Expect further change.  */
+  /* Type of value; either not an lval, or one of the various different
+     possible kinds of lval.  */
+  enum lval_type &lval ()
+  {
+    return m_lval;
+  }
+
+  enum lval_type lval () const
+  {
+    return m_lval;
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -722,17 +737,6 @@ extern void mark_value_bits_optimized_out (struct value *value,
    --- regardless of what kind of lvalue WHOLE is.  */
 extern void set_value_component_location (struct value *component,
                                           const struct value *whole);
-
-/* While the following fields are per- VALUE .CONTENT .PIECE (i.e., a
-   single value might have multiple LVALs), this hacked interface is
-   limited to just the first PIECE.  Expect further change.  */
-/* Type of value; either not an lval, or one of the various different
-   possible kinds of lval.  */
-extern enum lval_type *deprecated_value_lval_hack (struct value *);
-#define VALUE_LVAL(val) (*deprecated_value_lval_hack (val))
-
-/* Like VALUE_LVAL, except the parameter can be const.  */
-extern enum lval_type value_lval_const (const struct value *value);
 
 /* If lval == lval_memory, return the address in the inferior.  If
    lval == lval_register, return the byte offset into the registers

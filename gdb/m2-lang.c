@@ -257,7 +257,7 @@ evaluate_subexp_modula2 (struct type *expect_type, struct expression *exp,
 	  }
 
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	return value_zero (TYPE_TARGET_TYPE (type), VALUE_LVAL (arg1));
+	return value_zero (TYPE_TARGET_TYPE (type), arg1->lval ());
       else
 	return value_subscript (arg1, value_as_long (arg2));
 

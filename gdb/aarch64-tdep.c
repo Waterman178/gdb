@@ -2335,7 +2335,7 @@ aarch64_pseudo_read_value (struct gdbarch *gdbarch, readable_regcache *regcache,
   struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
   struct value *result_value = allocate_value (register_type (gdbarch, regnum));
 
-  VALUE_LVAL (result_value) = lval_register;
+  result_value->lval () = lval_register;
   VALUE_REGNUM (result_value) = regnum;
 
   regnum -= gdbarch_num_regs (gdbarch);

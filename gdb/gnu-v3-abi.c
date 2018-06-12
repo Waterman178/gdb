@@ -1067,7 +1067,7 @@ gnuv3_get_typeid (struct value *value)
   /* We have to handle values a bit trickily here, to allow this code
      to work properly with non_lvalue values that are really just
      disguised types.  */
-  if (value_lval_const (value) == lval_memory)
+  if (value->lval () == lval_memory)
     value = coerce_ref (value);
 
   type = check_typedef (value->type ());
@@ -1098,7 +1098,7 @@ gnuv3_get_typeid (struct value *value)
   /* We check for lval_memory because in the "typeid (type-id)" case,
      the type is passed via a not_lval value object.  */
   if (TYPE_CODE (type) == TYPE_CODE_STRUCT
-      && value_lval_const (value) == lval_memory
+      && value->lval () == lval_memory
       && gnuv3_dynamic_class (type))
     {
       struct value *vtable, *typeinfo_value;

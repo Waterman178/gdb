@@ -786,7 +786,7 @@ call_site_to_target_addr (struct gdbarch *call_site_gdbarch,
 					dwarf_block->data, dwarf_block->size,
 					dwarf_block->per_cu);
 	/* DW_AT_call_target is a DWARF expression, not a DWARF location.  */
-	if (VALUE_LVAL (val) == lval_memory)
+	if (val->lval () == lval_memory)
 	  return value_address (val);
 	else
 	  return value_as_address (val);

@@ -1617,7 +1617,7 @@ info_frame_command (const char *addr_exp, int from_tty)
 
 	if (!value_optimized_out (value) && value_entirely_available (value))
 	  {
-	    if (VALUE_LVAL (value) == not_lval)
+	    if (value->lval () == not_lval)
 	      {
 		CORE_ADDR sp;
 		enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
@@ -1630,14 +1630,14 @@ info_frame_command (const char *addr_exp, int from_tty)
 		fputs_filtered (paddress (gdbarch, sp), gdb_stdout);
 		printf_filtered ("\n");
 	      }
-	    else if (VALUE_LVAL (value) == lval_memory)
+	    else if (value->lval () == lval_memory)
 	      {
 		printf_filtered (" Previous frame's sp at ");
 		fputs_filtered (paddress (gdbarch, value_address (value)),
 				gdb_stdout);
 		printf_filtered ("\n");
 	      }
-	    else if (VALUE_LVAL (value) == lval_register)
+	    else if (value->lval () == lval_register)
 	      {
 		printf_filtered (" Previous frame's sp in %s\n",
 				 gdbarch_register_name (gdbarch,

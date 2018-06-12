@@ -2599,7 +2599,7 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
       v = allocate_value (type);
       src = valaddr + offset;
     }
-  else if (VALUE_LVAL (obj) == lval_memory && obj->lazy ())
+  else if (obj->lval () == lval_memory && obj->lazy ())
     {
       int src_len = (bit_size + bit_offset + HOST_CHAR_BIT - 1) / 8;
       gdb_byte *buf;
@@ -2746,7 +2746,7 @@ ada_value_assign (struct value *toval, struct value *fromval)
   if (!toval->deprecated_modifiable ())
     error (_("Left operand of assignment is not a modifiable lvalue."));
 
-  if (VALUE_LVAL (toval) == lval_memory
+  if (toval->lval () == lval_memory
       && bits > 0
       && (TYPE_CODE (type) == TYPE_CODE_FLT
           || TYPE_CODE (type) == TYPE_CODE_STRUCT))
@@ -4459,14 +4459,14 @@ ada_read_renaming_var_value (struct symbol *renaming_sym,
 static struct value *
 ensure_lval (struct value *val)
 {
-  if (VALUE_LVAL (val) == not_lval
-      || VALUE_LVAL (val) == lval_internalvar)
+  if (val->lval () == not_lval
+      || val->lval () == lval_internalvar)
     {
       int len = TYPE_LENGTH (ada_check_typedef (val->type ()));
       const CORE_ADDR addr =
         value_as_long (value_allocate_space_in_inferior (len));
 
-      VALUE_LVAL (val) = lval_memory;
+      val->lval () = lval_memory;
       set_value_address (val, addr);
       write_memory (addr, value_contents (val), len);
     }
@@ -4504,7 +4504,7 @@ ada_convert_actual (struct value *actual, struct type *formal_type0)
 	result = desc_data (actual);
       else if (TYPE_CODE (formal_type) != TYPE_CODE_PTR)
         {
-          if (VALUE_LVAL (actual) != lval_memory)
+          if (actual->lval () != lval_memory)
             {
               struct value *val;
 
@@ -9289,7 +9289,7 @@ ada_to_fixed_value_create (struct type *type0, CORE_ADDR address,
   if (type == type0 && val0 != NULL)
     return val0;
 
-  if (VALUE_LVAL (val0) != lval_memory)
+  if (val0->lval () != lval_memory)
     {
       /* Our value does not live in memory; it could be a convenience
 	 variable, for instance.  Create a not_lval value using val0's
@@ -10530,11 +10530,11 @@ ada_evaluate_subexp_for_cast (expression *exp, int *pos,
 
       /* Follow the Ada language semantics that do not allow taking
 	 an address of the result of a cast (view conversion in Ada).  */
-      if (VALUE_LVAL (val) == lval_memory)
+      if (val->lval () == lval_memory)
         {
           if (val->lazy ())
             val->fetch_lazy ();
-          VALUE_LVAL (val) = not_lval;
+          val->lval () = not_lval;
         }
       return val;
     }
@@ -10624,7 +10624,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
          In the case of assigning to a convenience variable, the lhs
          should be exactly the result of the evaluation of the rhs.  */
       type = arg1->type ();
-      if (VALUE_LVAL (arg1) == lval_internalvar)
+      if (arg1->lval () == lval_internalvar)
          type = NULL;
       arg2 = evaluate_subexp (type, exp, pos, noside);
       if (noside == EVAL_SKIP || noside == EVAL_AVOID_SIDE_EFFECTS)
@@ -10903,7 +10903,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
 	  argvec[0] = ada_to_fixed_value (coerce_ref (argvec[0]));
 	}
       else if (TYPE_CODE (argvec[0]->type ()) == TYPE_CODE_ARRAY
-	       && VALUE_LVAL (argvec[0]) == lval_memory)
+	       && argvec[0]->lval () == lval_memory)
 	argvec[0] = value_addr (argvec[0]);
 
       type = ada_check_typedef (argvec[0]->type ());
@@ -11036,7 +11036,7 @@ ada_evaluate_subexp (struct type *expect_type, struct expression *exp,
            convert to a pointer.  */
         if (TYPE_CODE (array->type ()) == TYPE_CODE_REF
             || (TYPE_CODE (array->type ()) == TYPE_CODE_ARRAY
-                && VALUE_LVAL (array) == lval_memory))
+                && array->lval () == lval_memory))
           array = value_addr (array);
 
         if (noside == EVAL_AVOID_SIDE_EFFECTS

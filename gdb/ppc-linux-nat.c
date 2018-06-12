@@ -1725,9 +1725,9 @@ num_memory_accesses (const std::vector<value_ref_ptr> &chain)
       struct value *v = iter.get ();
 
       /* Constants and values from the history are fine.  */
-      if (VALUE_LVAL (v) == not_lval || v->deprecated_modifiable () == 0)
+      if (v->lval () == not_lval || v->deprecated_modifiable () == 0)
 	continue;
-      else if (VALUE_LVAL (v) == lval_memory)
+      else if (v->lval () == lval_memory)
 	{
 	  /* A lazy memory lvalue is one that GDB never needed to fetch;
 	     we either just used its address (e.g., `a' in `a.b') or
@@ -1773,7 +1773,7 @@ check_condition (CORE_ADDR watch_addr, struct expression *cond,
     return 0;
 
   if (num_accesses_left == 1 && num_accesses_right == 0
-      && VALUE_LVAL (left_val) == lval_memory
+      && left_val->lval () == lval_memory
       && value_address (left_val) == watch_addr)
     {
       *data_value = value_as_long (right_val);
@@ -1783,7 +1783,7 @@ check_condition (CORE_ADDR watch_addr, struct expression *cond,
       *len = TYPE_LENGTH (check_typedef (left_val->type ()));
     }
   else if (num_accesses_left == 0 && num_accesses_right == 1
-	   && VALUE_LVAL (right_val) == lval_memory
+	   && right_val->lval () == lval_memory
 	   && value_address (right_val) == watch_addr)
     {
       *data_value = value_as_long (left_val);

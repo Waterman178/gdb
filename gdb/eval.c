@@ -1978,7 +1978,7 @@ evaluate_subexp_standard (struct type *expect_type,
       arg3 = value_struct_elt (&arg1, NULL, &exp->elts[pc + 2].string,
 			       NULL, "structure");
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	arg3 = value_zero (arg3->type (), VALUE_LVAL (arg3));
+	arg3 = value_zero (arg3->type (), arg3->lval ());
       return arg3;
 
     case STRUCTOP_PTR:
@@ -2034,7 +2034,7 @@ evaluate_subexp_standard (struct type *expect_type,
       arg3 = value_struct_elt (&arg1, NULL, &exp->elts[pc + 2].string,
 			       NULL, "structure pointer");
       if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	arg3 = value_zero (arg3->type (), VALUE_LVAL (arg3));
+	arg3 = value_zero (arg3->type (), arg3->lval ());
       return arg3;
 
     case STRUCTOP_MEMBER:
@@ -2267,7 +2267,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	    }
 
 	  if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	    return value_zero (TYPE_TARGET_TYPE (type), VALUE_LVAL (arg1));
+	    return value_zero (TYPE_TARGET_TYPE (type), arg1->lval ());
 	  else
 	    return value_subscript (arg1, value_as_long (arg2));
 	}
@@ -2295,7 +2295,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      type = TYPE_TARGET_TYPE (check_typedef (arg1->type ()));
 	      if (type != NULL)
 		{
-		  arg1 = value_zero (type, VALUE_LVAL (arg1));
+		  arg1 = value_zero (type, arg1->lval ());
 		  noside = EVAL_SKIP;
 		  continue;
 		}
@@ -3033,7 +3033,7 @@ evaluate_subexp_for_address (struct expression *exp, int *pos,
 	  if (TYPE_IS_REFERENCE (type))
 	    return value_zero (lookup_pointer_type (TYPE_TARGET_TYPE (type)),
 			       not_lval);
-	  else if (VALUE_LVAL (x) == lval_memory || value_must_coerce_to_target (x))
+	  else if (x->lval () == lval_memory || value_must_coerce_to_target (x))
 	    return value_zero (lookup_pointer_type (x->type ()),
 			       not_lval);
 	  else
@@ -3254,11 +3254,11 @@ evaluate_subexp_for_cast (expression *exp, int *pos,
       val = value_cast (to_type, val);
 
       /* Don't allow e.g. '&(int)var_with_no_debug_info'.  */
-      if (VALUE_LVAL (val) == lval_memory)
+      if (val->lval () == lval_memory)
 	{
 	  if (val->lazy ())
 	    val->fetch_lazy ();
-	  VALUE_LVAL (val) = not_lval;
+	  val->lval () = not_lval;
 	}
       return val;
     }

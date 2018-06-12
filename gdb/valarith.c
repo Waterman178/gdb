@@ -87,7 +87,7 @@ value_ptradd (struct value *arg1, LONGEST arg2)
 
   result = value_from_pointer (valptrtype,
 			       value_as_address (arg1) + sz * arg2);
-  if (VALUE_LVAL (result) != lval_internalvar)
+  if (result->lval () != lval_internalvar)
     set_value_component_location (result, arg1);
   return result;
 }
@@ -152,7 +152,7 @@ value_subscript (struct value *array, LONGEST index)
       LONGEST lowerbound, upperbound;
 
       get_discrete_bounds (range_type, &lowerbound, &upperbound);
-      if (VALUE_LVAL (array) != lval_memory)
+      if (array->lval () != lval_memory)
 	return value_subscripted_rvalue (array, index, lowerbound);
 
       if (c_style == 0)
@@ -487,7 +487,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
 
 	      if (return_type == NULL)
 		error (_("Xmethod is missing return type."));
-	      return value_zero (return_type, VALUE_LVAL (arg1));
+	      return value_zero (return_type, arg1->lval ());
 	    }
 	  return call_xmethod (argvec[0], 2, argvec + 1);
 	}
@@ -497,7 +497,7 @@ value_x_binop (struct value *arg1, struct value *arg2, enum exp_opcode op,
 
 	  return_type
 	    = TYPE_TARGET_TYPE (check_typedef (argvec[0]->type ()));
-	  return value_zero (return_type, VALUE_LVAL (arg1));
+	  return value_zero (return_type, arg1->lval ());
 	}
       return call_function_by_hand (argvec[0], NULL, 2 - static_memfuncp,
 				    argvec + 1);
@@ -606,7 +606,7 @@ value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
 
 	      if (return_type == NULL)
 		error (_("Xmethod is missing return type."));
-	      return value_zero (return_type, VALUE_LVAL (arg1));
+	      return value_zero (return_type, arg1->lval ());
 	    }
 	  return call_xmethod (argvec[0], 1, argvec + 1);
 	}
@@ -616,7 +616,7 @@ value_x_unop (struct value *arg1, enum exp_opcode op, enum noside noside)
 
 	  return_type
 	    = TYPE_TARGET_TYPE (check_typedef (argvec[0]->type ()));
-	  return value_zero (return_type, VALUE_LVAL (arg1));
+	  return value_zero (return_type, arg1->lval ());
 	}
       return call_function_by_hand (argvec[0], NULL, nargs, argvec + 1);
     }

@@ -1297,7 +1297,7 @@ rust_subscript (struct expression *exp, int *pos, enum noside noside,
       else
 	new_type = base_type;
 
-      return value_zero (new_type, VALUE_LVAL (lhs));
+      return value_zero (new_type, lhs->lval ());
     }
   else
     {
@@ -1663,7 +1663,7 @@ tuple structs, and tuple-like enum variants"));
 	else
 	  result = value_struct_elt (&lhs, NULL, field_name, NULL, "structure");
 	if (noside == EVAL_AVOID_SIDE_EFFECTS)
-	  result = value_zero (result->type (), VALUE_LVAL (result));
+	  result = value_zero (result->type (), result->lval ());
       }
       break;
 
