@@ -127,12 +127,12 @@ f77_print_array_1 (int nss, int ndimensions, struct type *type,
 	   i++)
 	{
 	  struct value *subarray = value_from_contents_and_address
-	    (TYPE_TARGET_TYPE (type), value_contents_for_printing_const (val)
+	    (TYPE_TARGET_TYPE (type), val->contents_for_printing ()
 	     + offs, addr + offs);
 
 	  fprintf_filtered (stream, "( ");
 	  f77_print_array_1 (nss + 1, ndimensions, subarray->type (),
-			     value_contents_for_printing (subarray),
+			     subarray->contents_for_printing (),
 			     subarray->embedded_offset (),
 			     subarray->address (),
 			     stream, recurse, subarray, options, elts);
@@ -218,7 +218,7 @@ f_val_print (struct type *type, int embedded_offset,
   struct type *elttype;
   CORE_ADDR addr;
   int index;
-  const gdb_byte *valaddr =value_contents_for_printing (original_value);
+  const gdb_byte *valaddr =original_value->contents_for_printing ();
 
   type = check_typedef (type);
   switch (TYPE_CODE (type))

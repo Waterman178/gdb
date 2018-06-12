@@ -646,10 +646,10 @@ arc_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	  unsigned int len = TYPE_LENGTH (args[i]->type ());
 	  unsigned int space = align_up (len, 4);
 
-	  memcpy (data, value_contents (args[i]), (size_t) len);
+	  memcpy (data, args[i]->contents (), (size_t) len);
 	  if (arc_debug)
 	    debug_printf ("arc: copying arg %d, val 0x%08x, len %d to mem\n",
-			  i, *((int *) value_contents (args[i])), len);
+			  i, *((int *) args[i]->contents ()), len);
 
 	  data += space;
 	}

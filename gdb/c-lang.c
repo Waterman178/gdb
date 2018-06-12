@@ -285,7 +285,7 @@ c_get_string (struct value *value, gdb_byte **buffer,
       && fetchlimit != UINT_MAX)
     {
       int i;
-      const gdb_byte *contents = value_contents (value);
+      const gdb_byte *contents = value->contents ();
 
       /* If a length is specified, use that.  */
       if (*length >= 0)
@@ -689,7 +689,7 @@ evaluate_subexp_c (struct type *expect_type, struct expression *exp,
 		  error (_("Too many array elements"));
 
 		result = allocate_value (expect_type);
-		memcpy (value_contents_raw (result), obstack_base (&output),
+		memcpy (result->contents_raw (), obstack_base (&output),
 			obstack_object_size (&output));
 	      }
 	    else

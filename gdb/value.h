@@ -475,6 +475,46 @@ struct value
     m_location.address = addr;
   }
 
+  /* value_contents() and value_contents_raw() both return the address
+     of the gdb buffer used to hold a copy of the contents of the lval.
+     value_contents() is used when the contents of the buffer are needed
+     -- it uses value_fetch_lazy() to load the buffer from the process
+     being debugged if it hasn't already been loaded
+     (value_contents_writeable() is used when a writeable but fetched
+     buffer is required)..  value_contents_raw() is used when data is
+     being stored into the buffer, or when it is certain that the
+     contents of the buffer are valid.
+
+     Note: The contents pointer is adjusted by the offset required to
+     get to the real subobject, if the value happens to represent
+     something embedded in a larger run-time object.  */
+
+  gdb_byte *contents_raw ();
+
+  /* Actual contents of the value.  For use of this value; setting it
+     uses the stuff above.  Not valid if lazy is nonzero.  Target
+     byte-order.  We force it to be aligned properly for any possible
+     value.  Note that a value therefore extends beyond what is
+     declared here.  */
+
+  const gdb_byte *contents ();
+  gdb_byte *contents_writeable ();
+
+  /* The ALL variants of the above two methods do not adjust the
+     returned pointer by the embedded_offset value.  */
+
+  gdb_byte *contents_all_raw ();
+  const gdb_byte *contents_all ();
+
+  /* Like value_contents_all, but does not require that the returned
+     bits be valid.  This should only be used in situations where you
+     plan to check the validity manually.  */
+  const gdb_byte *contents_for_printing ();
+
+  /* Const overload.  Unlike the non-const variant, however, the
+     pointed value must _not_ be lazy.  */
+  const gdb_byte *contents_for_printing () const;
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -726,48 +766,6 @@ extern struct value *allocate_optimized_out_value (struct type *type);
    out.  */
 
 extern void error_value_optimized_out (void);
-
-/* value_contents() and value_contents_raw() both return the address
-   of the gdb buffer used to hold a copy of the contents of the lval.
-   value_contents() is used when the contents of the buffer are needed
-   -- it uses value_fetch_lazy() to load the buffer from the process
-   being debugged if it hasn't already been loaded
-   (value_contents_writeable() is used when a writeable but fetched
-   buffer is required)..  value_contents_raw() is used when data is
-   being stored into the buffer, or when it is certain that the
-   contents of the buffer are valid.
-
-   Note: The contents pointer is adjusted by the offset required to
-   get to the real subobject, if the value happens to represent
-   something embedded in a larger run-time object.  */
-
-extern gdb_byte *value_contents_raw (struct value *);
-
-/* Actual contents of the value.  For use of this value; setting it
-   uses the stuff above.  Not valid if lazy is nonzero.  Target
-   byte-order.  We force it to be aligned properly for any possible
-   value.  Note that a value therefore extends beyond what is
-   declared here.  */
-
-extern const gdb_byte *value_contents (struct value *);
-extern gdb_byte *value_contents_writeable (struct value *);
-
-/* The ALL variants of the above two macros do not adjust the returned
-   pointer by the embedded_offset value.  */
-
-extern gdb_byte *value_contents_all_raw (struct value *);
-extern const gdb_byte *value_contents_all (struct value *);
-
-/* Like value_contents_all, but does not require that the returned
-   bits be valid.  This should only be used in situations where you
-   plan to check the validity manually.  */
-extern const gdb_byte *value_contents_for_printing (struct value *value);
-
-/* Like value_contents_for_printing, but accepts a constant value
-   pointer.  Unlike value_contents_for_printing however, the pointed
-   value must _not_ be lazy.  */
-extern const gdb_byte *
-  value_contents_for_printing_const (const struct value *value);
 
 /* Mark VALUE's content bytes starting at OFFSET and extending for
    LENGTH bytes as optimized out.  */

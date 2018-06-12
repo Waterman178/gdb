@@ -1430,7 +1430,7 @@ spu_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
     {
       struct value *arg = args[i];
       struct type *type = check_typedef (arg->type ());
-      const gdb_byte *contents = value_contents (arg);
+      const gdb_byte *contents = arg->contents ();
       int n_regs = align_up (TYPE_LENGTH (type), 16) / 16;
 
       /* If the argument doesn't wholly fit into registers, it and
@@ -1471,7 +1471,7 @@ spu_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	  else
 	    preferred_slot = 0;
 
-	  target_write_memory (ap + preferred_slot, value_contents (arg), len);
+	  target_write_memory (ap + preferred_slot, arg->contents (), len);
 	  ap += align_up (TYPE_LENGTH (type), 16);
 	}
     }

@@ -894,7 +894,7 @@ gdbscm_value_to_bytevector (SCM self)
     {
       type = check_typedef (type);
       length = TYPE_LENGTH (type);
-      contents = value_contents (value);
+      contents = value->contents ();
     }
   CATCH (except, RETURN_MASK_ALL)
     {
@@ -1041,9 +1041,9 @@ gdbscm_value_to_real (SCM self)
     {
       if (is_floating_value (value))
 	{
-	  d = target_float_to_host_double (value_contents (value), type);
+	  d = target_float_to_host_double (value->contents (), type);
 	  check = allocate_value (type);
-	  target_float_from_host_double (value_contents_raw (check), type, d);
+	  target_float_from_host_double (check->contents_raw (), type, d);
 	}
       else if (TYPE_UNSIGNED (type))
 	{

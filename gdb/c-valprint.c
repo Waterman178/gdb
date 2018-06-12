@@ -504,7 +504,7 @@ c_val_print (struct type *type,
 	     const struct value_print_options *options)
 {
   struct type *unresolved_type = type;
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   type = check_typedef (type);
   switch (TYPE_CODE (type))

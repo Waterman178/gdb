@@ -187,8 +187,8 @@ lval_func_read (struct value *v)
   gdb_assert (n <= c->n);
 
   for (i = offset; i < n; i++)
-    memcpy (value_contents_raw (v) + j++ * elsize,
-	    value_contents (c->val) + c->indices[i] * elsize,
+    memcpy (v->contents_raw () + j++ * elsize,
+	    c->val->contents () + c->indices[i] * elsize,
 	    elsize);
 }
 
@@ -227,8 +227,8 @@ lval_func_write (struct value *v, struct value *fromval)
       struct value *from_elm_val = allocate_value (eltype);
       struct value *to_elm_val = value_subscript (c->val, c->indices[i]);
 
-      memcpy (value_contents_writeable (from_elm_val),
-	      value_contents (fromval) + j++ * elsize,
+      memcpy (from_elm_val->contents_writeable (),
+	      fromval->contents () + j++ * elsize,
 	      elsize);
       value_assign (to_elm_val, from_elm_val);
     }
@@ -362,9 +362,9 @@ create_value (struct gdbarch *gdbarch, struct value *val, enum noside noside,
 
 	      /* Copy src val contents into the destination value.  */
 	      for (i = 0; i < n; i++)
-		memcpy (value_contents_writeable (ret)
+		memcpy (ret->contents_writeable ()
 			+ (i * TYPE_LENGTH (elm_type)),
-			value_contents (val)
+			val->contents ()
 			+ (indices[i] * TYPE_LENGTH (elm_type)),
 			TYPE_LENGTH (elm_type));
 	    }
@@ -518,7 +518,7 @@ opencl_logical_not (struct expression *exp, struct value *arg)
 	  value of its operand compares unequal to 0, and -1 (i.e. all bits
 	  set) if the value of its operand compares equal to 0.  */
 	  int tmp = value_logical_not (value_subscript (arg, i)) ? -1 : 0;
-	  memset (value_contents_writeable (ret) + i * TYPE_LENGTH (eltype),
+	  memset (ret->contents_writeable () + i * TYPE_LENGTH (eltype),
 		  tmp, TYPE_LENGTH (eltype));
 	}
     }
@@ -618,7 +618,7 @@ vector_relop (struct expression *exp, struct value *val1, struct value *val2,
 	 if the specified relation is true.  */
       int tmp = scalar_relop (value_subscript (val1, i),
 			      value_subscript (val2, i), op) ? -1 : 0;
-      memset (value_contents_writeable (ret) + i * TYPE_LENGTH (eltype1),
+      memset (ret->contents_writeable () + i * TYPE_LENGTH (eltype1),
 	      tmp, TYPE_LENGTH (eltype1));
      }
 
@@ -929,8 +929,8 @@ Cannot perform conditional operation on vectors with different sizes"));
 	    {
 	      tmp = value_logical_not (value_subscript (arg1, i)) ?
 		    value_subscript (arg3, i) : value_subscript (arg2, i);
-	      memcpy (value_contents_writeable (ret) +
-		      i * TYPE_LENGTH (eltype2), value_contents_all (tmp),
+	      memcpy (ret->contents_writeable () +
+		      i * TYPE_LENGTH (eltype2), tmp->contents_all (),
 		      TYPE_LENGTH (eltype2));
 	    }
 

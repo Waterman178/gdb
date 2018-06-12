@@ -1316,7 +1316,7 @@ valpy_nonzero (PyObject *self)
       if (is_integral_type (type) || TYPE_CODE (type) == TYPE_CODE_PTR)
 	nonzero = !!value_as_long (self_value->value);
       else if (is_floating_value (self_value->value))
-	nonzero = !target_float_is_zero (value_contents (self_value->value),
+	nonzero = !target_float_is_zero (self_value->value->contents (),
 					 type);
       else
 	/* All other values are True.  */
@@ -1561,7 +1561,7 @@ valpy_float (PyObject *self)
       if (TYPE_CODE (type) != TYPE_CODE_FLT || !is_floating_value (value))
 	error (_("Cannot convert value to float."));
 
-      d = target_float_to_host_double (value_contents (value), type);
+      d = target_float_to_host_double (value->contents (), type);
     }
   CATCH (except, RETURN_MASK_ALL)
     {
@@ -1680,7 +1680,7 @@ convert_value_from_python (PyObject *obj)
 	  if (! PyErr_Occurred ())
 	    {
 	      value = allocate_value (builtin_type_pyfloat);
-	      target_float_from_host_double (value_contents_raw (value),
+	      target_float_from_host_double (value->contents_raw (),
 					     value->type (), d);
 	    }
 	}

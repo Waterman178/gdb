@@ -274,7 +274,7 @@ lm32_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
       /* FIXME: Handle structures.  */
 
-      contents = (gdb_byte *) value_contents (arg);
+      contents = (gdb_byte *) arg->contents ();
       val = extract_unsigned_integer (contents, TYPE_LENGTH (arg_type),
 				      byte_order);
 

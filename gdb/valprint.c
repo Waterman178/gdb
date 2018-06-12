@@ -461,7 +461,7 @@ generic_val_print_ptr (struct type *type,
     {
       struct type *unresolved_elttype = TYPE_TARGET_TYPE(type);
       struct type *elttype = check_typedef (unresolved_elttype);
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
       CORE_ADDR addr = unpack_pointer (type,
 				       valaddr + embedded_offset * unit_size);
 
@@ -510,7 +510,7 @@ get_value_addr_contents (struct value *deref_val)
   gdb_assert (deref_val != NULL);
 
   if (deref_val->lval () == lval_memory)
-    return value_contents_for_printing_const (value_addr (deref_val));
+    return value_addr (deref_val)->contents_for_printing ();
   else
     {
       /* We have a non-addressable value, such as a DW_AT_const_value.  */
@@ -535,7 +535,7 @@ generic_val_print_ref (struct type *type,
   const int must_coerce_ref = ((options->addressprint && value_is_synthetic)
 			       || options->deref_ref);
   const int type_is_defined = TYPE_CODE (elttype) != TYPE_CODE_UNDEF;
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   if (must_coerce_ref && type_is_defined)
     {
@@ -663,7 +663,7 @@ generic_val_print_enum (struct type *type,
     }
   else
     {
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
 
       val = unpack_long (type, valaddr + embedded_offset * unit_size);
 
@@ -685,7 +685,7 @@ generic_val_print_flags (struct type *type,
 				options, 0, stream);
   else
     {
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
 
       val_print_type_code_flags (type, valaddr + embedded_offset, stream);
     }
@@ -743,7 +743,7 @@ generic_val_print_bool (struct type *type,
     }
   else
     {
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
 
       val = unpack_long (type, valaddr + embedded_offset * unit_size);
       if (val == 0)
@@ -795,7 +795,7 @@ generic_val_print_char (struct type *type, struct type *unresolved_type,
     }
   else
     {
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
 
       val = unpack_long (type, valaddr + embedded_offset * unit_size);
       if (TYPE_UNSIGNED (type))
@@ -825,7 +825,7 @@ generic_val_print_float (struct type *type,
     }
   else
     {
-      const gdb_byte *valaddr = value_contents_for_printing (original_value);
+      const gdb_byte *valaddr = original_value->contents_for_printing ();
 
       print_floating (valaddr + embedded_offset * unit_size, type, stream);
     }
@@ -843,7 +843,7 @@ generic_val_print_complex (struct type *type,
 {
   struct gdbarch *gdbarch = get_type_arch (type);
   int unit_size = gdbarch_addressable_memory_unit_size (gdbarch);
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   fprintf_filtered (stream, "%s", decorations->complex_prefix);
   if (options->format)
@@ -1262,7 +1262,7 @@ val_print_scalar_formatted (struct type *type,
   /* value_contents_for_printing fetches all VAL's contents.  They are
      needed to check whether VAL is optimized-out or unavailable
      below.  */
-  const gdb_byte *valaddr = value_contents_for_printing (val);
+  const gdb_byte *valaddr = val->contents_for_printing ();
 
   /* A scalar object that does not have all bits available can't be
      printed, because all bits contribute to its representation.  */

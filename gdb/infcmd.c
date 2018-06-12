@@ -1644,7 +1644,7 @@ get_return_value (struct value *function, struct type *value_type)
     case RETURN_VALUE_ABI_PRESERVES_ADDRESS:
       value = allocate_value (value_type);
       gdbarch_return_value (gdbarch, function, value_type, stop_regs,
-			    value_contents_raw (value), NULL);
+			    value->contents_raw (), NULL);
       break;
     case RETURN_VALUE_STRUCT_CONVENTION:
       value = NULL;
@@ -2322,7 +2322,7 @@ default_print_one_register_info (struct ui_file *file,
       || TYPE_CODE (regtype) == TYPE_CODE_DECFLOAT)
     {
       struct value_print_options opts;
-      const gdb_byte *valaddr = value_contents_for_printing (val);
+      const gdb_byte *valaddr = val->contents_for_printing ();
       enum bfd_endian byte_order = gdbarch_byte_order (get_type_arch (regtype));
 
       get_user_print_options (&opts);

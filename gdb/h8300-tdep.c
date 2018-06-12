@@ -664,7 +664,7 @@ h8300_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
     {
       struct type *type = args[argument]->type ();
       int len = TYPE_LENGTH (type);
-      char *contents = (char *) value_contents (args[argument]);
+      char *contents = (char *) args[argument]->contents ();
 
       /* Pad the argument appropriately.  */
       int padded_len = align_up (len, wordsize);

@@ -621,7 +621,7 @@ default_read_var_value (struct symbol *var, const struct block *var_block,
 	}
       /* Put the constant back in target format. */
       v = allocate_value (type);
-      store_signed_integer (value_contents_raw (v), TYPE_LENGTH (type),
+      store_signed_integer (v->contents_raw (), TYPE_LENGTH (type),
 			    gdbarch_byte_order (get_type_arch (type)),
 			    (LONGEST) SYMBOL_VALUE (var));
       v->lval () = not_lval;
@@ -637,10 +637,10 @@ default_read_var_value (struct symbol *var, const struct block *var_block,
 					SYMBOL_OBJ_SECTION (symbol_objfile (var),
 							    var));
 
-	  store_typed_address (value_contents_raw (v), type, addr);
+	  store_typed_address (v->contents_raw (), type, addr);
 	}
       else
-	store_typed_address (value_contents_raw (v), type,
+	store_typed_address (v->contents_raw (), type,
 			      SYMBOL_VALUE_ADDRESS (var));
       v->lval () = not_lval;
       return v;
@@ -652,7 +652,7 @@ default_read_var_value (struct symbol *var, const struct block *var_block,
 	  type = resolve_dynamic_type (type, NULL, /* Unused address.  */ 0);
 	}
       v = allocate_value (type);
-      memcpy (value_contents_raw (v), SYMBOL_VALUE_BYTES (var),
+      memcpy (v->contents_raw (), SYMBOL_VALUE_BYTES (var),
 	      TYPE_LENGTH (type));
       v->lval () = not_lval;
       return v;
@@ -921,7 +921,7 @@ value_from_register (struct type *type, int regnum, struct frame_info *frame)
       VALUE_NEXT_FRAME_ID (v) = get_frame_id (get_next_frame_sentinel_okay (frame));
       VALUE_REGNUM (v) = regnum;
       ok = gdbarch_register_to_value (gdbarch, frame, regnum, type1,
-				      value_contents_raw (v), &optim,
+				      v->contents_raw (), &optim,
 				      &unavail);
 
       if (!ok)

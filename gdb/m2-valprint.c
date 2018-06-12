@@ -178,7 +178,7 @@ m2_print_unbounded_array (struct type *type, const gdb_byte *valaddr,
 
   fprintf_filtered (stream, "{");  
   m2_print_array_contents (val->type (),
-			   value_contents_for_printing (val),
+			   val->contents_for_printing (),
 			   val->embedded_offset (), addr, stream,
 			   recurse, val, options, len);
   fprintf_filtered (stream, ", HIGH = %d}", (int) len);
@@ -316,7 +316,7 @@ m2_val_print (struct type *type, int embedded_offset,
   unsigned len;
   struct type *elttype;
   CORE_ADDR addr;
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   type = check_typedef (type);
   switch (TYPE_CODE (type))

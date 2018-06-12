@@ -592,7 +592,7 @@ riscv_print_one_register_info (struct gdbarch *gdbarch,
   if (TYPE_CODE (regtype) == TYPE_CODE_FLT)
     {
       struct value_print_options opts;
-      const gdb_byte *valaddr = value_contents_for_printing (val);
+      const gdb_byte *valaddr = val->contents_for_printing ();
       enum bfd_endian byte_order = gdbarch_byte_order (get_type_arch (regtype));
 
       get_user_print_options (&opts);
@@ -2057,7 +2057,7 @@ riscv_push_dummy_call (struct gdbarch *gdbarch,
 
       if (info->type != arg_type)
 	arg_value = value_cast (info->type, arg_value);
-      info->contents = value_contents (arg_value);
+      info->contents = arg_value->contents ();
     }
 
   /* Adjust the stack pointer and align it.  */

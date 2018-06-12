@@ -2335,14 +2335,14 @@ printf_floating (struct ui_file *stream, const char *format,
     {
       param_type = float_type_from_length (param_type);
       if (param_type != value->type ())
-	value = value_from_contents (param_type, value_contents (value));
+	value = value_from_contents (param_type, value->contents ());
     }
 
   value = value_cast (fmt_type, value);
 
   /* Convert the value to a string and print it.  */
   std::string str
-    = target_float_to_string (value_contents (value), fmt_type, format);
+    = target_float_to_string (value->contents (), fmt_type, format);
   fputs_filtered (str.c_str (), stream);
 }
 
@@ -2498,7 +2498,7 @@ ui_printf (const char *arg, struct ui_file *stream)
 		  || TYPE_CODE (valtype) != TYPE_CODE_INT)
 		error (_("expected wchar_t argument for %%lc"));
 
-	      bytes = value_contents (val_args[i]);
+	      bytes = val_args[i]->contents ();
 
 	      auto_obstack output;
 

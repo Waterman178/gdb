@@ -1290,7 +1290,7 @@ avr_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       int j;
       struct value *arg = args[i];
       struct type *type = check_typedef (arg->type ());
-      const bfd_byte *contents = value_contents (arg);
+      const bfd_byte *contents = arg->contents ();
       int len = TYPE_LENGTH (type);
 
       /* Calculate the potential last register needed.

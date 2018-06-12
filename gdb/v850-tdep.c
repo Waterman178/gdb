@@ -1063,7 +1063,7 @@ v850_push_dummy_call (struct gdbarch *gdbarch,
       else
 	{
 	  len = TYPE_LENGTH ((*args)->type ());
-	  val = (gdb_byte *) value_contents (*args);
+	  val = (gdb_byte *) (*args)->contents ();
 	}
 
       if (gdbarch_tdep (gdbarch)->eight_byte_align

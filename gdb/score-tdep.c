@@ -549,7 +549,7 @@ score_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       struct value *arg = args[argnum];
       struct type *arg_type = check_typedef (arg->type ());
       enum type_code typecode = TYPE_CODE (arg_type);
-      const gdb_byte *val = value_contents (arg);
+      const gdb_byte *val = arg->contents ();
       int downward_offset = 0;
       int arg_last_part_p = 0;
 

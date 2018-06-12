@@ -1623,7 +1623,7 @@ info_frame_command (const char *addr_exp, int from_tty)
 		enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
 		int sp_size = register_size (gdbarch, sp_regnum);
 
-		sp = extract_unsigned_integer (value_contents_all (value),
+		sp = extract_unsigned_integer (value->contents_all (),
 					       sp_size, byte_order);
 
 		printf_filtered (" Previous frame's sp is ");
@@ -2409,7 +2409,7 @@ return_command (const char *retval_exp, int from_tty)
 		  && rv_conv != RETURN_VALUE_ABI_RETURNS_ADDRESS);
       gdbarch_return_value (gdbarch, function, return_type,
 			    get_current_regcache (), NULL /*read*/,
-			    value_contents (return_value) /*write*/);
+			    return_value->contents () /*write*/);
     }
 
   /* If we are at the end of a call dummy now, pop the dummy frame

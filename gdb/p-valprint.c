@@ -76,7 +76,7 @@ pascal_val_print (struct type *type,
   struct type *char_type;
   CORE_ADDR addr;
   int want_space = 0;
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   type = check_typedef (type);
   switch (TYPE_CODE (type))
@@ -877,7 +877,7 @@ pascal_object_print_static_field (struct value *val,
 
       type = check_typedef (type);
       pascal_object_print_value_fields (type,
-					value_contents_for_printing (val),
+					val->contents_for_printing (),
 					val->embedded_offset (),
 					addr,
 					stream, recurse,

@@ -1439,7 +1439,7 @@ value_of_dwarf_reg_entry (struct type *type, struct frame_info *frame,
 				 target_val /* closure */);
 
   /* Copy the referencing pointer to the new computed value.  */
-  memcpy (value_contents_raw (val), value_contents_raw (outer_val),
+  memcpy (val->contents_raw (), outer_val->contents_raw (),
 	  TYPE_LENGTH (checked_type));
   val->set_lazy (0);
 
@@ -1777,7 +1777,7 @@ rw_pieced_value (struct value *v, struct value *from)
 
   if (from != NULL)
     {
-      from_contents = value_contents (from);
+      from_contents = from->contents ();
       v_contents = NULL;
     }
   else
@@ -1786,7 +1786,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	internal_error (__FILE__, __LINE__,
 			_("Should not be able to create a lazy value with "
 			  "an enclosing type"));
-      v_contents = value_contents_raw (v);
+      v_contents = v->contents_raw ();
       from_contents = NULL;
     }
 
@@ -1991,7 +1991,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	      bits_to_skip += p->offset;
 
 	    copy_bitwise (v_contents, offset,
-			  value_contents_all (p->v.value),
+			  p->v.value->contents_all (),
 			  bits_to_skip,
 			  this_size_bits, bits_big_endian);
 	  }
@@ -2236,7 +2236,7 @@ indirect_pieced_value (struct value *value)
      return a CORE_ADDR with high bits set on architectures that
      encode address spaces and other things in CORE_ADDR.  */
   byte_order = gdbarch_byte_order (get_frame_arch (frame));
-  byte_offset = extract_signed_integer (value_contents (value),
+  byte_offset = extract_signed_integer (value->contents (),
 					TYPE_LENGTH (type), byte_order);
   byte_offset += piece->v.ptr.offset;
 
@@ -2491,8 +2491,8 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	    if (gdbarch_byte_order (objfile_gdbarch) == BFD_ENDIAN_BIG)
 	      subobj_byte_offset += n - max;
 
-	    memcpy (value_contents_raw (retval),
-		    value_contents_all (value) + subobj_byte_offset, len);
+	    memcpy (retval->contents_raw (),
+		    value->contents_all () + subobj_byte_offset, len);
 	  }
 	  break;
 
@@ -2506,7 +2506,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 
 	    free_values.free_to_mark ();
 	    retval = allocate_value (subobj_type);
-	    contents = value_contents_raw (retval);
+	    contents = retval->contents_raw ();
 	    memcpy (contents, ctx.data + subobj_byte_offset, n);
 	  }
 	  break;

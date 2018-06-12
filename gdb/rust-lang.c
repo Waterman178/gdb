@@ -427,7 +427,7 @@ rust_print_enum (struct type *type, int embedded_offset,
 
   opts.deref_ref = 0;
 
-  const gdb_byte *valaddr = value_contents_for_printing (val);
+  const gdb_byte *valaddr = val->contents_for_printing ();
   struct field *variant_field = rust_enum_variant (type, valaddr);
   embedded_offset += FIELD_BITPOS (*variant_field) / 8;
   struct type *variant_type = FIELD_TYPE (*variant_field);
@@ -500,7 +500,7 @@ rust_val_print (struct type *type, int embedded_offset,
 		struct value *val,
 		const struct value_print_options *options)
 {
-  const gdb_byte *valaddr = value_contents_for_printing (val);
+  const gdb_byte *valaddr = val->contents_for_printing ();
 
   type = check_typedef (type);
   switch (TYPE_CODE (type))
@@ -1560,7 +1560,7 @@ rust_evaluate_subexp (struct type *expect_type, struct expression *exp,
 
 	    if (rust_enum_p (type))
 	      {
-		const gdb_byte *valaddr = value_contents (lhs);
+		const gdb_byte *valaddr = lhs->contents ();
 		struct field *variant_field = rust_enum_variant (type, valaddr);
 
 		struct value *union_value = value_primitive_field (lhs, 0, 0,
@@ -1628,7 +1628,7 @@ tuple structs, and tuple-like enum variants"));
         type = lhs->type ();
         if (TYPE_CODE (type) == TYPE_CODE_STRUCT && rust_enum_p (type))
 	  {
-	    const gdb_byte *valaddr = value_contents (lhs);
+	    const gdb_byte *valaddr = lhs->contents ();
 	    struct field *variant_field = rust_enum_variant (type, valaddr);
 
 	    struct value *union_value = value_primitive_field (lhs, 0, 0,

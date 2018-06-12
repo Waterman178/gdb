@@ -855,20 +855,20 @@ allocate_optimized_out_value (struct type *type)
 }
 
 gdb_byte *
-value_contents_raw (struct value *value)
+value::contents_raw ()
 {
-  struct gdbarch *arch = value->arch ();
+  struct gdbarch *arch = this->arch ();
   int unit_size = gdbarch_addressable_memory_unit_size (arch);
 
-  allocate_value_contents (value);
-  return value->m_contents.get () + value->m_embedded_offset * unit_size;
+  allocate_value_contents (this);
+  return m_contents.get () + m_embedded_offset * unit_size;
 }
 
 gdb_byte *
-value_contents_all_raw (struct value *value)
+value::contents_all_raw ()
 {
-  allocate_value_contents (value);
-  return value->m_contents.get ();
+  allocate_value_contents (this);
+  return m_contents.get ();
 }
 
 /* Look at value.h for description.  */
@@ -940,26 +940,26 @@ require_available (const struct value *value)
 }
 
 const gdb_byte *
-value_contents_for_printing (struct value *value)
+value::contents_for_printing ()
 {
-  if (value->m_lazy)
-    value->fetch_lazy ();
-  return value->m_contents.get ();
+  if (m_lazy)
+    fetch_lazy ();
+  return m_contents.get ();
 }
 
 const gdb_byte *
-value_contents_for_printing_const (const struct value *value)
+value::contents_for_printing () const
 {
-  gdb_assert (!value->m_lazy);
-  return value->m_contents.get ();
+  gdb_assert (!m_lazy);
+  return m_contents.get ();
 }
 
 const gdb_byte *
-value_contents_all (struct value *value)
+value::contents_all ()
 {
-  const gdb_byte *result = value_contents_for_printing (value);
-  require_not_optimized_out (value);
-  require_available (value);
+  const gdb_byte *result = contents_for_printing ();
+  require_not_optimized_out (this);
+  require_available (this);
   return result;
 }
 
@@ -1035,8 +1035,8 @@ value_contents_copy_raw (struct value *dst, LONGEST dst_offset,
 					     TARGET_CHAR_BIT * length));
 
   /* Copy the data.  */
-  memcpy (value_contents_all_raw (dst) + dst_offset * unit_size,
-	  value_contents_all_raw (src) + src_offset * unit_size,
+  memcpy (dst->contents_all_raw () + dst_offset * unit_size,
+	  src->contents_all_raw () + src_offset * unit_size,
 	  length * unit_size);
 
   /* Copy the meta-data, adjusted.  */
@@ -1070,20 +1070,20 @@ value_contents_copy (struct value *dst, LONGEST dst_offset,
 }
 
 const gdb_byte *
-value_contents (struct value *value)
+value::contents ()
 {
-  const gdb_byte *result = value_contents_writeable (value);
-  require_not_optimized_out (value);
-  require_available (value);
+  const gdb_byte *result = contents_writeable ();
+  require_not_optimized_out (this);
+  require_available (this);
   return result;
 }
 
 gdb_byte *
-value_contents_writeable (struct value *value)
+value::contents_writeable ()
 {
-  if (value->m_lazy)
-    value->fetch_lazy ();
-  return value_contents_raw (value);
+  if (m_lazy)
+    fetch_lazy ();
+  return contents_raw ();
 }
 
 int
@@ -1293,7 +1293,7 @@ value_copy (struct value *arg)
   val->m_modifiable = arg->m_modifiable;
   if (!val->lazy ())
     {
-      memcpy (value_contents_all_raw (val), value_contents_all_raw (arg),
+      memcpy (val->contents_all_raw (), arg->contents_all_raw (),
 	      TYPE_LENGTH (arg->enclosing_type ()));
 
     }
@@ -1341,7 +1341,7 @@ value_non_lval (struct value *arg)
       struct type *enc_type = arg->enclosing_type ();
       struct value *val = allocate_value (enc_type);
 
-      memcpy (value_contents_all_raw (val), value_contents_all (arg),
+      memcpy (val->contents_all_raw (), arg->contents_all (),
 	      TYPE_LENGTH (enc_type));
       val->m_type = arg->m_type;
       val->set_embedded_offset (arg->embedded_offset ());
@@ -1358,7 +1358,7 @@ value_force_lval (struct value *v, CORE_ADDR addr)
 {
   gdb_assert (v->lval () == not_lval);
 
-  write_memory (addr, value_contents_raw (v), TYPE_LENGTH (v->type ()));
+  write_memory (addr, v->contents_raw (), TYPE_LENGTH (v->type ()));
   v->m_lval = lval_memory;
   v->m_location.address = addr;
 }
@@ -1845,7 +1845,7 @@ set_internalvar_component (struct internalvar *var,
   switch (var->kind)
     {
     case INTERNALVAR_VALUE:
-      addr = value_contents_writeable (var->u.value);
+      addr = var->u.value->contents_writeable ();
       arch = var->u.value->arch ();
       unit_size = gdbarch_addressable_memory_unit_size (arch);
 
@@ -1853,7 +1853,7 @@ set_internalvar_component (struct internalvar *var,
 	modify_field (var->u.value->type (), addr + offset,
 		      value_as_long (newval), bitpos, bitsize);
       else
-	memcpy (addr + offset * unit_size, value_contents (newval),
+	memcpy (addr + offset * unit_size, newval->contents (),
 		TYPE_LENGTH (newval->type ()));
       break;
 
@@ -2230,7 +2230,7 @@ value_as_long (struct value *val)
      in disassemble_command).  It also dereferences references, which
      I suspect is the most logical thing to do.  */
   val = coerce_array (val);
-  return unpack_long (val->type (), value_contents (val));
+  return unpack_long (val->type (), val->contents ());
 }
 
 /* Extract a value as a C pointer.  Does not deallocate the value.
@@ -2334,9 +2334,9 @@ value_as_address (struct value *val)
       && !TYPE_IS_REFERENCE (val->type ())
       && gdbarch_integer_to_address_p (gdbarch))
     return gdbarch_integer_to_address (gdbarch, val->type (),
-				       value_contents (val));
+				       val->contents ());
 
-  return unpack_long (val->type (), value_contents (val));
+  return unpack_long (val->type (), val->contents ());
 #endif
 }
 
@@ -2423,7 +2423,7 @@ is_floating_value (struct value *val)
 
   if (is_floating_type (type))
     {
-      if (!target_float_is_valid (value_contents (val), type))
+      if (!target_float_is_valid (val->contents (), type))
 	error (_("Invalid floating value found in program."));
       return true;
     }
@@ -2564,7 +2564,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 	 for references to ordinary fields of unavailable values.  */
       if (BASETYPE_VIA_VIRTUAL (arg_type, fieldno))
 	boffset = baseclass_offset (arg_type, fieldno,
-				    value_contents (arg1),
+				    arg1->contents (),
 				    arg1->embedded_offset (),
 				    arg1->address (),
 				    arg1);
@@ -2836,7 +2836,7 @@ unpack_value_bitfield (struct value *dest_val,
 
       num = unpack_bits_as_long (field_type, valaddr + embedded_offset,
 				 bitpos, bitsize);
-      store_signed_integer (value_contents_raw (dest_val),
+      store_signed_integer (dest_val->contents_raw (),
 			    TYPE_LENGTH (field_type), byte_order, num);
     }
 
@@ -3015,7 +3015,7 @@ value_from_longest (struct type *type, LONGEST num)
 {
   struct value *val = allocate_value (type);
 
-  pack_long (value_contents_raw (val), type, num);
+  pack_long (val->contents_raw (), type, num);
   return val;
 }
 
@@ -3027,7 +3027,7 @@ value_from_ulongest (struct type *type, ULONGEST num)
 {
   struct value *val = allocate_value (type);
 
-  pack_unsigned_long (value_contents_raw (val), type, num);
+  pack_unsigned_long (val->contents_raw (), type, num);
 
   return val;
 }
@@ -3041,7 +3041,7 @@ value_from_pointer (struct type *type, CORE_ADDR addr)
 {
   struct value *val = allocate_value (type);
 
-  store_typed_address (value_contents_raw (val),
+  store_typed_address (val->contents_raw (),
 		       check_typedef (type), addr);
   return val;
 }
@@ -3105,7 +3105,7 @@ value_from_contents (struct type *type, const gdb_byte *contents)
   struct value *result;
 
   result = allocate_value (type);
-  memcpy (value_contents_raw (result), contents, TYPE_LENGTH (type));
+  memcpy (result->contents_raw (), contents, TYPE_LENGTH (type));
   return result;
 }
 
@@ -3250,7 +3250,7 @@ coerce_ref (struct value *arg)
 
   retval = value_at_lazy (enc_type,
                           unpack_pointer (arg->type (),
-                                          value_contents (arg)));
+                                          arg->contents ()));
   enc_type = retval->type ();
   return readjust_indirect_value_type (retval, enc_type,
                                        value_type_arg_tmp, arg);
@@ -3331,7 +3331,7 @@ value::fetch_lazy_bitfield ()
     p->fetch_lazy ();
 
   unpack_value_bitfield (this, bitpos (), bitsize (),
-			 value_contents_for_printing (p),
+			 p->contents_for_printing (),
 			 offset (), p);
 }
 
@@ -3347,7 +3347,7 @@ value::fetch_lazy_memory ()
 
   if (TYPE_LENGTH (type))
       read_value_memory (this, 0, stack (),
-			 addr, value_contents_all_raw (this),
+			 addr, this->contents_all_raw (),
 			 type_length_units (type));
 }
 
@@ -3444,7 +3444,7 @@ value::fetch_lazy_register ()
       else
 	{
 	  int i;
-	  const gdb_byte *buf = value_contents (new_val);
+	  const gdb_byte *buf = new_val->contents ();
 
 	  if (new_val->lval () == lval_register)
 	    fprintf_unfiltered (gdb_stdlog, " register=%d",

@@ -710,7 +710,7 @@ msp430_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
       for (i = 0; i < nargs; i++)
 	{
 	  struct value *arg = args[i];
-	  const gdb_byte *arg_bits = value_contents_all (arg);
+	  const gdb_byte *arg_bits = arg->contents_all ();
 	  struct type *arg_type = check_typedef (arg->type ());
 	  ULONGEST arg_size = TYPE_LENGTH (arg_type);
 	  int offset;

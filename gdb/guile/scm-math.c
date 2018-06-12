@@ -599,7 +599,7 @@ vlscm_convert_typed_number (const char *func_name, int obj_arg_pos, SCM obj,
   else if (TYPE_CODE (type) == TYPE_CODE_FLT)
     {
       struct value *value = allocate_value (type);
-      target_float_from_host_double (value_contents_raw (value),
+      target_float_from_host_double (value->contents_raw (),
 				     value->type (),
 				     scm_to_double (obj));
       return value;
@@ -685,7 +685,7 @@ vlscm_convert_number (const char *func_name, int obj_arg_pos, SCM obj,
   else if (scm_is_real (obj))
     {
       struct value *value = allocate_value (bt->builtin_double);
-      target_float_from_host_double (value_contents_raw (value),
+      target_float_from_host_double (value->contents_raw (),
 				     value->type (),
 				     scm_to_double (obj));
       return value;

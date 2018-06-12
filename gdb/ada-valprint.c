@@ -840,7 +840,7 @@ ada_val_print_num (struct type *type, const gdb_byte *valaddr,
 
       const char *fmt = TYPE_LENGTH (type) < 4 ? "%.11g" : "%.17g";
       std::string str
-	= target_float_to_string (value_contents (v), v->type (), fmt);
+	= target_float_to_string (v->contents (), v->type (), fmt);
       fputs_filtered (str.c_str (), stream);
       return;
     }
@@ -1122,7 +1122,7 @@ ada_val_print_1 (struct type *type,
 		 const struct language_defn *language)
 {
   int offset_aligned;
-  const gdb_byte *valaddr = value_contents_for_printing (original_value);
+  const gdb_byte *valaddr = original_value->contents_for_printing ();
 
   type = ada_check_typedef (type);
 

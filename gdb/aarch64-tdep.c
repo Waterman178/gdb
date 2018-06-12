@@ -1243,7 +1243,7 @@ pass_in_x (struct gdbarch *gdbarch, struct regcache *regcache,
   int len = TYPE_LENGTH (type);
   enum type_code typecode = TYPE_CODE (type);
   int regnum = AARCH64_X0_REGNUM + info->ngrn;
-  const bfd_byte *buf = value_contents (arg);
+  const bfd_byte *buf = arg->contents ();
 
   info->argnum++;
 
@@ -1315,7 +1315,7 @@ static void
 pass_on_stack (struct aarch64_call_info *info, struct type *type,
 	       struct value *arg)
 {
-  const bfd_byte *buf = value_contents (arg);
+  const bfd_byte *buf = arg->contents ();
   int len = TYPE_LENGTH (type);
   int align;
   stack_item_t item;
@@ -1392,7 +1392,7 @@ pass_in_v_or_stack (struct gdbarch *gdbarch,
 		    struct value *arg)
 {
   if (!pass_in_v (gdbarch, regcache, info, TYPE_LENGTH (type),
-		  value_contents (arg)))
+		  arg->contents ()))
     pass_on_stack (info, type, arg);
 }
 
@@ -1510,7 +1510,7 @@ aarch64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	case TYPE_CODE_COMPLEX:
 	  if (info.nsrn <= 6)
 	    {
-	      const bfd_byte *buf = value_contents (arg);
+	      const bfd_byte *buf = arg->contents ();
 	      struct type *target_type =
 		check_typedef (TYPE_TARGET_TYPE (arg_type));
 
@@ -1577,7 +1577,7 @@ aarch64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	      sp = align_down (sp - len, 16);
 
 	      /* Write the real data into the stack.  */
-	      write_memory (sp, value_contents (arg), len);
+	      write_memory (sp, arg->contents (), len);
 
 	      /* Construct the indirection.  */
 	      arg_type = lookup_pointer_type (arg_type);
@@ -2321,7 +2321,7 @@ aarch64_pseudo_read_value_1 (struct gdbarch *gdbarch,
     mark_value_bytes_unavailable (result_value, 0,
 				  TYPE_LENGTH (result_value->type ()));
   else
-    memcpy (value_contents_raw (result_value), reg_buf, regsize);
+    memcpy (result_value->contents_raw (), reg_buf, regsize);
 
   return result_value;
  }

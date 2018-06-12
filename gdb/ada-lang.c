@@ -2562,7 +2562,7 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
   if (obj == NULL)
     src = valaddr + offset;
   else
-    src = value_contents (obj) + offset;
+    src = obj->contents () + offset;
 
   if (is_dynamic_type (type))
     {
@@ -2612,7 +2612,7 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
   else
     {
       v = allocate_value (type);
-      src = value_contents (obj) + offset;
+      src = obj->contents () + offset;
     }
 
   if (obj != NULL)
@@ -2635,7 +2635,7 @@ ada_value_primitive_packed_val (struct value *obj, const gdb_byte *valaddr,
     }
   else
     v->set_bitsize (bit_size);
-  unpacked = value_contents_writeable (v);
+  unpacked = v->contents_writeable ();
 
   if (bit_size == 0)
     {
@@ -2767,14 +2767,14 @@ ada_value_assign (struct value *toval, struct value *fromval)
 	from_size = TYPE_LENGTH (fromval->type ()) * TARGET_CHAR_BIT;
       if (gdbarch_bits_big_endian (get_type_arch (type)))
         move_bits (buffer, toval->bitpos (),
-		   value_contents (fromval), from_size - bits, bits, 1);
+		   fromval->contents (), from_size - bits, bits, 1);
       else
         move_bits (buffer, toval->bitpos (),
-		   value_contents (fromval), 0, bits, 0);
+		   fromval->contents (), 0, bits, 0);
       write_memory_with_notification (to_addr, buffer, len);
 
       val = value_copy (toval);
-      memcpy (value_contents_raw (val), value_contents (fromval),
+      memcpy (val->contents_raw (), fromval->contents (),
               TYPE_LENGTH (type));
       val->deprecated_set_type (type);
 
@@ -2814,15 +2814,15 @@ value_assign_to_component (struct value *container, struct value *component,
     bits = component->bitsize ();
 
   if (gdbarch_bits_big_endian (get_type_arch (container->type ())))
-    move_bits (value_contents_writeable (container) + offset_in_container,
+    move_bits (container->contents_writeable () + offset_in_container,
 	       container->bitpos () + bit_offset_in_container,
-	       value_contents (val),
+	       val->contents (),
 	       TYPE_LENGTH (component->type ()) * TARGET_CHAR_BIT - bits,
 	       bits, 1);
   else
-    move_bits (value_contents_writeable (container) + offset_in_container,
+    move_bits (container->contents_writeable () + offset_in_container,
 	       container->bitpos () + bit_offset_in_container,
-	       value_contents (val), 0, bits, 0);
+	       val->contents (), 0, bits, 0);
 }
 
 /* The value of the element of array ARR at the ARITY indices given in IND.
@@ -4468,7 +4468,7 @@ ensure_lval (struct value *val)
 
       val->lval () = lval_memory;
       val->set_address (addr);
-      write_memory (addr, value_contents (val), len);
+      write_memory (addr, val->contents (), len);
     }
 
   return val;
@@ -4510,8 +4510,8 @@ ada_convert_actual (struct value *actual, struct type *formal_type0)
 
               actual_type = ada_check_typedef (actual->type ());
               val = allocate_value (actual_type);
-              memcpy ((char *) value_contents_raw (val),
-                      (char *) value_contents (actual),
+              memcpy ((char *) val->contents_raw (),
+                      (char *) actual->contents (),
                       TYPE_LENGTH (actual_type));
               actual = ensure_lval (val);
             }
@@ -4575,11 +4575,11 @@ make_array_descriptor (struct type *type, struct value *arr)
   for (i = ada_array_arity (ada_check_typedef (arr->type ()));
        i > 0; i -= 1)
     {
-      modify_field (bounds->type (), value_contents_writeable (bounds),
+      modify_field (bounds->type (), bounds->contents_writeable (),
 		    ada_array_bound (arr, i, 0),
 		    desc_bound_bitpos (bounds_type, i, 0),
 		    desc_bound_bitsize (bounds_type, i, 0));
-      modify_field (bounds->type (), value_contents_writeable (bounds),
+      modify_field (bounds->type (), bounds->contents_writeable (),
 		    ada_array_bound (arr, i, 1),
 		    desc_bound_bitpos (bounds_type, i, 1),
 		    desc_bound_bitsize (bounds_type, i, 1));
@@ -4588,14 +4588,14 @@ make_array_descriptor (struct type *type, struct value *arr)
   bounds = ensure_lval (bounds);
 
   modify_field (descriptor->type (),
-		value_contents_writeable (descriptor),
+		descriptor->contents_writeable (),
 		value_pointer (ensure_lval (arr),
 			       TYPE_FIELD_TYPE (desc_type, 0)),
 		fat_pntr_data_bitpos (desc_type),
 		fat_pntr_data_bitsize (desc_type));
 
   modify_field (descriptor->type (),
-		value_contents_writeable (descriptor),
+		descriptor->contents_writeable (),
 		value_pointer (bounds,
 			       TYPE_FIELD_TYPE (desc_type, 1)),
 		fat_pntr_bounds_bitpos (desc_type),
@@ -7165,7 +7165,7 @@ ada_value_primitive_field (struct value *arg1, int offset, int fieldno,
       int bit_pos = TYPE_FIELD_BITPOS (arg_type, fieldno);
       int bit_size = TYPE_FIELD_BITSIZE (arg_type, fieldno);
 
-      return ada_value_primitive_packed_val (arg1, value_contents (arg1),
+      return ada_value_primitive_packed_val (arg1, arg1->contents (),
                                              offset + bit_pos / 8,
                                              bit_pos % 8, bit_size, type);
     }
@@ -8751,7 +8751,7 @@ to_fixed_variant_branch_type (struct type *var_type0, const gdb_byte *valaddr,
       return var_type0;
   which =
     ada_which_variant_applies (var_type,
-                               dval->type (), value_contents (dval));
+                               dval->type (), dval->contents ());
 
   if (which < 0)
     return empty_record (var_type);
@@ -9294,7 +9294,7 @@ ada_to_fixed_value_create (struct type *type0, CORE_ADDR address,
       /* Our value does not live in memory; it could be a convenience
 	 variable, for instance.  Create a not_lval value using val0's
 	 contents.  */
-      return value_from_contents (type, value_contents (val0));
+      return value_from_contents (type, val0->contents ());
     }
 
   return value_from_contents_and_address (type, 0, address);
@@ -9750,8 +9750,8 @@ ada_promote_array_of_integrals (struct type *type, struct value *val)
     {
       struct value *elt = value_cast (elt_type, value_subscript (val, lo + i));
 
-      memcpy (value_contents_writeable (res) + (i * TYPE_LENGTH (elt_type)),
-	      value_contents_all (elt), TYPE_LENGTH (elt_type));
+      memcpy (res->contents_writeable () + (i * TYPE_LENGTH (elt_type)),
+	      elt->contents_all (), TYPE_LENGTH (elt_type));
     }
 
   return res;
@@ -9854,7 +9854,7 @@ ada_value_binop (struct value *arg1, struct value *arg2, enum exp_opcode op)
     }
 
   val = allocate_value (type1);
-  store_unsigned_integer (value_contents_raw (val),
+  store_unsigned_integer (val->contents_raw (),
                           TYPE_LENGTH (val->type ()),
 			  gdbarch_byte_order (get_type_arch (type1)), v);
   return val;
@@ -9886,7 +9886,7 @@ ada_value_equal (struct value *arg1, struct value *arg2)
          representations use all bits (no padding or undefined bits)
          and do not have user-defined equality.  */
       return (TYPE_LENGTH (arg1_type) == TYPE_LENGTH (arg2_type)
-	      && memcmp (value_contents (arg1), value_contents (arg2),
+	      && memcmp (arg1->contents (), arg2->contents (),
 			 TYPE_LENGTH (arg1_type)) == 0);
     }
   return value_equal (arg1, arg2);

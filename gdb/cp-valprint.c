@@ -227,7 +227,7 @@ cp_print_value_fields (struct type *type, struct type *real_type,
       vptr_fieldno = get_vptr_fieldno (type, &vptr_basetype);
       for (i = n_baseclasses; i < len; i++)
 	{
-	  const gdb_byte *valaddr = value_contents_for_printing (val);
+	  const gdb_byte *valaddr = val->contents_for_printing ();
 
 	  /* If requested, skip printing of static fields.  */
 	  if (!options->static_field_print
@@ -468,7 +468,7 @@ cp_print_value (struct type *type, struct type *real_type,
   int i, n_baseclasses = TYPE_N_BASECLASSES (type);
   LONGEST thisoffset;
   struct type *thistype;
-  const gdb_byte *valaddr = value_contents_for_printing (val);
+  const gdb_byte *valaddr = val->contents_for_printing ();
 
   if (dont_print_vb == 0)
     {

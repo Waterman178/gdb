@@ -2718,7 +2718,7 @@ i386_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 		args_space_used = align_up (args_space_used, 16);
 
 	      write_memory (sp + args_space_used,
-			    value_contents_all (args[i]), len);
+			    args[i]->contents_all (), len);
 	      /* The System V ABI says that:
 
 	      "An argument's size is increased, if necessary, to make it a
@@ -3276,7 +3276,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 {
   gdb_byte raw_buf[I386_MAX_REGISTER_SIZE];
   enum register_status status;
-  gdb_byte *buf = value_contents_raw (result_value);
+  gdb_byte *buf = result_value->contents_raw ();
 
   if (i386_mmx_regnum_p (gdbarch, regnum))
     {

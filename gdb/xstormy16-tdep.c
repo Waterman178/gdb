@@ -257,7 +257,7 @@ xstormy16_push_dummy_call (struct gdbarch *gdbarch,
 	break;
 
       /* Put argument into registers wordwise.  */
-      val = value_contents (args[i]);
+      val = args[i]->contents ();
       for (j = 0; j < typelen; j += xstormy16_reg_size)
 	{
 	  ULONGEST regval;
@@ -275,7 +275,7 @@ xstormy16_push_dummy_call (struct gdbarch *gdbarch,
      wordaligned.  */
   for (j = nargs - 1; j >= i; j--)
     {
-      const gdb_byte *bytes = value_contents (args[j]);
+      const gdb_byte *bytes = args[j]->contents ();
 
       typelen = TYPE_LENGTH (args[j]->enclosing_type ());
       slacklen = typelen & 1;

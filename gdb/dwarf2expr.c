@@ -205,7 +205,7 @@ dwarf_expr_context::fetch_address (int n)
   ULONGEST result;
 
   dwarf_require_integral (result_val->type ());
-  result = extract_unsigned_integer (value_contents (result_val),
+  result = extract_unsigned_integer (result_val->contents (),
 				     TYPE_LENGTH (result_val->type ()),
 				     byte_order);
 
@@ -1375,7 +1375,7 @@ dwarf_expr_context::execute_stack_op (const gdb_byte *op_ptr,
 	    else
 	      result_val
 		= value_from_contents (type,
-				       value_contents_all (result_val));
+				       result_val->contents_all ());
 	  }
 	  break;
 

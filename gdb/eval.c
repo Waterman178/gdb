@@ -332,12 +332,12 @@ evaluate_struct_tuple (struct value *struct_val,
 
       bitsize = TYPE_FIELD_BITSIZE (struct_type, fieldno);
       bitpos = TYPE_FIELD_BITPOS (struct_type, fieldno);
-      addr = value_contents_writeable (struct_val) + bitpos / 8;
+      addr = struct_val->contents_writeable () + bitpos / 8;
       if (bitsize)
 	modify_field (struct_type, addr,
 		      value_as_long (val), bitpos % 8, bitsize);
       else
-	memcpy (addr, value_contents (val),
+	memcpy (addr, val->contents (),
 		TYPE_LENGTH (val->type ()));
 
     }
@@ -371,8 +371,8 @@ init_array_element (struct value *array, struct value *element,
       index = value_as_long (evaluate_subexp (NULL_TYPE, exp, pos, noside));
       if (index < low_bound || index > high_bound)
 	error (_("tuple index out of range"));
-      memcpy (value_contents_raw (array) + (index - low_bound) * element_size,
-	      value_contents (element), element_size);
+      memcpy (array->contents_raw () + (index - low_bound) * element_size,
+	      element->contents (), element_size);
     }
   return index;
 }
@@ -1423,7 +1423,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	{
 	  struct value *rec = allocate_value (expect_type);
 
-	  memset (value_contents_raw (rec), '\0', TYPE_LENGTH (type));
+	  memset (rec->contents_raw (), '\0', TYPE_LENGTH (type));
 	  return evaluate_struct_tuple (rec, exp, pos, noside, nargs);
 	}
 
@@ -1442,7 +1442,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	      high_bound = (TYPE_LENGTH (type) / element_size) - 1;
 	    }
 	  index = low_bound;
-	  memset (value_contents_raw (array), 0, TYPE_LENGTH (expect_type));
+	  memset (array->contents_raw (), 0, TYPE_LENGTH (expect_type));
 	  for (tem = nargs; --nargs >= 0;)
 	    {
 	      struct value *element;
@@ -1465,9 +1465,9 @@ evaluate_subexp_standard (struct type *expect_type,
 		  if (index > high_bound)
 		    /* To avoid memory corruption.  */
 		    error (_("Too many array elements"));
-		  memcpy (value_contents_raw (array)
+		  memcpy (array->contents_raw ()
 			  + (index - low_bound) * element_size,
-			  value_contents (element),
+			  element->contents (),
 			  element_size);
 		}
 	      index++;
@@ -1479,7 +1479,7 @@ evaluate_subexp_standard (struct type *expect_type,
 	  && TYPE_CODE (type) == TYPE_CODE_SET)
 	{
 	  struct value *set = allocate_value (expect_type);
-	  gdb_byte *valaddr = value_contents_raw (set);
+	  gdb_byte *valaddr = set->contents_raw ();
 	  struct type *element_type = TYPE_INDEX_TYPE (type);
 	  struct type *check_type = element_type;
 	  LONGEST low_bound, high_bound;

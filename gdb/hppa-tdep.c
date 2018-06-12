@@ -759,7 +759,7 @@ hppa32_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	      param_len = 4;
 	      struct_ptr += align_up (TYPE_LENGTH (type), 8);
 	      if (write_pass)
-		write_memory (struct_end - struct_ptr, value_contents (arg),
+		write_memory (struct_end - struct_ptr, arg->contents (),
 			      TYPE_LENGTH (type));
 	      store_unsigned_integer (param_val, 4, byte_order,
 				      struct_end - struct_ptr);
@@ -772,13 +772,13 @@ hppa32_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	      param_len = align_up (TYPE_LENGTH (type), 4);
 	      store_unsigned_integer (param_val, param_len, byte_order,
 				      unpack_long (type,
-						   value_contents (arg)));
+						   arg->contents ()));
 	    }
 	  else if (TYPE_CODE (type) == TYPE_CODE_FLT)
             {
 	      /* Floating point value store, right aligned.  */
 	      param_len = align_up (TYPE_LENGTH (type), 4);
-	      memcpy (param_val, value_contents (arg), param_len);
+	      memcpy (param_val, arg->contents (), param_len);
             }
 	  else
 	    {
@@ -786,7 +786,7 @@ hppa32_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 
 	      /* Small struct value are stored right-aligned.  */
 	      memcpy (param_val + param_len - TYPE_LENGTH (type),
-		      value_contents (arg), TYPE_LENGTH (type));
+		      arg->contents (), TYPE_LENGTH (type));
 
 	      /* Structures of size 5, 6 and 7 bytes are special in that
 	         the higher-ordered word is stored in the lower-ordered
@@ -1045,7 +1045,7 @@ hppa64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 		     the right halves of the floating point registers;
 		     the left halves are unused."  */
 		  regcache->cooked_write_part (regnum, offset % 8, len,
-					       value_contents (arg));
+					       arg->contents ());
 		}
 	    }
 	}
@@ -1069,7 +1069,7 @@ hppa64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
         {
 	  ULONGEST codeptr, fptr;
 
-	  codeptr = unpack_long (type, value_contents (arg));
+	  codeptr = unpack_long (type, arg->contents ());
 	  fptr = hppa64_convert_code_addr_to_fptr (gdbarch, codeptr);
 	  store_unsigned_integer (fptrbuf, TYPE_LENGTH (type), byte_order,
 				  fptr);
@@ -1077,7 +1077,7 @@ hppa64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	}
       else
         {
-          valbuf = value_contents (arg);
+          valbuf = arg->contents ();
 	}
 
       /* Always store the argument in memory.  */
@@ -2779,7 +2779,7 @@ hppa_frame_prev_register_helper (struct frame_info *this_frame,
         trad_frame_get_prev_register (this_frame, saved_regs,
                                       HPPA_PCOQ_HEAD_REGNUM);
 
-      pc = extract_unsigned_integer (value_contents_all (pcoq_val),
+      pc = extract_unsigned_integer (pcoq_val->contents_all (),
 				     size, byte_order);
       return frame_unwind_got_constant (this_frame, regnum, pc + 4);
     }

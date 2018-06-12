@@ -308,7 +308,7 @@ tilegx_push_dummy_call (struct gdbarch *gdbarch,
 	break;
 
       /* Put argument into registers wordwise.	*/
-      val = value_contents (args[i]);
+      val = args[i]->contents ();
       for (j = 0; j < typelen; j += tilegx_reg_size)
 	{
 	  /* ISSUE: Why special handling for "typelen = 4x + 1"?
@@ -327,7 +327,7 @@ tilegx_push_dummy_call (struct gdbarch *gdbarch,
      the stack, word aligned.  */
   for (j = nargs - 1; j >= i; j--)
     {
-      const gdb_byte *contents = value_contents (args[j]);
+      const gdb_byte *contents = args[j]->contents ();
 
       typelen = TYPE_LENGTH (args[j]->enclosing_type ());
       slacklen = align_up (typelen, 8) - typelen;

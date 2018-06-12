@@ -468,8 +468,8 @@ value_cast (struct type *type, struct value *arg2)
       if (is_floating_value (arg2))
 	{
 	  struct value *v = allocate_value (to_type);
-	  target_float_convert (value_contents (arg2), type2,
-				value_contents_raw (v), type);
+	  target_float_convert (arg2->contents (), type2,
+				v->contents_raw (), type);
 	  return v;
 	}
 
@@ -494,7 +494,7 @@ value_cast (struct type *type, struct value *arg2)
          bits.  */
       if (code2 == TYPE_CODE_PTR)
         longest = extract_unsigned_integer
-		    (value_contents (arg2), TYPE_LENGTH (type2),
+		    (arg2->contents (), TYPE_LENGTH (type2),
 		     gdbarch_byte_order (get_type_arch (type2)));
       else
         longest = value_as_long (arg2);
@@ -531,7 +531,7 @@ value_cast (struct type *type, struct value *arg2)
     {
       struct value *result = allocate_value (to_type);
 
-      cplus_make_method_ptr (to_type, value_contents_writeable (result), 0, 0);
+      cplus_make_method_ptr (to_type, result->contents_writeable (), 0, 0);
       return result;
     }
   else if (code1 == TYPE_CODE_MEMBERPTR && code2 == TYPE_CODE_INT
@@ -811,7 +811,7 @@ value_dynamic_cast (struct type *type, struct value *arg)
 	return tem;
       result = NULL;
       if (dynamic_cast_check_1 (TYPE_TARGET_TYPE (resolved_type),
-				value_contents_for_printing (tem),
+				tem->contents_for_printing (),
 				tem->embedded_offset (),
 				tem->address (), tem,
 				rtti_type, addr,
@@ -827,7 +827,7 @@ value_dynamic_cast (struct type *type, struct value *arg)
   result = NULL;
   if (is_public_ancestor (arg_type, rtti_type)
       && dynamic_cast_check_2 (TYPE_TARGET_TYPE (resolved_type),
-			       value_contents_for_printing (tem),
+			       tem->contents_for_printing (),
 			       tem->embedded_offset (),
 			       tem->address (), tem,
 			       rtti_type, &result) == 1)
@@ -879,8 +879,8 @@ value_one (struct type *type)
       for (i = 0; i < high_bound - low_bound + 1; i++)
 	{
 	  tmp = value_one (eltype);
-	  memcpy (value_contents_writeable (val) + i * TYPE_LENGTH (eltype),
-		  value_contents_all (tmp), TYPE_LENGTH (eltype));
+	  memcpy (val->contents_writeable () + i * TYPE_LENGTH (eltype),
+		  tmp->contents_all (), TYPE_LENGTH (eltype));
 	}
     }
   else
@@ -1091,7 +1091,7 @@ value_assign (struct value *toval, struct value *fromval)
 	  {
 	    changed_addr = toval->address ();
 	    changed_len = type_length_units (type);
-	    dest_buffer = value_contents (fromval);
+	    dest_buffer = fromval->contents ();
 	  }
 
 	write_memory_with_notification (changed_addr, dest_buffer, changed_len);
@@ -1166,14 +1166,14 @@ value_assign (struct value *toval, struct value *fromval)
 		   format.  */
 		gdbarch_value_to_register (gdbarch, frame,
 					   VALUE_REGNUM (toval), type,
-					   value_contents (fromval));
+					   fromval->contents ());
 	      }
 	    else
 	      {
 		put_frame_register_bytes (frame, value_reg,
 					  toval->offset (),
 					  TYPE_LENGTH (type),
-					  value_contents (fromval));
+					  fromval->contents ());
 	      }
 	  }
 
@@ -1253,7 +1253,7 @@ value_assign (struct value *toval, struct value *fromval)
      implies the returned value is not lazy, even if TOVAL was.  */
   val = value_copy (toval);
   val->set_lazy (0);
-  memcpy (value_contents_raw (val), value_contents (fromval),
+  memcpy (val->contents_raw (), fromval->contents (),
 	  TYPE_LENGTH (type));
 
   /* We copy over the enclosing type and pointed-to offset from FROMVAL
@@ -1287,7 +1287,7 @@ value_repeat (struct value *arg1, int count)
   val->set_address (arg1->address ());
 
   read_value_memory (val, 0, val->stack (), val->address (),
-		     value_contents_all_raw (val),
+		     val->contents_all_raw (),
 		     type_length_units (val->enclosing_type ()));
 
   return val;
@@ -1396,7 +1396,7 @@ value_coerce_to_target (struct value *val)
 
   length = TYPE_LENGTH (check_typedef (val->type ()));
   addr = allocate_space_in_inferior (length);
-  write_memory (addr, value_contents (val), length);
+  write_memory (addr, val->contents (), length);
   return value_at_lazy (val->type (), addr);
 }
 
@@ -1659,7 +1659,7 @@ value_cstring (const char *ptr, ssize_t len, struct type *char_type)
     = lookup_array_range_type (char_type, lowbound, highbound + lowbound - 1);
 
   val = allocate_value (stringtype);
-  memcpy (value_contents_raw (val), ptr, len);
+  memcpy (val->contents_raw (), ptr, len);
   return val;
 }
 
@@ -1682,7 +1682,7 @@ value_string (const char *ptr, ssize_t len, struct type *char_type)
     = lookup_string_range_type (char_type, lowbound, highbound + lowbound - 1);
 
   val = allocate_value (stringtype);
-  memcpy (value_contents_raw (val), ptr, len);
+  memcpy (val->contents_raw (), ptr, len);
   return val;
 }
 
@@ -1901,7 +1901,7 @@ do_search_struct_field (const char *name, struct value *arg1, LONGEST offset,
 	  struct value *v2;
 
 	  boffset = baseclass_offset (type, i,
-				      value_contents_for_printing (arg1),
+				      arg1->contents_for_printing (),
 				      arg1->embedded_offset () + offset,
 				      arg1->address (),
 				      arg1);
@@ -1919,7 +1919,7 @@ do_search_struct_field (const char *name, struct value *arg1, LONGEST offset,
 	      base_addr = arg1->address () + boffset;
 	      v2 = value_at_lazy (basetype, base_addr);
 	      if (target_read_memory (base_addr, 
-				      value_contents_raw (v2),
+				      v2->contents_raw (),
 				      TYPE_LENGTH (v2->type ())) != 0)
 		error (_("virtual baseclass botch"));
 	    }
@@ -2078,13 +2078,13 @@ search_struct_method (const char *name, struct value **arg1p,
 	      base_val = value_from_contents_and_address (baseclass,
 							  tmp.data (),
 							  address + offset);
-	      base_valaddr = value_contents_for_printing (base_val);
+	      base_valaddr = base_val->contents_for_printing ();
 	      this_offset = 0;
 	    }
 	  else
 	    {
 	      base_val = *arg1p;
-	      base_valaddr = value_contents_for_printing (*arg1p);
+	      base_valaddr = (*arg1p)->contents_for_printing ();
 	      this_offset = offset;
 	    }
 
@@ -2384,7 +2384,7 @@ find_method_list (struct value **argp, const char *method,
       if (BASETYPE_VIA_VIRTUAL (type, i))
 	{
 	  base_offset = baseclass_offset (type, i,
-					  value_contents_for_printing (*argp),
+					  (*argp)->contents_for_printing (),
 					  (*argp)->offset () + offset,
 					  (*argp)->address (), *argp);
 	}
@@ -3509,7 +3509,7 @@ value_struct_elt_for_reference (struct type *domain, int offset,
 		  result = allocate_value
 		    (lookup_methodptr_type (TYPE_FN_FIELD_TYPE (f, j)));
 		  cplus_make_method_ptr (result->type (),
-					 value_contents_writeable (result),
+					 result->contents_writeable (),
 					 TYPE_FN_FIELD_VOFFSET (f, j), 1);
 		}
 	      else if (noside == EVAL_AVOID_SIDE_EFFECTS)
@@ -3534,7 +3534,7 @@ value_struct_elt_for_reference (struct type *domain, int offset,
 		{
 		  result = allocate_value (lookup_methodptr_type (TYPE_FN_FIELD_TYPE (f, j)));
 		  cplus_make_method_ptr (result->type (),
-					 value_contents_writeable (result),
+					 result->contents_writeable (),
 					 v->address (), 0);
 		}
 	    }
@@ -3878,10 +3878,10 @@ value_literal_complex (struct value *arg1,
   arg1 = value_cast (real_type, arg1);
   arg2 = value_cast (real_type, arg2);
 
-  memcpy (value_contents_raw (val),
-	  value_contents (arg1), TYPE_LENGTH (real_type));
-  memcpy (value_contents_raw (val) + TYPE_LENGTH (real_type),
-	  value_contents (arg2), TYPE_LENGTH (real_type));
+  memcpy (val->contents_raw (),
+	  arg1->contents (), TYPE_LENGTH (real_type));
+  memcpy (val->contents_raw () + TYPE_LENGTH (real_type),
+	  arg2->contents (), TYPE_LENGTH (real_type));
   return val;
 }
 
@@ -3898,10 +3898,10 @@ cast_into_complex (struct type *type, struct value *val)
       struct value *re_val = allocate_value (val_real_type);
       struct value *im_val = allocate_value (val_real_type);
 
-      memcpy (value_contents_raw (re_val),
-	      value_contents (val), TYPE_LENGTH (val_real_type));
-      memcpy (value_contents_raw (im_val),
-	      value_contents (val) + TYPE_LENGTH (val_real_type),
+      memcpy (re_val->contents_raw (),
+	      val->contents (), TYPE_LENGTH (val_real_type));
+      memcpy (im_val->contents_raw (),
+	      val->contents () + TYPE_LENGTH (val_real_type),
 	      TYPE_LENGTH (val_real_type));
 
       return value_literal_complex (re_val, im_val, type);

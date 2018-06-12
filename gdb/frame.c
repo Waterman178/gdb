@@ -1124,7 +1124,7 @@ frame_register_unwind (struct frame_info *frame, int regnum,
   if (bufferp)
     {
       if (!*optimizedp && !*unavailablep)
-	memcpy (bufferp, value_contents_all (value),
+	memcpy (bufferp, value->contents_all (),
 		TYPE_LENGTH (value->type ()));
       else
 	memset (bufferp, 0, TYPE_LENGTH (value->type ()));
@@ -1232,7 +1232,7 @@ frame_unwind_register_value (struct frame_info *frame, int regnum)
 	  else
 	    {
 	      int i;
-	      const gdb_byte *buf = value_contents (value);
+	      const gdb_byte *buf = value->contents ();
 
 	      fprintf_unfiltered (gdb_stdlog, " bytes=");
 	      fprintf_unfiltered (gdb_stdlog, "[");
@@ -1275,7 +1275,7 @@ frame_unwind_register_signed (struct frame_info *frame, int regnum)
 		   _("Register %d is not available"), regnum);
     }
 
-  LONGEST r = extract_signed_integer (value_contents_all (value), size,
+  LONGEST r = extract_signed_integer (value->contents_all (), size,
 				      byte_order);
 
   release_value (value);
@@ -1309,7 +1309,7 @@ frame_unwind_register_unsigned (struct frame_info *frame, int regnum)
 		   _("Register %d is not available"), regnum);
     }
 
-  ULONGEST r = extract_unsigned_integer (value_contents_all (value), size,
+  ULONGEST r = extract_unsigned_integer (value->contents_all (), size,
 					 byte_order);
 
   release_value (value);
@@ -1335,7 +1335,7 @@ read_frame_register_unsigned (struct frame_info *frame, int regnum,
       enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
       int size = register_size (gdbarch, VALUE_REGNUM (regval));
 
-      *val = extract_unsigned_integer (value_contents (regval), size, byte_order);
+      *val = extract_unsigned_integer (regval->contents (), size, byte_order);
       return 1;
     }
 
@@ -1461,7 +1461,7 @@ get_frame_register_bytes (struct frame_info *frame, int regnum,
 	      release_value (value);
 	      return 0;
 	    }
-	  memcpy (myaddr, value_contents_all (value) + offset, curr_len);
+	  memcpy (myaddr, value->contents_all () + offset, curr_len);
 	  release_value (value);
 	}
 
@@ -1507,9 +1507,9 @@ put_frame_register_bytes (struct frame_info *frame, int regnum,
 							     regnum);
 	  gdb_assert (value != NULL);
 
-	  memcpy ((char *) value_contents_writeable (value) + offset, myaddr,
+	  memcpy ((char *) value->contents_writeable () + offset, myaddr,
 		  curr_len);
-	  put_frame_register (frame, regnum, value_contents_raw (value));
+	  put_frame_register (frame, regnum, value->contents_raw ());
 	  release_value (value);
 	}
 
