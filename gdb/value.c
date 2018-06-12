@@ -188,22 +188,20 @@ value::entirely_available ()
    is lazy, it'll be read now.  Note that RANGE is a pointer to
    pointer because reading the value might change *RANGE.  */
 
-static int
-value_entirely_covered_by_range_vector (struct value *value,
-					const std::vector<range> &ranges)
+int
+value::entirely_covered_by_range_vector (const std::vector<range> &ranges)
 {
   /* We can only tell whether the whole value is optimized out /
      unavailable when we try to read it.  */
-  if (value->m_lazy)
-    value->fetch_lazy ();
+  if (m_lazy)
+    fetch_lazy ();
 
   if (ranges.size () == 1)
     {
       const struct range &t = ranges[0];
 
       if (t.offset == 0
-	  && t.length == (TARGET_CHAR_BIT
-			  * TYPE_LENGTH (value->enclosing_type ())))
+	  && t.length == (TARGET_CHAR_BIT * TYPE_LENGTH (enclosing_type ())))
 	return 1;
     }
 
@@ -211,15 +209,15 @@ value_entirely_covered_by_range_vector (struct value *value,
 }
 
 int
-value_entirely_unavailable (struct value *value)
+value::entirely_unavailable ()
 {
-  return value_entirely_covered_by_range_vector (value, value->m_unavailable);
+  return entirely_covered_by_range_vector (m_unavailable);
 }
 
 int
-value_entirely_optimized_out (struct value *value)
+value::entirely_optimized_out ()
 {
-  return value_entirely_covered_by_range_vector (value, value->m_optimized_out);
+  return entirely_covered_by_range_vector (m_optimized_out);
 }
 
 /* Insert into the vector pointed to by VECTORP the bit range starting of

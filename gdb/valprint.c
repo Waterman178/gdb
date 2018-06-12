@@ -1083,7 +1083,7 @@ value_check_printable (struct value *val, struct ui_file *stream,
       return 0;
     }
 
-  if (value_entirely_optimized_out (val))
+  if (val->entirely_optimized_out ())
     {
       if (options->summary && !val_print_scalar_type_p (val->type ()))
 	fprintf_filtered (stream, "...");
@@ -1092,7 +1092,7 @@ value_check_printable (struct value *val, struct ui_file *stream,
       return 0;
     }
 
-  if (value_entirely_unavailable (val))
+  if (val->entirely_unavailable ())
     {
       if (options->summary && !val_print_scalar_type_p (val->type ()))
 	fprintf_filtered (stream, "...");

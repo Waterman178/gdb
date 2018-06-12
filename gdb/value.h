@@ -435,6 +435,14 @@ struct value
      whole object is unavailable.  */
   int entirely_available ();
 
+  /* Like entirely_available, but return false if any byte in the
+     whole object is available.  */
+  int entirely_unavailable ();
+
+  /* Like value_optimized_out, but return true iff the whole value is
+     optimized out.  */
+  int entirely_optimized_out ();
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -600,6 +608,8 @@ private:
   void fetch_lazy_bitfield ();
   void fetch_lazy_memory ();
   void fetch_lazy_register ();
+
+  int entirely_covered_by_range_vector (const std::vector<range> &ranges);
 };
 
 /* For lval_computed values, this structure holds functions used to
@@ -739,10 +749,6 @@ extern int value_optimized_out (struct value *value);
 extern int value_bits_any_optimized_out (const struct value *value,
 					 int bit_offset, int bit_length);
 
-/* Like value_optimized_out, but return true iff the whole value is
-   optimized out.  */
-extern int value_entirely_optimized_out (struct value *value);
-
 /* Mark VALUE's content bytes starting at OFFSET and extending for
    LENGTH bytes as optimized out.  */
 
@@ -830,10 +836,6 @@ extern struct value *coerce_array (struct value *value);
 
 extern int value_bits_synthetic_pointer (const struct value *value,
 					 LONGEST offset, LONGEST length);
-
-/* Like value_entirely_available, but return false if any byte in the
-   whole object is available.  */
-extern int value_entirely_unavailable (struct value *value);
 
 /* Mark VALUE's content bytes starting at OFFSET and extending for
    LENGTH bytes as unavailable.  */
