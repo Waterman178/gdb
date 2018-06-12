@@ -2014,7 +2014,7 @@ val_print_array_elements (struct type *type,
       if (options->repeat_count_threshold < UINT_MAX)
 	{
 	  while (rep1 < len
-		 && value_contents_eq (val,
+		 && val->contents_eq (
 				       embedded_offset + i * eltlen,
 				       val,
 				       (embedded_offset

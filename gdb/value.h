@@ -539,6 +539,68 @@ struct value
      pointed value must _not_ be lazy.  */
   const gdb_byte *contents_for_printing () const;
 
+  /* Compare LENGTH bytes of VAL1's contents starting at OFFSET1 with
+     LENGTH bytes of VAL2's contents starting at OFFSET2.
+
+     Note that "contents" refers to the whole value's contents
+     (value_contents_all), without any embedded offset adjustment.  For
+     example, to compare a complete object value with itself, including
+     its enclosing type chunk, you'd do:
+
+     int len = TYPE_LENGTH (check_typedef (val->enclosing_type ()));
+     val->contents_eq (0, val, 0, len);
+
+     Returns true iff the set of available/valid contents match.
+
+     Optimized-out contents are equal to optimized-out contents, and are
+     not equal to non-optimized-out contents.
+
+     Unavailable contente are equal to unavailable contents, and are not
+     equal to non-unavailable contents.
+
+     For example, if 'x's represent an unavailable byte, and 'V' and 'Z'
+     represent different available/valid bytes, in a value with length
+     16:
+
+     offset:   0   4   8   12  16
+     contents: xxxxVVVVxxxxVVZZ
+
+     then:
+
+     value_contents_eq(val, 0, val, 8, 6) => true
+     value_contents_eq(val, 0, val, 4, 4) => false
+     value_contents_eq(val, 0, val, 8, 8) => false
+     value_contents_eq(val, 4, val, 12, 2) => true
+     value_contents_eq(val, 4, val, 12, 4) => true
+     value_contents_eq(val, 3, val, 4, 4) => true
+
+     If 'x's represent an unavailable byte, 'o' represents an optimized
+     out byte, in a value with length 8:
+
+     offset:   0   4   8
+     contents: xxxxoooo
+
+     then:
+
+     value_contents_eq(val, 0, val, 2, 2) => true
+     value_contents_eq(val, 4, val, 6, 2) => true
+     value_contents_eq(val, 0, val, 4, 4) => true
+
+     We only know whether a value chunk is unavailable or optimized out
+     if we've tried to read it.  As this routine is used by printing
+     routines, which may be printing values in the value history, long
+     after the inferior is gone, it works with const values.  Therefore,
+     this routine must not be called with lazy values.  */
+
+  bool contents_eq (LONGEST offset1,
+		    const struct value *val2, LONGEST offset2,
+		    LONGEST length) const
+  {
+    return contents_bits_eq (this, offset1 * TARGET_CHAR_BIT,
+			     val2, offset2 * TARGET_CHAR_BIT,
+			     length * TARGET_CHAR_BIT);
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -706,6 +768,10 @@ private:
   void fetch_lazy_register ();
 
   int entirely_covered_by_range_vector (const std::vector<range> &ranges);
+
+  static bool contents_bits_eq (const struct value *val1, int offset1,
+				const struct value *val2, int offset2,
+				int length);
 };
 
 /* For lval_computed values, this structure holds functions used to
@@ -853,63 +919,6 @@ extern struct value *coerce_array (struct value *value);
 
 extern int value_bits_synthetic_pointer (const struct value *value,
 					 LONGEST offset, LONGEST length);
-
-/* Compare LENGTH bytes of VAL1's contents starting at OFFSET1 with
-   LENGTH bytes of VAL2's contents starting at OFFSET2.
-
-   Note that "contents" refers to the whole value's contents
-   (value_contents_all), without any embedded offset adjustment.  For
-   example, to compare a complete object value with itself, including
-   its enclosing type chunk, you'd do:
-
-     int len = TYPE_LENGTH (check_typedef (val->enclosing_type ()));
-     value_contents_eq (val, 0, val, 0, len);
-
-   Returns true iff the set of available/valid contents match.
-
-   Optimized-out contents are equal to optimized-out contents, and are
-   not equal to non-optimized-out contents.
-
-   Unavailable contente are equal to unavailable contents, and are not
-   equal to non-unavailable contents.
-
-   For example, if 'x's represent an unavailable byte, and 'V' and 'Z'
-   represent different available/valid bytes, in a value with length
-   16:
-
-     offset:   0   4   8   12  16
-     contents: xxxxVVVVxxxxVVZZ
-
-   then:
-
-     value_contents_eq(val, 0, val, 8, 6) => true
-     value_contents_eq(val, 0, val, 4, 4) => false
-     value_contents_eq(val, 0, val, 8, 8) => false
-     value_contents_eq(val, 4, val, 12, 2) => true
-     value_contents_eq(val, 4, val, 12, 4) => true
-     value_contents_eq(val, 3, val, 4, 4) => true
-
-   If 'x's represent an unavailable byte, 'o' represents an optimized
-   out byte, in a value with length 8:
-
-     offset:   0   4   8
-     contents: xxxxoooo
-
-   then:
-
-     value_contents_eq(val, 0, val, 2, 2) => true
-     value_contents_eq(val, 4, val, 6, 2) => true
-     value_contents_eq(val, 0, val, 4, 4) => true
-
-   We only know whether a value chunk is unavailable or optimized out
-   if we've tried to read it.  As this routine is used by printing
-   routines, which may be printing values in the value history, long
-   after the inferior is gone, it works with const values.  Therefore,
-   this routine must not be called with lazy values.  */
-
-extern bool value_contents_eq (const struct value *val1, LONGEST offset1,
-			       const struct value *val2, LONGEST offset2,
-			       LONGEST length);
 
 /* Read LENGTH addressable memory units starting at MEMADDR into BUFFER,
    which is (or will be copied to) VAL's contents buffer offset by

@@ -592,17 +592,17 @@ find_first_range_overlap_and_match (struct ranges_and_idx *rp1,
     }
 }
 
-/* Helper function for value_contents_eq.  The only difference is that
+/* Helper function for contents_eq.  The only difference is that
    this function is bit rather than byte based.
 
    Compare LENGTH bits of VAL1's contents starting at OFFSET1 bits
    with LENGTH bits of VAL2's contents starting at OFFSET2 bits.
    Return true if the available bits match.  */
 
-static bool
-value_contents_bits_eq (const struct value *val1, int offset1,
-			const struct value *val2, int offset2,
-			int length)
+bool
+value::contents_bits_eq (const struct value *val1, int offset1,
+			 const struct value *val2, int offset2,
+			 int length)
 {
   /* Each array element corresponds to a ranges source (unavailable,
      optimized out).  '1' is for VAL1, '2' for VAL2.  */
@@ -660,17 +660,6 @@ value_contents_bits_eq (const struct value *val1, int offset1,
 
   return true;
 }
-
-bool
-value_contents_eq (const struct value *val1, LONGEST offset1,
-		   const struct value *val2, LONGEST offset2,
-		   LONGEST length)
-{
-  return value_contents_bits_eq (val1, offset1 * TARGET_CHAR_BIT,
-				 val2, offset2 * TARGET_CHAR_BIT,
-				 length * TARGET_CHAR_BIT);
-}
-
 
 /* The value-history records all the values printed by print commands
    during this session.  */

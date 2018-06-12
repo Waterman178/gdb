@@ -222,7 +222,7 @@ val_print_packed_array_elements (struct type *type, const gdb_byte *valaddr,
 	  if (TYPE_LENGTH (check_typedef (v0->type ()))
 	      != TYPE_LENGTH (check_typedef (v1->type ())))
 	    break;
-	  if (!value_contents_eq (v0, v0->embedded_offset (),
+	  if (!v0->contents_eq (v0->embedded_offset (),
 				  v1, v1->embedded_offset (),
 				  TYPE_LENGTH (check_typedef (v0->type ()))))
 	    break;
