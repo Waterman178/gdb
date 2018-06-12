@@ -1112,7 +1112,7 @@ frame_register_unwind (struct frame_info *frame, int regnum,
 
   gdb_assert (value != NULL);
 
-  *optimizedp = value_optimized_out (value);
+  *optimizedp = value->optimized_out ();
   *unavailablep = !value->entirely_available ();
   *lvalp = value->lval ();
   *addrp = value_address (value);
@@ -1210,7 +1210,7 @@ frame_unwind_register_value (struct frame_info *frame, int regnum)
   if (frame_debug)
     {
       fprintf_unfiltered (gdb_stdlog, "->");
-      if (value_optimized_out (value))
+      if (value->optimized_out ())
 	{
 	  fprintf_unfiltered (gdb_stdlog, " ");
 	  val_print_optimized_out (value, gdb_stdlog);
@@ -1264,7 +1264,7 @@ frame_unwind_register_signed (struct frame_info *frame, int regnum)
 
   gdb_assert (value != NULL);
 
-  if (value_optimized_out (value))
+  if (value->optimized_out ())
     {
       throw_error (OPTIMIZED_OUT_ERROR,
 		   _("Register %d was not saved"), regnum);
@@ -1298,7 +1298,7 @@ frame_unwind_register_unsigned (struct frame_info *frame, int regnum)
 
   gdb_assert (value != NULL);
 
-  if (value_optimized_out (value))
+  if (value->optimized_out ())
     {
       throw_error (OPTIMIZED_OUT_ERROR,
 		   _("Register %d was not saved"), regnum);
@@ -1328,7 +1328,7 @@ read_frame_register_unsigned (struct frame_info *frame, int regnum,
 {
   struct value *regval = get_frame_register_value (frame, regnum);
 
-  if (!value_optimized_out (regval)
+  if (!regval->optimized_out ()
       && regval->entirely_available ())
     {
       struct gdbarch *gdbarch = get_frame_arch (frame);
@@ -1453,7 +1453,7 @@ get_frame_register_bytes (struct frame_info *frame, int regnum,
 	  struct value *value = frame_unwind_register_value (frame->next,
 							     regnum);
 	  gdb_assert (value != NULL);
-	  *optimizedp = value_optimized_out (value);
+	  *optimizedp = value->optimized_out ();
 	  *unavailablep = !value->entirely_available ();
 
 	  if (*optimizedp || *unavailablep)

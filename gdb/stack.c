@@ -360,7 +360,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
       && SYMBOL_COMPUTED_OPS (sym)->read_variable_at_entry != NULL
       && print_entry_values != print_entry_values_no
       && (print_entry_values != print_entry_values_if_needed
-	  || !val || value_optimized_out (val)))
+	  || !val || val->optimized_out ()))
     {
       TRY
 	{
@@ -379,7 +379,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
 	}
       END_CATCH
 
-      if (entryval != NULL && value_optimized_out (entryval))
+      if (entryval != NULL && entryval->optimized_out ())
 	entryval = NULL;
 
       if (print_entry_values == print_entry_values_compact
@@ -484,7 +484,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
       if (print_entry_values == print_entry_values_only
 	  || print_entry_values == print_entry_values_both
 	  || (print_entry_values == print_entry_values_preferred
-	      && (!val || value_optimized_out (val))))
+	      && (!val || val->optimized_out ())))
 	{
 	  entryval = allocate_optimized_out_value (SYMBOL_TYPE (sym));
 	  entryval_error = NULL;
@@ -493,7 +493,7 @@ read_frame_arg (struct symbol *sym, struct frame_info *frame,
   if ((print_entry_values == print_entry_values_compact
        || print_entry_values == print_entry_values_if_needed
        || print_entry_values == print_entry_values_preferred)
-      && (!val || value_optimized_out (val)) && entryval != NULL)
+      && (!val || val->optimized_out ()) && entryval != NULL)
     {
       val = NULL;
       val_error = NULL;
@@ -1615,7 +1615,7 @@ info_frame_command (const char *addr_exp, int from_tty)
 	struct value *value = frame_unwind_register_value (fi, sp_regnum);
 	gdb_assert (value != NULL);
 
-	if (!value_optimized_out (value) && value->entirely_available ())
+	if (!value->optimized_out () && value->entirely_available ())
 	  {
 	    if (value->lval () == not_lval)
 	      {

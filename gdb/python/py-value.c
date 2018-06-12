@@ -971,7 +971,7 @@ valpy_get_is_optimized_out (PyObject *self, void *closure)
 
   TRY
     {
-      opt = value_optimized_out (value);
+      opt = value->optimized_out ();
     }
   CATCH (except, RETURN_MASK_ALL)
     {

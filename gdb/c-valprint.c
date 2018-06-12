@@ -268,7 +268,7 @@ c_val_print_array (struct type *type, const gdb_byte *valaddr,
 				  options->format)
 	  && original_value->bytes_available (embedded_offset,
 				    TYPE_LENGTH (type))
-	  && !value_bits_any_optimized_out (original_value,
+	  && !original_value->bits_any_optimized_out (
 					    TARGET_CHAR_BIT * embedded_offset,
 					    TARGET_CHAR_BIT * TYPE_LENGTH (type)))
 	{

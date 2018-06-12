@@ -993,7 +993,7 @@ address_from_register (int regnum, struct frame_info *frame)
   value = gdbarch_value_from_register (gdbarch, type, regnum, null_frame_id);
   read_frame_register_value (value, frame);
 
-  if (value_optimized_out (value))
+  if (value->optimized_out ())
     {
       /* This function is used while computing a location expression.
 	 Complain about the value being optimized out, rather than

@@ -443,6 +443,16 @@ struct value
      optimized out.  */
   int entirely_optimized_out ();
 
+  /* If nonzero, this is the value of a variable which does not actually
+     exist in the program, at least partially.  If the value is lazy,
+     this may fetch it now.  */
+  int optimized_out ();
+
+  /* Given a value, return true if any of the contents bits starting at
+     OFFSET and extending for LENGTH bits is optimized out, false
+     otherwise.  */
+  int bits_any_optimized_out (int bit_offset, int bit_length) const;
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -736,18 +746,6 @@ extern const gdb_byte *value_contents_for_printing (struct value *value);
    value must _not_ be lazy.  */
 extern const gdb_byte *
   value_contents_for_printing_const (const struct value *value);
-
-/* If nonzero, this is the value of a variable which does not actually
-   exist in the program, at least partially.  If the value is lazy,
-   this may fetch it now.  */
-extern int value_optimized_out (struct value *value);
-
-/* Given a value, return true if any of the contents bits starting at
-   OFFSET and extending for LENGTH bits is optimized out, false
-   otherwise.  */
-
-extern int value_bits_any_optimized_out (const struct value *value,
-					 int bit_offset, int bit_length);
 
 /* Mark VALUE's content bytes starting at OFFSET and extending for
    LENGTH bytes as optimized out.  */

@@ -587,7 +587,7 @@ store_regs (struct type *regs_type, CORE_ADDR regs_base)
       regnum = compile_register_name_demangle (gdbarch, reg_name);
 
       regval = value_from_register (reg_type, regnum, get_current_frame ());
-      if (value_optimized_out (regval))
+      if (regval->optimized_out ())
 	error (_("Register \"%s\" is optimized out."), reg_name);
       if (!regval->entirely_available ())
 	error (_("Register \"%s\" is not available."), reg_name);

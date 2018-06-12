@@ -6515,7 +6515,7 @@ print_gp_register_row (struct ui_file *file, struct frame_info *frame,
 
       /* OK: get the data in raw format.  */
       value = get_frame_register_value (frame, regnum);
-      if (value_optimized_out (value)
+      if (value->optimized_out ()
 	|| !value->entirely_available ())
 	{
 	  fprintf_filtered (file, "%*s ",

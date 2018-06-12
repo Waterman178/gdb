@@ -164,11 +164,11 @@ value::bits_available (LONGEST offset, LONGEST length) const
 }
 
 int
-value_bits_any_optimized_out (const struct value *value, int bit_offset, int bit_length)
+value::bits_any_optimized_out (int bit_offset, int bit_length) const
 {
-  gdb_assert (!value->m_lazy);
+  gdb_assert (!m_lazy);
 
-  return ranges_contain (value->m_optimized_out, bit_offset, bit_length);
+  return ranges_contain (m_optimized_out, bit_offset, bit_length);
 }
 
 int
@@ -891,7 +891,7 @@ value::actual_type (int resolve_simple_types, int *real_type_found)
       if ((TYPE_CODE (result) == TYPE_CODE_PTR || TYPE_IS_REFERENCE (result))
 	  && TYPE_CODE (check_typedef (TYPE_TARGET_TYPE (result)))
 	     == TYPE_CODE_STRUCT
-	  && !value_optimized_out (this))
+	  && !this->optimized_out ())
         {
           struct type *real_type;
 
@@ -1030,7 +1030,7 @@ value_contents_copy_raw (struct value *dst, LONGEST dst_offset,
      replaced.  Make sure to remember to implement replacing if it
      turns out actually necessary.  */
   gdb_assert (dst->bytes_available (dst_offset, length));
-  gdb_assert (!value_bits_any_optimized_out (dst,
+  gdb_assert (!dst->bits_any_optimized_out (
 					     TARGET_CHAR_BIT * dst_offset,
 					     TARGET_CHAR_BIT * length));
 
@@ -1087,15 +1087,15 @@ value_contents_writeable (struct value *value)
 }
 
 int
-value_optimized_out (struct value *value)
+value::optimized_out ()
 {
   /* We can only know if a value is optimized out once we have tried to
      fetch it.  */
-  if (value->m_optimized_out.empty () && value->m_lazy)
+  if (m_optimized_out.empty () && m_lazy)
     {
       TRY
 	{
-	  value->fetch_lazy ();
+	  fetch_lazy ();
 	}
       CATCH (ex, RETURN_MASK_ERROR)
 	{
@@ -1104,7 +1104,7 @@ value_optimized_out (struct value *value)
       END_CATCH
     }
 
-  return !value->m_optimized_out.empty ();
+  return !m_optimized_out.empty ();
 }
 
 /* Mark contents of VALUE as optimized out, starting at OFFSET bytes, and
@@ -2797,7 +2797,7 @@ unpack_value_field_as_long (struct type *type, const gdb_byte *valaddr,
   gdb_assert (val != NULL);
 
   bit_offset = embedded_offset * TARGET_CHAR_BIT + bitpos;
-  if (value_bits_any_optimized_out (val, bit_offset, bitsize)
+  if (val->bits_any_optimized_out (bit_offset, bitsize)
       || !val->bits_available (bit_offset, bitsize))
     return 0;
 
@@ -3451,7 +3451,7 @@ value::fetch_lazy_register ()
 			  user_reg_map_regnum_to_name (gdbarch, regnum));
 
       fprintf_unfiltered (gdb_stdlog, "->");
-      if (value_optimized_out (new_val))
+      if (new_val->optimized_out ())
 	{
 	  fprintf_unfiltered (gdb_stdlog, " ");
 	  val_print_optimized_out (new_val, gdb_stdlog);

@@ -307,7 +307,7 @@ valprint_check_validity (struct ui_file *stream,
       && TYPE_CODE (type) != TYPE_CODE_STRUCT
       && TYPE_CODE (type) != TYPE_CODE_ARRAY)
     {
-      if (value_bits_any_optimized_out (val,
+      if (val->bits_any_optimized_out (
 					TARGET_CHAR_BIT * embedded_offset,
 					TARGET_CHAR_BIT * TYPE_LENGTH (type)))
 	{
@@ -1266,7 +1266,7 @@ val_print_scalar_formatted (struct type *type,
 
   /* A scalar object that does not have all bits available can't be
      printed, because all bits contribute to its representation.  */
-  if (value_bits_any_optimized_out (val,
+  if (val->bits_any_optimized_out (
 				    TARGET_CHAR_BIT * embedded_offset,
 				    TARGET_CHAR_BIT * TYPE_LENGTH (type)))
     val_print_optimized_out (val, stream);

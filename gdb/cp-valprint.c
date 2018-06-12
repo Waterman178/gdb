@@ -425,7 +425,7 @@ cp_print_value_fields_rtti (struct type *type,
 
   /* We require all bits to be valid in order to attempt a
      conversion.  */
-  if (!value_bits_any_optimized_out (val,
+  if (!val->bits_any_optimized_out (
 				     TARGET_CHAR_BIT * offset,
 				     TARGET_CHAR_BIT * TYPE_LENGTH (type)))
     {

@@ -2416,7 +2416,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	      error (_("cannot use offset on synthetic pointer to register"));
 	    free_values.free_to_mark ();
 	    retval = value_from_register (subobj_type, gdb_regnum, frame);
-	    if (value_optimized_out (retval))
+	    if (retval->optimized_out ())
 	      {
 		struct value *tmp;
 
@@ -2647,7 +2647,7 @@ dwarf2_evaluate_property (const struct dynamic_prop *prop,
 	  {
 	    val = dwarf2_evaluate_loc_desc (baton->referenced_type, frame, data,
 					    size, baton->loclist.per_cu);
-	    if (!value_optimized_out (val))
+	    if (!val->optimized_out ())
 	      {
 		*value = value_as_address (val);
 		return 1;

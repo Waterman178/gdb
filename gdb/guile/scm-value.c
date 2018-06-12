@@ -398,7 +398,7 @@ gdbscm_value_optimized_out_p (SCM self)
 
   TRY
     {
-      opt = value_optimized_out (value);
+      opt = value->optimized_out ();
     }
   CATCH (except, RETURN_MASK_ALL)
     {
