@@ -481,7 +481,7 @@ valpy_lazy_string (PyObject *self, PyObject *args, PyObject *kw)
 						low_bound,
 						low_bound + length - 1);
 	      }
-	    addr = value_address (value);
+	    addr = value->address ();
 	    break;
 	  }
 	case TYPE_CODE_PTR:
@@ -491,7 +491,7 @@ valpy_lazy_string (PyObject *self, PyObject *args, PyObject *kw)
 	  break;
 	default:
 	  /* Should flag an error here.  PR 20769.  */
-	  addr = value_address (value);
+	  addr = value->address ();
 	  break;
 	}
 

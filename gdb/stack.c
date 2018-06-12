@@ -1633,7 +1633,7 @@ info_frame_command (const char *addr_exp, int from_tty)
 	    else if (value->lval () == lval_memory)
 	      {
 		printf_filtered (" Previous frame's sp at ");
-		fputs_filtered (paddress (gdbarch, value_address (value)),
+		fputs_filtered (paddress (gdbarch, value->address ()),
 				gdb_stdout);
 		printf_filtered ("\n");
 	      }

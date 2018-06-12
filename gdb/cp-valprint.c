@@ -579,7 +579,7 @@ cp_print_value (struct type *type, struct type *real_type,
 	    result
 	      = apply_ext_lang_val_pretty_printer (baseclass,
 						   thisoffset + boffset,
-						   value_address (base_val),
+						   base_val->address (),
 						   stream, recurse,
 						   base_val, options,
 						   current_language);
@@ -587,7 +587,7 @@ cp_print_value (struct type *type, struct type *real_type,
 	  if (!result)
 	    cp_print_value_fields (baseclass, thistype,
 				   thisoffset + boffset,
-				   value_address (base_val),
+				   base_val->address (),
 				   stream, recurse, base_val, options,
 				   ((struct type **)
 				    obstack_base (&dont_print_vb_obstack)),
@@ -647,7 +647,7 @@ cp_print_static_field (struct type *type,
 
       while (--i >= 0)
 	{
-	  if (value_address (val) == first_dont_print[i])
+	  if (val->address () == first_dont_print[i])
 	    {
 	      fputs_filtered ("<same as static member of an already"
 			      " seen type>",
@@ -656,7 +656,7 @@ cp_print_static_field (struct type *type,
 	    }
 	}
 
-      addr = value_address (val);
+      addr = val->address ();
       obstack_grow (&dont_print_statmem_obstack, (char *) &addr,
 		    sizeof (CORE_ADDR));
       cp_print_value_fields (type, val->enclosing_type (),
@@ -697,7 +697,7 @@ cp_print_static_field (struct type *type,
   opts.deref_ref = 0;
   val_print (type,
 	     val->embedded_offset (),
-	     value_address (val),
+	     val->address (),
 	     stream, recurse, val,
 	     &opts, current_language);
 }

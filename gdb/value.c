@@ -1140,34 +1140,19 @@ value_bits_synthetic_pointer (const struct value *value,
 }
 
 CORE_ADDR
-value_address (const struct value *value)
+value::address () const
 {
-  if (value->m_lval != lval_memory)
+  if (m_lval != lval_memory)
     return 0;
-  if (value->m_parent != NULL)
-    return value_address (value->m_parent.get ()) + value->m_offset;
-  if (NULL != TYPE_DATA_LOCATION (value->type ()))
+  if (m_parent != NULL)
+    return m_parent.get ()->address () + m_offset;
+  if (NULL != TYPE_DATA_LOCATION (type ()))
     {
-      gdb_assert (PROP_CONST == TYPE_DATA_LOCATION_KIND (value->type ()));
-      return TYPE_DATA_LOCATION_ADDR (value->type ());
+      gdb_assert (PROP_CONST == TYPE_DATA_LOCATION_KIND (type ()));
+      return TYPE_DATA_LOCATION_ADDR (type ());
     }
 
-  return value->m_location.address + value->m_offset;
-}
-
-CORE_ADDR
-value_raw_address (const struct value *value)
-{
-  if (value->m_lval != lval_memory)
-    return 0;
-  return value->m_location.address;
-}
-
-void
-set_value_address (struct value *value, CORE_ADDR addr)
-{
-  gdb_assert (value->m_lval == lval_memory);
-  value->m_location.address = addr;
+  return m_location.address + m_offset;
 }
 
 struct internalvar **
@@ -1405,7 +1390,7 @@ set_value_component_location (struct value *component,
   type = whole->type ();
   if (NULL != TYPE_DATA_LOCATION (type)
       && TYPE_DATA_LOCATION_KIND (type) == PROP_CONST)
-    set_value_address (component, TYPE_DATA_LOCATION_ADDR (type));
+    component->set_address (TYPE_DATA_LOCATION_ADDR (type));
 }
 
 /* Access to the value history.  */
@@ -2284,7 +2269,7 @@ value_as_address (struct value *val)
 
      Upon entry to this function, if VAL is a value of type `function'
      (that is, TYPE_CODE (val->type ()) == TYPE_CODE_FUNC), then
-     value_address (val) is the address of the function.  This is what
+     val->address () is the address of the function.  This is what
      you'll get if you evaluate an expression like `main'.  The call
      to COERCE_ARRAY below actually does all the usual unary
      conversions, which includes converting values of type `function'
@@ -2304,7 +2289,7 @@ value_as_address (struct value *val)
      function, just return its address directly.  */
   if (TYPE_CODE (val->type ()) == TYPE_CODE_FUNC
       || TYPE_CODE (val->type ()) == TYPE_CODE_METHOD)
-    return value_address (val);
+    return val->address ();
 
   val = coerce_array (val);
 
@@ -2581,7 +2566,7 @@ value_primitive_field (struct value *arg1, LONGEST offset,
 	boffset = baseclass_offset (arg_type, fieldno,
 				    value_contents (arg1),
 				    arg1->embedded_offset (),
-				    value_address (arg1),
+				    arg1->address (),
 				    arg1);
       else
 	boffset = TYPE_FIELD_BITPOS (arg_type, fieldno) / 8;
@@ -2680,7 +2665,7 @@ value_fn_field (struct value **arg1p, struct fn_field *f,
   v->lval () = lval_memory;
   if (sym)
     {
-      set_value_address (v, BLOCK_START (SYMBOL_BLOCK_VALUE (sym)));
+      v->set_address (BLOCK_START (SYMBOL_BLOCK_VALUE (sym)));
     }
   else
     {
@@ -2689,7 +2674,7 @@ value_fn_field (struct value **arg1p, struct fn_field *f,
       struct objfile *objfile = msym.objfile;
       struct gdbarch *gdbarch = get_objfile_arch (objfile);
 
-      set_value_address (v,
+      v->set_address (
 	gdbarch_convert_from_func_ptr_addr
 	   (gdbarch, BMSYMBOL_VALUE_ADDRESS (msym), current_top_target ()));
     }
@@ -3081,7 +3066,7 @@ value_from_contents_and_address_unresolved (struct type *type,
   else
     v = value_from_contents (type, valaddr);
   v->lval () = lval_memory;
-  set_value_address (v, address);
+  v->set_address (address);
   return v;
 }
 
@@ -3107,7 +3092,7 @@ value_from_contents_and_address (struct type *type,
       && TYPE_DATA_LOCATION_KIND (resolved_type_no_typedef) == PROP_CONST)
     address = TYPE_DATA_LOCATION_ADDR (resolved_type_no_typedef);
   v->lval () = lval_memory;
-  set_value_address (v, address);
+  v->set_address (address);
   return v;
 }
 
@@ -3357,7 +3342,7 @@ value::fetch_lazy_memory ()
 {
   gdb_assert (m_lval == lval_memory);
 
-  CORE_ADDR addr = value_address (this);
+  CORE_ADDR addr = this->address ();
   struct type *type = check_typedef (enclosing_type ());
 
   if (TYPE_LENGTH (type))
@@ -3467,7 +3452,7 @@ value::fetch_lazy_register ()
 	  else if (new_val->lval () == lval_memory)
 	    fprintf_unfiltered (gdb_stdlog, " address=%s",
 				paddress (gdbarch,
-					  value_address (new_val)));
+					  new_val->address ()));
 	  else
 	    fprintf_unfiltered (gdb_stdlog, " computed");
 

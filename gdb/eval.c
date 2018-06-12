@@ -796,7 +796,7 @@ eval_call (expression *exp, enum noside noside,
 	{
 	  if (TYPE_GNU_IFUNC (ftype))
 	    {
-	      CORE_ADDR address = value_address (argvec[0]);
+	      CORE_ADDR address = argvec[0]->address ();
 	      type *resolved_type = find_gnu_ifunc_target_type (address);
 
 	      if (resolved_type != NULL)
@@ -1163,7 +1163,7 @@ evaluate_funcall (type *expect_type, expression *exp, int *pos,
 	     reflect any ``this'' changes.  */
 	  arg2
 	    = value_from_longest (lookup_pointer_type(temp->type ()),
-				  value_address (temp)
+				  temp->address ()
 				  + temp->embedded_offset ());
 	  argvec[1] = arg2;	/* the ``this'' pointer */
 	}
@@ -1339,7 +1339,7 @@ evaluate_subexp_standard (struct type *expect_type,
 
       {
 	value *func = evaluate_subexp_standard (NULL, exp, pos, noside);
-	CORE_ADDR addr = value_address (func);
+	CORE_ADDR addr = func->address ();
 
 	const block *blk = block_for_pc (addr);
 	const char *var = &exp->elts[pc + 2].string;

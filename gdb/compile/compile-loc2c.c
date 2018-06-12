@@ -635,7 +635,7 @@ do_compile_dwarf_expr_to_c (int indent, string_file &stream,
 
       fprintfi_filtered (indent, &stream, "%s = %s;\n",
 			 result_name,
-			 core_addr_to_string (value_address (val)));
+			 core_addr_to_string (val->address ()));
       fprintfi_filtered (indent - 2, &stream, "}\n");
       return;
     }

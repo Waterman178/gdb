@@ -453,6 +453,28 @@ struct value
      otherwise.  */
   int bits_any_optimized_out (int bit_offset, int bit_length) const;
 
+  /* If lval == lval_memory, return the address in the inferior.  If
+     lval == lval_register, return the byte offset into the registers
+     structure.  Otherwise, return 0.  The returned address
+     includes the offset, if any.  */
+  CORE_ADDR address () const;
+
+  /* Like address, except the result does not include value's
+     offset.  */
+  CORE_ADDR raw_address () const
+  {
+    if (m_lval != lval_memory)
+      return 0;
+    return m_location.address;
+  }
+
+  /* Set the address of a value.  */
+  void set_address (CORE_ADDR addr)
+  {
+    gdb_assert (m_lval == lval_memory);
+    m_location.address = addr;
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -763,19 +785,6 @@ extern void mark_value_bits_optimized_out (struct value *value,
    --- regardless of what kind of lvalue WHOLE is.  */
 extern void set_value_component_location (struct value *component,
                                           const struct value *whole);
-
-/* If lval == lval_memory, return the address in the inferior.  If
-   lval == lval_register, return the byte offset into the registers
-   structure.  Otherwise, return 0.  The returned address
-   includes the offset, if any.  */
-extern CORE_ADDR value_address (const struct value *);
-
-/* Like value_address, except the result does not include value's
-   offset.  */
-extern CORE_ADDR value_raw_address (const struct value *);
-
-/* Set the address of a value.  */
-extern void set_value_address (struct value *, CORE_ADDR);
 
 /* Pointer to internal variable.  */
 extern struct internalvar **deprecated_value_internalvar_hack (struct value *);

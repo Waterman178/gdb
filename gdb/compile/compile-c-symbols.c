@@ -254,7 +254,7 @@ convert_one_symbol (struct compile_c_instance *context,
 		     SYMBOL_PRINT_NAME (sym.symbol));
 
 	    kind = GCC_C_SYMBOL_VARIABLE;
-	    addr = value_address (val);
+	    addr = val->address ();
 	  }
 	  break;
 

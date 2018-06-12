@@ -204,7 +204,7 @@ value_subscripted_rvalue (struct value *array, LONGEST index, int lowerbound)
     {
       CORE_ADDR address;
 
-      address = value_address (array) + elt_offs;
+      address = array->address () + elt_offs;
       elt_type = resolve_dynamic_type (elt_type, NULL, address);
     }
 

@@ -725,7 +725,7 @@ msp430_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 	      gdb_byte struct_addr[4];
 
 	      store_unsigned_integer (struct_addr, 4, byte_order,
-				      value_address (arg));
+				      arg->address ());
 	      arg_bits = struct_addr;
 	      arg_size = (code_model == MSP_LARGE_CODE_MODEL) ? 4 : 2;
 	    }

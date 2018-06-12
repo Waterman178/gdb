@@ -1148,7 +1148,7 @@ common_val_print (struct value *val, struct ui_file *stream, int recurse,
     val->fetch_lazy ();
 
   val_print (val->type (),
-	     val->embedded_offset (), value_address (val),
+	     val->embedded_offset (), val->address (),
 	     stream, recurse,
 	     val, options, language);
 }
@@ -1168,7 +1168,7 @@ value_print (struct value *val, struct ui_file *stream,
       int r
 	= apply_ext_lang_val_pretty_printer (val->type (),
 					     val->embedded_offset (),
-					     value_address (val),
+					     val->address (),
 					     stream, 0,
 					     val, options, current_language);
 

@@ -862,7 +862,7 @@ pascal_object_print_static_field (struct value *val,
 
       while (--i >= 0)
 	{
-	  if (value_address (val) == first_dont_print[i])
+	  if (val->address () == first_dont_print[i])
 	    {
 	      fputs_filtered ("\
 <same as static member of an already seen type>",
@@ -871,7 +871,7 @@ pascal_object_print_static_field (struct value *val,
 	    }
 	}
 
-      addr = value_address (val);
+      addr = val->address ();
       obstack_grow (&dont_print_statmem_obstack, (char *) &addr,
 		    sizeof (CORE_ADDR));
 

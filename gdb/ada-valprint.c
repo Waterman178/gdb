@@ -788,7 +788,7 @@ ada_val_print_gnat_array (struct type *type, const gdb_byte *valaddr,
     }
   else
     val_print (val->type (),
-	       val->embedded_offset (), value_address (val),
+	       val->embedded_offset (), val->address (),
 	       stream, recurse, val, options, language);
   value_free_to_mark (mark);
 }
@@ -1106,7 +1106,7 @@ ada_val_print_ref (struct type *type, const gdb_byte *valaddr,
 
   val_print (deref_val->type (),
 	     deref_val->embedded_offset (),
-	     value_address (deref_val), stream, recurse + 1,
+	     deref_val->address (), stream, recurse + 1,
 	     deref_val, options, language);
 }
 
@@ -1223,7 +1223,7 @@ ada_value_print (struct value *val0, struct ui_file *stream,
 		 const struct value_print_options *options)
 {
   struct value *val = ada_to_fixed_value (val0);
-  CORE_ADDR address = value_address (val);
+  CORE_ADDR address = val->address ();
   struct type *type = ada_check_typedef (val->enclosing_type ());
   struct value_print_options opts;
 
