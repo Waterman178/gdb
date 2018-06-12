@@ -336,7 +336,7 @@ valprint_check_validity (struct ui_file *stream,
 	  return is_ref;
 	}
 
-      if (!value_bytes_available (val, embedded_offset, TYPE_LENGTH (type)))
+      if (!val->bytes_available (embedded_offset, TYPE_LENGTH (type)))
 	{
 	  val_print_unavailable (stream);
 	  return 0;
@@ -1270,7 +1270,7 @@ val_print_scalar_formatted (struct type *type,
 				    TARGET_CHAR_BIT * embedded_offset,
 				    TARGET_CHAR_BIT * TYPE_LENGTH (type)))
     val_print_optimized_out (val, stream);
-  else if (!value_bytes_available (val, embedded_offset, TYPE_LENGTH (type)))
+  else if (!val->bytes_available (embedded_offset, TYPE_LENGTH (type)))
     val_print_unavailable (stream);
   else
     print_scalar_formatted (valaddr + embedded_offset * unit_size, type,

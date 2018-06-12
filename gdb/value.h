@@ -420,6 +420,17 @@ struct value
 
   int bits_available (LONGEST offset, LONGEST length) const;
 
+  /* Given a value, determine whether the contents bytes starting at
+     OFFSET and extending for LENGTH bytes are available.  This returns
+     nonzero if all bytes in the given range are available, zero if any
+     byte is unavailable.  */
+
+  int bytes_available (LONGEST offset, LONGEST length) const
+  {
+    return bits_available (offset * TARGET_CHAR_BIT,
+			   length * TARGET_CHAR_BIT);
+  }
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -815,14 +826,6 @@ extern struct value *coerce_array (struct value *value);
 
 extern int value_bits_synthetic_pointer (const struct value *value,
 					 LONGEST offset, LONGEST length);
-
-/* Given a value, determine whether the contents bytes starting at
-   OFFSET and extending for LENGTH bytes are available.  This returns
-   nonzero if all bytes in the given range are available, zero if any
-   byte is unavailable.  */
-
-extern int value_bytes_available (const struct value *value,
-				  LONGEST offset, LONGEST length);
 
 /* Like value_bytes_available, but return false if any byte in the
    whole object is unavailable.  */

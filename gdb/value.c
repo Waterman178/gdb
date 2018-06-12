@@ -164,15 +164,6 @@ value::bits_available (LONGEST offset, LONGEST length) const
 }
 
 int
-value_bytes_available (const struct value *value,
-		       LONGEST offset, LONGEST length)
-{
-  return value->bits_available (
-			       offset * TARGET_CHAR_BIT,
-			       length * TARGET_CHAR_BIT);
-}
-
-int
 value_bits_any_optimized_out (const struct value *value, int bit_offset, int bit_length)
 {
   gdb_assert (!value->m_lazy);
@@ -1040,7 +1031,7 @@ value_contents_copy_raw (struct value *dst, LONGEST dst_offset,
   /* The overwritten DST range gets unavailability ORed in, not
      replaced.  Make sure to remember to implement replacing if it
      turns out actually necessary.  */
-  gdb_assert (value_bytes_available (dst, dst_offset, length));
+  gdb_assert (dst->bytes_available (dst_offset, length));
   gdb_assert (!value_bits_any_optimized_out (dst,
 					     TARGET_CHAR_BIT * dst_offset,
 					     TARGET_CHAR_BIT * length));

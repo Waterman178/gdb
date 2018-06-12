@@ -665,7 +665,7 @@ gdbpy_apply_val_pretty_printer (const struct extension_language_defn *extlang,
   const gdb_byte *valaddr = value_contents_for_printing (val);
 
   /* No pretty-printer support for unavailable values.  */
-  if (!value_bytes_available (val, embedded_offset, TYPE_LENGTH (type)))
+  if (!val->bytes_available (embedded_offset, TYPE_LENGTH (type)))
     return EXT_LANG_RC_NOP;
 
   if (!gdb_python_initialized)
