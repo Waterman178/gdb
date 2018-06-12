@@ -769,6 +769,9 @@ private:
 
   int entirely_covered_by_range_vector (const std::vector<range> &ranges);
 
+  void require_not_optimized_out () const;
+  void require_available () const;
+
   static bool contents_bits_eq (const struct value *val1, int offset1,
 				const struct value *val2, int offset2,
 				int length);

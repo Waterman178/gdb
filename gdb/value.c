@@ -899,22 +899,22 @@ error_value_optimized_out (void)
   error (_("value has been optimized out"));
 }
 
-static void
-require_not_optimized_out (const struct value *value)
+void
+value::require_not_optimized_out () const
 {
-  if (!value->m_optimized_out.empty ())
+  if (!m_optimized_out.empty ())
     {
-      if (value->m_lval == lval_register)
+      if (m_lval == lval_register)
 	error (_("register has not been saved in frame"));
       else
 	error_value_optimized_out ();
     }
 }
 
-static void
-require_available (const struct value *value)
+void
+value::require_available () const
 {
-  if (!value->m_unavailable.empty ())
+  if (!m_unavailable.empty ())
     throw_error (NOT_AVAILABLE_ERROR, _("value is not available"));
 }
 
@@ -937,8 +937,8 @@ const gdb_byte *
 value::contents_all ()
 {
   const gdb_byte *result = contents_for_printing ();
-  require_not_optimized_out (this);
-  require_available (this);
+  require_not_optimized_out ();
+  require_available ();
   return result;
 }
 
@@ -1052,8 +1052,8 @@ const gdb_byte *
 value::contents ()
 {
   const gdb_byte *result = contents_writeable ();
-  require_not_optimized_out (this);
-  require_available (this);
+  require_not_optimized_out ();
+  require_available ();
   return result;
 }
 
