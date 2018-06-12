@@ -156,18 +156,18 @@ value::~value ()
 /* See value.h.  */
 
 int
-value_bits_available (const struct value *value, LONGEST offset, LONGEST length)
+value::bits_available (LONGEST offset, LONGEST length) const
 {
-  gdb_assert (!value->m_lazy);
+  gdb_assert (!m_lazy);
 
-  return !ranges_contain (value->m_unavailable, offset, length);
+  return !ranges_contain (m_unavailable, offset, length);
 }
 
 int
 value_bytes_available (const struct value *value,
 		       LONGEST offset, LONGEST length)
 {
-  return value_bits_available (value,
+  return value->bits_available (
 			       offset * TARGET_CHAR_BIT,
 			       length * TARGET_CHAR_BIT);
 }
@@ -2809,7 +2809,7 @@ unpack_value_field_as_long (struct type *type, const gdb_byte *valaddr,
 
   bit_offset = embedded_offset * TARGET_CHAR_BIT + bitpos;
   if (value_bits_any_optimized_out (val, bit_offset, bitsize)
-      || !value_bits_available (val, bit_offset, bitsize))
+      || !val->bits_available (bit_offset, bitsize))
     return 0;
 
   *result = unpack_bits_as_long (field_type, valaddr + embedded_offset,

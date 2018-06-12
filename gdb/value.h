@@ -413,6 +413,13 @@ struct value
     return m_lval;
   }
 
+  /* Given a value, determine whether the contents bits starting at
+     OFFSET and extending for LENGTH bits are available.  This returns
+     nonzero if all bits in the given range are available, zero if any
+     bit is unavailable.  */
+
+  int bits_available (LONGEST offset, LONGEST length) const;
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -816,14 +823,6 @@ extern int value_bits_synthetic_pointer (const struct value *value,
 
 extern int value_bytes_available (const struct value *value,
 				  LONGEST offset, LONGEST length);
-
-/* Given a value, determine whether the contents bits starting at
-   OFFSET and extending for LENGTH bits are available.  This returns
-   nonzero if all bits in the given range are available, zero if any
-   bit is unavailable.  */
-
-extern int value_bits_available (const struct value *value,
-				 LONGEST offset, LONGEST length);
 
 /* Like value_bytes_available, but return false if any byte in the
    whole object is unavailable.  */
