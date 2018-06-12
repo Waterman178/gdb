@@ -2020,16 +2020,15 @@ add_internal_function (const char *name, const char *doc,
    prevent cycles / duplicates.  */
 
 void
-preserve_one_value (struct value *value, struct objfile *objfile,
-		    htab_t copied_types)
+value::preserve (struct objfile *objfile, htab_t copied_types)
 {
-  if (TYPE_OBJFILE (value->m_type) == objfile)
-    value->m_type = copy_type_recursive (objfile, value->m_type, copied_types);
+  if (TYPE_OBJFILE (m_type) == objfile)
+    m_type = copy_type_recursive (objfile, m_type, copied_types);
 
-  if (TYPE_OBJFILE (value->m_enclosing_type) == objfile)
-    value->m_enclosing_type = copy_type_recursive (objfile,
-						 value->m_enclosing_type,
-						 copied_types);
+  if (TYPE_OBJFILE (m_enclosing_type) == objfile)
+    m_enclosing_type = copy_type_recursive (objfile,
+					    m_enclosing_type,
+					    copied_types);
 }
 
 /* Likewise for internal variable VAR.  */
@@ -2047,7 +2046,7 @@ preserve_one_internalvar (struct internalvar *var, struct objfile *objfile,
       break;
 
     case INTERNALVAR_VALUE:
-      preserve_one_value (var->u.value, objfile, copied_types);
+      var->u.value->preserve (objfile, copied_types);
       break;
     }
 }
@@ -2069,7 +2068,7 @@ preserve_values (struct objfile *objfile)
   copied_types = create_copied_types_hash (objfile);
 
   for (const value_ref_ptr &item : value_history)
-    preserve_one_value (item.get (), objfile, copied_types);
+    item->preserve (objfile, copied_types);
 
   for (var = internalvars; var; var = var->next)
     preserve_one_internalvar (var, objfile, copied_types);

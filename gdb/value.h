@@ -618,6 +618,11 @@ struct value
     return &m_location.reg.regnum;
   }
 
+  /* Update value before discarding OBJFILE.  COPIED_TYPES is used to
+     prevent cycles / duplicates.  */
+
+  void preserve (struct objfile *objfile, htab_t copied_types);
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */

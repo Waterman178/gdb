@@ -156,7 +156,7 @@ valpy_new (PyTypeObject *subtype, PyObject *args, PyObject *keywords)
   return (PyObject *) value_obj;
 }
 
-/* Iterate over all the Value objects, calling preserve_one_value on
+/* Iterate over all the Value objects, calling value::preserve on
    each.  */
 void
 gdbpy_preserve_values (const struct extension_language_defn *extlang,
@@ -165,7 +165,7 @@ gdbpy_preserve_values (const struct extension_language_defn *extlang,
   value_object *iter;
 
   for (iter = values_in_python; iter; iter = iter->next)
-    preserve_one_value (iter->value, objfile, copied_types);
+    iter->value->preserve (objfile, copied_types);
 }
 
 /* Given a value of a pointer type, apply the C unary * operator to it.  */

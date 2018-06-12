@@ -80,7 +80,7 @@ static SCM substitute_symbol;
 
 /* Administrivia for value smobs.  */
 
-/* Iterate over all the <gdb:value> objects, calling preserve_one_value on
+/* Iterate over all the <gdb:value> objects, calling value::preserve on
    each.
    This is the extension_language_ops.preserve_values "method".  */
 
@@ -91,7 +91,7 @@ gdbscm_preserve_values (const struct extension_language_defn *extlang,
   value_smob *iter;
 
   for (iter = values_in_scheme; iter; iter = iter->next)
-    preserve_one_value (iter->value, objfile, copied_types);
+    iter->value->preserve (objfile, copied_types);
 }
 
 /* Helper to add a value_smob to the global list.  */
