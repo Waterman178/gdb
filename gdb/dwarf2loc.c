@@ -2526,7 +2526,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	}
     }
 
-  set_value_initialized (retval, ctx.initialized);
+  retval->set_initialized (ctx.initialized);
 
   return retval;
 }

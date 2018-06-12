@@ -659,7 +659,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 	}
     }
 
-  if (!value_initialized (val))
+  if (!val->initialized ())
     fprintf_filtered (stream, " [uninitialized] ");
 
   if (options->objectprint && (TYPE_CODE (type) == TYPE_CODE_STRUCT))
