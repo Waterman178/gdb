@@ -1853,10 +1853,10 @@ rw_pieced_value (struct value *v, struct value *from)
 					       &optim, &unavail))
 		  {
 		    if (optim)
-		      mark_value_bits_optimized_out (v, offset,
+		      v->mark_bits_optimized_out (offset,
 						     this_size_bits);
 		    if (unavail)
-		      mark_value_bits_unavailable (v, offset,
+		      v->mark_bits_unavailable (offset,
 						   this_size_bits);
 		    break;
 		  }
@@ -1971,7 +1971,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	  {
 	    if (from != NULL)
 	      {
-		mark_value_bits_optimized_out (v, offset, this_size_bits);
+		v->mark_bits_optimized_out (offset, this_size_bits);
 		break;
 	      }
 
@@ -2001,7 +2001,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	  {
 	    if (from != NULL)
 	      {
-		mark_value_bits_optimized_out (v, offset, this_size_bits);
+		v->mark_bits_optimized_out (offset, this_size_bits);
 		break;
 	      }
 
@@ -2024,7 +2024,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	case DWARF_VALUE_IMPLICIT_POINTER:
 	    if (from != NULL)
 	      {
-		mark_value_bits_optimized_out (v, offset, this_size_bits);
+		v->mark_bits_optimized_out (offset, this_size_bits);
 		break;
 	      }
 
@@ -2033,7 +2033,7 @@ rw_pieced_value (struct value *v, struct value *from)
 	  break;
 
 	case DWARF_VALUE_OPTIMIZED_OUT:
-	  mark_value_bits_optimized_out (v, offset, this_size_bits);
+	  v->mark_bits_optimized_out (offset, this_size_bits);
 	  break;
 
 	default:
@@ -2365,7 +2365,7 @@ dwarf2_evaluate_loc_desc_full (struct type *type, struct frame_info *frame,
 	{
 	  free_values.free_to_mark ();
 	  retval = allocate_value (subobj_type);
-	  mark_value_bytes_unavailable (retval, 0,
+	  retval->mark_bytes_unavailable (0,
 					TYPE_LENGTH (subobj_type));
 	  return retval;
 	}

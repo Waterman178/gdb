@@ -376,7 +376,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
 	  if (status == REG_VALID)
 	    memcpy (buf, raw_buf + 1, 1);
 	  else
-	    mark_value_bytes_unavailable (result_value, 0,
+	    result_value->mark_bytes_unavailable (0,
 					  TYPE_LENGTH (result_value->type ()));
 	}
       else
@@ -385,7 +385,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
 	  if (status == REG_VALID)
 	    memcpy (buf, raw_buf, 1);
 	  else
-	    mark_value_bytes_unavailable (result_value, 0,
+	    result_value->mark_bytes_unavailable (0,
 					  TYPE_LENGTH (result_value->type ()));
 	}
     }
@@ -397,7 +397,7 @@ amd64_pseudo_register_read_value (struct gdbarch *gdbarch,
       if (status == REG_VALID)
 	memcpy (buf, raw_buf, 4);
       else
-	mark_value_bytes_unavailable (result_value, 0,
+	result_value->mark_bytes_unavailable (0,
 				      TYPE_LENGTH (result_value->type ()));
     }
   else

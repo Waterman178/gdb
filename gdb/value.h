@@ -453,6 +453,30 @@ struct value
      otherwise.  */
   int bits_any_optimized_out (int bit_offset, int bit_length) const;
 
+  /* Mark value's content bytes starting at OFFSET and extending for
+     LENGTH bytes as optimized out.  */
+  void mark_bytes_optimized_out (int offset, int length)
+  {
+    mark_bits_optimized_out (offset * TARGET_CHAR_BIT,
+			     length * TARGET_CHAR_BIT);
+  }
+
+  /* Mark value's content bits starting at OFFSET and extending for
+     LENGTH bits as optimized out.  */
+  void mark_bits_optimized_out (LONGEST offset, LONGEST length);
+
+  /* Mark value's content bytes starting at OFFSET and extending for
+     LENGTH bytes as unavailable.  */
+  void mark_bytes_unavailable (LONGEST offset, LONGEST length)
+  {
+    mark_bits_unavailable (offset * TARGET_CHAR_BIT,
+			   length * TARGET_CHAR_BIT);
+  }
+
+  /* Mark value's content bits starting at OFFSET and extending for
+     LENGTH bits as unavailable.  */
+  void mark_bits_unavailable (LONGEST offset, LONGEST length);
+
   /* If lval == lval_memory, return the address in the inferior.  If
      lval == lval_register, return the byte offset into the registers
      structure.  Otherwise, return 0.  The returned address
@@ -767,18 +791,6 @@ extern struct value *allocate_optimized_out_value (struct type *type);
 
 extern void error_value_optimized_out (void);
 
-/* Mark VALUE's content bytes starting at OFFSET and extending for
-   LENGTH bytes as optimized out.  */
-
-extern void mark_value_bytes_optimized_out (struct value *value,
-					    int offset, int length);
-
-/* Mark VALUE's content bits starting at OFFSET and extending for
-   LENGTH bits as optimized out.  */
-
-extern void mark_value_bits_optimized_out (struct value *value,
-					   LONGEST offset, LONGEST length);
-
 /* Set COMPONENT's location as appropriate for a component of WHOLE
    --- regardless of what kind of lvalue WHOLE is.  */
 extern void set_value_component_location (struct value *component,
@@ -840,18 +852,6 @@ extern struct value *coerce_array (struct value *value);
    extending for LENGTH bits are a synthetic pointer.  */
 
 extern int value_bits_synthetic_pointer (const struct value *value,
-					 LONGEST offset, LONGEST length);
-
-/* Mark VALUE's content bytes starting at OFFSET and extending for
-   LENGTH bytes as unavailable.  */
-
-extern void mark_value_bytes_unavailable (struct value *value,
-					  LONGEST offset, LONGEST length);
-
-/* Mark VALUE's content bits starting at OFFSET and extending for
-   LENGTH bits as unavailable.  */
-
-extern void mark_value_bits_unavailable (struct value *value,
 					 LONGEST offset, LONGEST length);
 
 /* Compare LENGTH bytes of VAL1's contents starting at OFFSET1 with

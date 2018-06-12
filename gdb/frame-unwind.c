@@ -209,7 +209,7 @@ frame_unwind_got_optimized (struct frame_info *frame, int regnum)
      "<not saved>".  */
   val = allocate_value_lazy (type);
   val->set_lazy (0);
-  mark_value_bytes_optimized_out (val, 0, TYPE_LENGTH (type));
+  val->mark_bytes_optimized_out (0, TYPE_LENGTH (type));
   val->lval () = lval_register;
   VALUE_REGNUM (val) = regnum;
   VALUE_NEXT_FRAME_ID (val)

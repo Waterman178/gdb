@@ -927,9 +927,9 @@ value_from_register (struct type *type, int regnum, struct frame_info *frame)
       if (!ok)
 	{
 	  if (optim)
-	    mark_value_bytes_optimized_out (v, 0, TYPE_LENGTH (type));
+	    v->mark_bytes_optimized_out (0, TYPE_LENGTH (type));
 	  if (unavail)
-	    mark_value_bytes_unavailable (v, 0, TYPE_LENGTH (type));
+	    v->mark_bytes_unavailable (0, TYPE_LENGTH (type));
 	}
     }
   else

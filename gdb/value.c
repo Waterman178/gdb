@@ -390,19 +390,9 @@ insert_into_bit_range_vector (std::vector<range> *vectorp,
 }
 
 void
-mark_value_bits_unavailable (struct value *value,
-			     LONGEST offset, LONGEST length)
+value::mark_bits_unavailable (LONGEST offset, LONGEST length)
 {
-  insert_into_bit_range_vector (&value->m_unavailable, offset, length);
-}
-
-void
-mark_value_bytes_unavailable (struct value *value,
-			      LONGEST offset, LONGEST length)
-{
-  mark_value_bits_unavailable (value,
-			       offset * TARGET_CHAR_BIT,
-			       length * TARGET_CHAR_BIT);
+  insert_into_bit_range_vector (&m_unavailable, offset, length);
 }
 
 /* Find the first range in RANGES that overlaps the range defined by
@@ -849,7 +839,7 @@ allocate_optimized_out_value (struct type *type)
 {
   struct value *retval = allocate_value_lazy (type);
 
-  mark_value_bytes_optimized_out (retval, 0, TYPE_LENGTH (type));
+  retval->mark_bytes_optimized_out (0, TYPE_LENGTH (type));
   retval->set_lazy (0);
   return retval;
 }
@@ -1107,24 +1097,12 @@ value::optimized_out ()
   return !m_optimized_out.empty ();
 }
 
-/* Mark contents of VALUE as optimized out, starting at OFFSET bytes, and
-   the following LENGTH bytes.  */
-
-void
-mark_value_bytes_optimized_out (struct value *value, int offset, int length)
-{
-  mark_value_bits_optimized_out (value,
-				 offset * TARGET_CHAR_BIT,
-				 length * TARGET_CHAR_BIT);
-}
-
 /* See value.h.  */
 
 void
-mark_value_bits_optimized_out (struct value *value,
-			       LONGEST offset, LONGEST length)
+value::mark_bits_optimized_out (LONGEST offset, LONGEST length)
 {
-  insert_into_bit_range_vector (&value->m_optimized_out, offset, length);
+  insert_into_bit_range_vector (&m_optimized_out, offset, length);
 }
 
 int

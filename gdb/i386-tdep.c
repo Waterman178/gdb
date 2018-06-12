@@ -3285,7 +3285,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
       /* Extract (always little endian).  */
       status = regcache->raw_read (fpnum, raw_buf);
       if (status != REG_VALID)
-	mark_value_bytes_unavailable (result_value, 0,
+	result_value->mark_bytes_unavailable (0,
 				      TYPE_LENGTH (result_value->type ()));
       else
 	memcpy (buf, raw_buf, register_size (gdbarch, regnum));
@@ -3301,7 +3301,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  status = regcache->raw_read (I387_BND0R_REGNUM (tdep) + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0, 16);
+	    result_value->mark_bytes_unavailable (0, 16);
 	  else
 	    {
 	      enum bfd_endian byte_order = gdbarch_byte_order (target_gdbarch ());
@@ -3323,7 +3323,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  /* Extract (always little endian).  */
 	  status = regcache->raw_read (tdep->k0_regnum + regnum, raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0, 8);
+	    result_value->mark_bytes_unavailable (0, 8);
 	  else
 	    memcpy (buf, raw_buf, 8);
 	}
@@ -3337,7 +3337,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	      status = regcache->raw_read (I387_XMM0_REGNUM (tdep) + regnum,
 					   raw_buf);
 	      if (status != REG_VALID)
-		mark_value_bytes_unavailable (result_value, 0, 16);
+		result_value->mark_bytes_unavailable (0, 16);
 	      else
 		memcpy (buf, raw_buf, 16);
 
@@ -3345,7 +3345,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	      status = regcache->raw_read (tdep->ymm0h_regnum + regnum,
 					   raw_buf);
 	      if (status != REG_VALID)
-		mark_value_bytes_unavailable (result_value, 16, 16);
+		result_value->mark_bytes_unavailable (16, 16);
 	      else
 		memcpy (buf + 16, raw_buf, 16);
 	    }
@@ -3356,7 +3356,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 					   - num_lower_zmm_regs,
 					   raw_buf);
 	      if (status != REG_VALID)
-		mark_value_bytes_unavailable (result_value, 0, 16);
+		result_value->mark_bytes_unavailable (0, 16);
 	      else
 		memcpy (buf, raw_buf, 16);
 
@@ -3365,7 +3365,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 					   - num_lower_zmm_regs,
 					   raw_buf);
 	      if (status != REG_VALID)
-		mark_value_bytes_unavailable (result_value, 16, 16);
+		result_value->mark_bytes_unavailable (16, 16);
 	      else
 		memcpy (buf + 16, raw_buf, 16);
 	    }
@@ -3374,7 +3374,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  status = regcache->raw_read (tdep->zmm0h_regnum + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 32, 32);
+	    result_value->mark_bytes_unavailable (32, 32);
 	  else
 	    memcpy (buf + 32, raw_buf, 32);
 	}
@@ -3386,14 +3386,14 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  status = regcache->raw_read (I387_XMM0_REGNUM (tdep) + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0, 16);
+	    result_value->mark_bytes_unavailable (0, 16);
 	  else
 	    memcpy (buf, raw_buf, 16);
 	  /* Read upper 128bits.  */
 	  status = regcache->raw_read (tdep->ymm0h_regnum + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 16, 32);
+	    result_value->mark_bytes_unavailable (16, 32);
 	  else
 	    memcpy (buf + 16, raw_buf, 16);
 	}
@@ -3404,14 +3404,14 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  status = regcache->raw_read (I387_XMM16_REGNUM (tdep) + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0, 16);
+	    result_value->mark_bytes_unavailable (0, 16);
 	  else
 	    memcpy (buf, raw_buf, 16);
 	  /* Read upper 128bits.  */
 	  status = regcache->raw_read (tdep->ymm16h_regnum + regnum,
 				       raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 16, 16);
+	    result_value->mark_bytes_unavailable (16, 16);
 	  else
 	    memcpy (buf + 16, raw_buf, 16);
 	}
@@ -3422,7 +3422,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	  /* Extract (always little endian).  */
 	  status = regcache->raw_read (gpnum, raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0,
+	    result_value->mark_bytes_unavailable (0,
 					  TYPE_LENGTH (result_value->type ()));
 	  else
 	    memcpy (buf, raw_buf, 2);
@@ -3435,7 +3435,7 @@ i386_pseudo_register_read_into_value (struct gdbarch *gdbarch,
 	     upper registers.  */
 	  status = regcache->raw_read (gpnum % 4, raw_buf);
 	  if (status != REG_VALID)
-	    mark_value_bytes_unavailable (result_value, 0,
+	    result_value->mark_bytes_unavailable (0,
 					  TYPE_LENGTH (result_value->type ()));
 	  else if (gpnum >= 4)
 	    memcpy (buf, raw_buf + 1, 1);

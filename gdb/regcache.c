@@ -659,7 +659,7 @@ readable_regcache::cooked_read_value (int regnum)
 	 API is preferred.  */
       if (cooked_read (regnum,
 		       result->contents_raw ()) == REG_UNAVAILABLE)
-	mark_value_bytes_unavailable (result, 0,
+	result->mark_bytes_unavailable (0,
 				      TYPE_LENGTH (result->type ()));
 
       return result;
