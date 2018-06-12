@@ -431,6 +431,10 @@ struct value
 			   length * TARGET_CHAR_BIT);
   }
 
+  /* Like bytes_available, but return false if any byte in the
+     whole object is unavailable.  */
+  int entirely_available ();
+
 
   /* Type of value; either not an lval, or one of the various
      different possible kinds of lval.  */
@@ -826,10 +830,6 @@ extern struct value *coerce_array (struct value *value);
 
 extern int value_bits_synthetic_pointer (const struct value *value,
 					 LONGEST offset, LONGEST length);
-
-/* Like value_bytes_available, but return false if any byte in the
-   whole object is unavailable.  */
-extern int value_entirely_available (struct value *value);
 
 /* Like value_entirely_available, but return false if any byte in the
    whole object is available.  */

@@ -586,7 +586,7 @@ riscv_print_one_register_info (struct gdbarch *gdbarch,
   fputs_filtered (name, file);
   print_spaces_filtered (value_column_1 - strlen (name), file);
 
-  print_raw_format = (value_entirely_available (val)
+  print_raw_format = (val->entirely_available ()
 		      && !value_optimized_out (val));
 
   if (TYPE_CODE (regtype) == TYPE_CODE_FLT)

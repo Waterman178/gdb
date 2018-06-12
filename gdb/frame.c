@@ -1113,7 +1113,7 @@ frame_register_unwind (struct frame_info *frame, int regnum,
   gdb_assert (value != NULL);
 
   *optimizedp = value_optimized_out (value);
-  *unavailablep = !value_entirely_available (value);
+  *unavailablep = !value->entirely_available ();
   *lvalp = value->lval ();
   *addrp = value_address (value);
   if (*lvalp == lval_register)
@@ -1269,7 +1269,7 @@ frame_unwind_register_signed (struct frame_info *frame, int regnum)
       throw_error (OPTIMIZED_OUT_ERROR,
 		   _("Register %d was not saved"), regnum);
     }
-  if (!value_entirely_available (value))
+  if (!value->entirely_available ())
     {
       throw_error (NOT_AVAILABLE_ERROR,
 		   _("Register %d is not available"), regnum);
@@ -1303,7 +1303,7 @@ frame_unwind_register_unsigned (struct frame_info *frame, int regnum)
       throw_error (OPTIMIZED_OUT_ERROR,
 		   _("Register %d was not saved"), regnum);
     }
-  if (!value_entirely_available (value))
+  if (!value->entirely_available ())
     {
       throw_error (NOT_AVAILABLE_ERROR,
 		   _("Register %d is not available"), regnum);
@@ -1329,7 +1329,7 @@ read_frame_register_unsigned (struct frame_info *frame, int regnum,
   struct value *regval = get_frame_register_value (frame, regnum);
 
   if (!value_optimized_out (regval)
-      && value_entirely_available (regval))
+      && regval->entirely_available ())
     {
       struct gdbarch *gdbarch = get_frame_arch (frame);
       enum bfd_endian byte_order = gdbarch_byte_order (gdbarch);
@@ -1454,7 +1454,7 @@ get_frame_register_bytes (struct frame_info *frame, int regnum,
 							     regnum);
 	  gdb_assert (value != NULL);
 	  *optimizedp = value_optimized_out (value);
-	  *unavailablep = !value_entirely_available (value);
+	  *unavailablep = !value->entirely_available ();
 
 	  if (*optimizedp || *unavailablep)
 	    {

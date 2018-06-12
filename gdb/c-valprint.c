@@ -621,7 +621,7 @@ c_value_print (struct value *val, struct ui_file *stream,
 	  /* Pointer to class, check real type of object.  */
 	  fprintf_filtered (stream, "(");
 
-	  if (value_entirely_available (val))
+	  if (val->entirely_available ())
 	    {
 	      real_type = value_rtti_indirect_type (val, &full, &top,
 						    &using_enc);

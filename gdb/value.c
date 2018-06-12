@@ -172,14 +172,14 @@ value_bits_any_optimized_out (const struct value *value, int bit_offset, int bit
 }
 
 int
-value_entirely_available (struct value *value)
+value::entirely_available ()
 {
   /* We can only tell whether the whole value is available when we try
      to read it.  */
-  if (value->m_lazy)
-    value->fetch_lazy ();
+  if (m_lazy)
+    fetch_lazy ();
 
-  if (value->m_unavailable.empty ())
+  if (m_unavailable.empty ())
     return 1;
   return 0;
 }

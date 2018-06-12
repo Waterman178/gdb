@@ -589,7 +589,7 @@ store_regs (struct type *regs_type, CORE_ADDR regs_base)
       regval = value_from_register (reg_type, regnum, get_current_frame ());
       if (value_optimized_out (regval))
 	error (_("Register \"%s\" is optimized out."), reg_name);
-      if (!value_entirely_available (regval))
+      if (!regval->entirely_available ())
 	error (_("Register \"%s\" is not available."), reg_name);
 
       inferior_addr = regs_base + reg_offset;

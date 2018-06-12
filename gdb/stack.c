@@ -1615,7 +1615,7 @@ info_frame_command (const char *addr_exp, int from_tty)
 	struct value *value = frame_unwind_register_value (fi, sp_regnum);
 	gdb_assert (value != NULL);
 
-	if (!value_optimized_out (value) && value_entirely_available (value))
+	if (!value_optimized_out (value) && value->entirely_available ())
 	  {
 	    if (value->lval () == not_lval)
 	      {

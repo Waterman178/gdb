@@ -620,7 +620,7 @@ readable_regcache::cooked_read (int regnum, gdb_byte *buf)
 
       computed = gdbarch_pseudo_register_read_value (m_descr->gdbarch,
 						     this, regnum);
-      if (value_entirely_available (computed))
+      if (computed->entirely_available ())
 	memcpy (buf, value_contents_raw (computed),
 		m_descr->sizeof_register[regnum]);
       else
