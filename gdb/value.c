@@ -1121,26 +1121,6 @@ value::address () const
 
   return m_location.address + m_offset;
 }
-
-struct internalvar **
-deprecated_value_internalvar_hack (struct value *value)
-{
-  return &value->m_location.internalvar;
-}
-
-struct frame_id *
-deprecated_value_next_frame_id_hack (struct value *value)
-{
-  gdb_assert (value->m_lval == lval_register);
-  return &value->m_location.reg.next_frame_id;
-}
-
-int *
-deprecated_value_regnum_hack (struct value *value)
-{
-  gdb_assert (value->m_lval == lval_register);
-  return &value->m_location.reg.regnum;
-}
 
 /* Return a mark in the value chain.  All values allocated after the
    mark is obtained (except for those released) are subject to being freed
