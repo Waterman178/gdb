@@ -4702,6 +4702,15 @@ recursive_dump_type (struct type *type, int spaces)
     {
       puts_filtered (" TYPE_NOTTEXT");
     }
+  struct discriminant_info *disc_info = nullptr;
+  if (TYPE_FLAG_DISCRIMINATED_UNION (type))
+    {
+      struct dynamic_prop *discriminant_prop
+	= get_dyn_prop (DYN_PROP_DISCRIMINATED, type);
+      disc_info = (struct discriminant_info *) discriminant_prop->data.baton;
+      printf_filtered (" TYPE_FLAG_DISCRIMINATED_UNION[disc=%d, default=%d]",
+		       disc_info->discriminant_index, disc_info->default_index);
+    }
   puts_filtered ("\n");
   printfi_filtered (spaces, "nfields %d ", TYPE_NFIELDS (type));
   gdb_print_host_address (TYPE_FIELDS (type), gdb_stdout);
@@ -4728,6 +4737,10 @@ recursive_dump_type (struct type *type, int spaces)
 	{
 	  recursive_dump_type (TYPE_FIELD_TYPE (type, idx), spaces + 4);
 	}
+      if (disc_info != nullptr && idx != disc_info->discriminant_index
+	  && idx != disc_info->default_index)
+	printfi_filtered (spaces + 4, "Tag value = %s\n",
+			  pulongest (disc_info->discriminants[idx]));
     }
   if (TYPE_CODE (type) == TYPE_CODE_RANGE)
     {
