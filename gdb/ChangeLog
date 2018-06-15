@@ -1,3 +1,9 @@
+2018-11-25  Tom Tromey  <tom@tromey.com>
+
+	* common/next-iterator.h: New file.
+	* objfiles.h (class all_objfiles): New.
+	(struct objfile_iterator): New.
+
 2019-01-03  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* linux-nat.c (delete_lwp_cleanup): Delete.
