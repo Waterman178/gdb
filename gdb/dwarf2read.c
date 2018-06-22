@@ -18424,6 +18424,25 @@ partial_die_info::read (const struct die_reader_specs *reader,
 	  if (cu->header.version >= 4 && attr_form_is_constant (&attr))
 		high_pc_relative = 1;
 	  break;
+	case DW_AT_ranges:
+	  {
+	    bool need_ranges_base = tag != DW_TAG_compile_unit;
+	    unsigned int ranges_offset = (DW_UNSND (&attr)
+					  + (need_ranges_base
+					     ? cu->ranges_base
+					     : 0));
+
+	    /* Value of the DW_AT_ranges attribute is the offset in
+	       the .debug_ranges section.  */
+	    if (dwarf2_ranges_read (ranges_offset, &lowpc, &highpc, cu,
+				    nullptr))
+	      {
+		has_low_pc_attr = 1;
+		has_high_pc_attr = 1;
+		high_pc_relative = 0;
+	      }
+	  }
+	  break;
 	case DW_AT_location:
           /* Support the .debug_loc offsets.  */
           if (attr_form_is_block (&attr))
