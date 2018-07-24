@@ -1,5 +1,15 @@
 2018-11-02  Tom Tromey  <tom@tromey.com>
 
+	* remote.c (remote_g_packet_guess_s): Remove typedef and DEF_VEC.
+	(struct remote_g_packet_data): Derive from allocate_on_obstack.
+	<guesses>: Now a std::vector.
+	(remote_g_packet_data_init, register_remote_g_packet_guess):
+	Update.
+	(remote_read_description_p): Update.  Return bool.
+	(remote_target::read_description): Update.
+
+2018-11-02  Tom Tromey  <tom@tromey.com>
+
 	* ppc-linux-nat.c (thread_points_p): Remove typedef and DEF_VEC.
 	(ppc_threads): Now a std::vector.  Now static.
 	(hwdebug_find_thread_points_by_tid)
