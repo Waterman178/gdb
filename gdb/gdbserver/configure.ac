@@ -163,6 +163,7 @@ case " $WARN_CFLAGS " in
   WARN_CFLAGS="$WARN_CFLAGS -Wno-missing-prototypes"
   ;;
 esac
+AM_GDB_CXX_DEBUG
 
 dnl dladdr is glibc-specific.  It is used by thread-db.c but only for
 dnl debugging messages.  It lives in -ldl which is handled below so we don't

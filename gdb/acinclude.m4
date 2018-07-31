@@ -15,6 +15,9 @@ sinclude(transform.m4)
 # This gets AM_GDB_WARNINGS.
 sinclude(warning.m4)
 
+# This gets AM_GDB_CXX_DEBUG.
+sinclude(cxx-debug.m4)
+
 dnl gdb/configure.in uses BFD_NEED_DECLARATION, so get its definition.
 sinclude(../bfd/bfd.m4)
 
