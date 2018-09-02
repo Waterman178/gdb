@@ -59,24 +59,35 @@ tui_disassemble (struct gdbarch *gdbarch, struct tui_asm_line *asm_lines,
   /* Now construct each line.  */
   for (; count > 0; count--, asm_lines++)
     {
-      if (asm_lines->addr_string)
-        xfree (asm_lines->addr_string);
-      if (asm_lines->insn)
-        xfree (asm_lines->insn);
-      
+      xfree (asm_lines->addr_string);
+      asm_lines->addr_string = nullptr;
+      xfree (asm_lines->insn);
+      asm_lines->insn = nullptr;
+
       print_address (gdbarch, pc, &gdb_dis_out);
       asm_lines->addr = pc;
       asm_lines->addr_string = xstrdup (gdb_dis_out.c_str ());
 
       gdb_dis_out.clear ();
 
-      pc = pc + gdb_print_insn (gdbarch, pc, &gdb_dis_out, NULL);
+      TRY
+	{
+	  pc = pc + gdb_print_insn (gdbarch, pc, &gdb_dis_out, NULL);
+	}
+      CATCH (e, RETURN_MASK_ALL)
+	{
+	  /* If we tried to scroll off the end, just stop and let the
+	     caller handle it.  */
+	  return pc;
+	}
+      END_CATCH
 
       asm_lines->insn = xstrdup (gdb_dis_out.c_str ());
 
       /* Reset the buffer to empty.  */
       gdb_dis_out.clear ();
     }
+
   return pc;
 }
 
@@ -103,6 +114,32 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
     {
       tui_disassemble (gdbarch, asm_lines, pc, max_lines);
       new_low = asm_lines[max_lines - 1].addr;
+
+      /* Now try to disassemble again, starting from the new spot.  It
+	 is possible that we've tried to scroll off the end.  In this
+	 case, update the offset and try again with the new value.  */
+      for (i = 0; i < max_lines; i++)
+	{
+	  xfree (asm_lines[i].addr_string);
+	  asm_lines[i].addr_string = nullptr;
+	  xfree (asm_lines[i].insn);
+	  asm_lines[i].insn = nullptr;
+	}
+
+      tui_disassemble (gdbarch, asm_lines, new_low, max_lines);
+      int count;
+      for (count = 0;
+	   (count < max_lines
+	    && asm_lines[max_lines - 1 - count].insn == nullptr);
+	   ++count)
+	{
+	  /* Nothing.  */
+	}
+      if (count > 0)
+	{
+	  tui_disassemble (gdbarch, asm_lines, pc, max_lines - count);
+	  new_low = asm_lines[max_lines - count - 1].addr;
+	}
     }
   else
     {
@@ -202,7 +239,7 @@ tui_set_disassem_content (struct gdbarch *gdbarch, CORE_ADDR pc)
   /* Determine maximum address- and instruction lengths.  */
   addr_size = 0;
   insn_size = 0;
-  for (i = 0; i < max_lines; i++)
+  for (i = 0; i < max_lines && asm_lines[i].insn != nullptr; i++)
     {
       size_t len = strlen (asm_lines[i].addr_string);
 
@@ -221,7 +258,7 @@ tui_set_disassem_content (struct gdbarch *gdbarch, CORE_ADDR pc)
   line = (char*) alloca (insn_pos + insn_size + 1);
 
   /* Now construct each line.  */
-  for (i = 0; i < max_lines; i++)
+  for (i = 0; i < max_lines && asm_lines[i].insn != nullptr; i++)
     {
       struct tui_win_element *element;
       struct tui_source_element *src;
@@ -252,7 +289,10 @@ tui_set_disassem_content (struct gdbarch *gdbarch, CORE_ADDR pc)
 			&& breakpoint_here_p (current_program_space->aspace,
 					      pc)
 			!= no_breakpoint_here);
+    }
 
+  for (i = 0; i < max_lines; ++i)
+    {
       xfree (asm_lines[i].addr_string);
       xfree (asm_lines[i].insn);
     }
