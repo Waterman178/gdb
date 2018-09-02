@@ -40,6 +40,8 @@
 #include "filestuff.h"
 #include "completer.h"
 #include "gdb_curses.h"
+#include "gdb_regex.h"
+#include <map>
 
 /* This redefines CTRL if it is not already defined, so it must come
    after terminal state releated include files like <term.h> and
@@ -47,6 +49,29 @@
 #include "readline/readline.h"
 
 static int tui_getc (FILE *fp);
+
+static const char *ansi_regex_text =
+  /* Introduction.  */
+  "^\e\\["
+#define DATA_SUBEXP 1
+  /* Capture parameter and intermediate bytes.  */
+  "("
+  /* Parameter bytes.  */
+  "[\x30-\x3f]*"
+  /* Intermediate bytes.  */
+  "[\x20-\x2f]*"
+  /* End the first capture.  */
+  ")"
+  /* The final byte.  */
+#define FINAL_SUBEXP 2
+  "([\x40-\x7e])";
+
+/* The number of subexpressions to allocate space for, including the
+   "0th" whole match subexpression.  */
+#define NUM_SUBEXPRESSIONS 3
+
+static regex_t ansi_regex;
+
 
 static int
 key_is_start_sequence (int ch)
@@ -188,6 +213,194 @@ tui_putc (char c)
   update_cmdwin_start_line ();
 }
 
+struct color
+{
+  int fg;
+  int bg;
+
+  bool operator< (const color &o) const
+  {
+    return fg < o.fg || (fg == o.fg && bg < o.bg);
+  }
+};
+
+static std::map<color, int> color_pair_map;
+
+static int
+get_color_pair (int fg, int bg)
+{
+  color c = { fg, bg };
+  auto it = color_pair_map.find (c);
+  if (it == color_pair_map.end ())
+    {
+      /* Color pair 0 is our default color, so new colors start at
+	 1.  */
+      int next = color_pair_map.size () + 1;
+      /* Curses has a limited number of available color pairs.  Fall
+	 back to the default if we've used too many.  */
+      if (next >= COLOR_PAIRS)
+	return 0;
+      init_pair (next, fg, bg);
+      color_pair_map[c] = next;
+      return next;
+    }
+  return it->second;
+}
+
+/* Indexed by ANSI color offset from the base color.  */
+static const int curses_colors[] = {
+  COLOR_BLACK,
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_YELLOW,
+  COLOR_BLUE,
+  COLOR_MAGENTA,
+  COLOR_CYAN,
+  COLOR_WHITE,
+
+  /* Ignored - we aren't handling RGB colors yet.  */
+  -1,
+
+  /* Default color.  */
+  -1
+};
+
+static size_t
+apply_ansi_escape (WINDOW *w, const char *buf)
+{
+  static int last_color_pair = -1;
+
+  regmatch_t subexps[NUM_SUBEXPRESSIONS];
+
+  int match = regexec (&ansi_regex, buf, ARRAY_SIZE (subexps), subexps, 0);
+  if (match == REG_NOMATCH)
+    return 0;
+  /* Other failures mean the regexp is broken.  */
+  gdb_assert (match == 0);
+  /* The regexp is anchored.  */
+  gdb_assert (subexps[0].rm_so == 0);
+  /* The final character exists.  */
+  gdb_assert (subexps[FINAL_SUBEXP].rm_eo - subexps[FINAL_SUBEXP].rm_so == 1);
+
+  if (buf[subexps[FINAL_SUBEXP].rm_so] != 'm')
+    {
+      /* We don't handle this sequence, so just drop it.  */
+      return subexps[0].rm_eo;
+    }
+
+  /* Examine each setting in the match and apply it immediately.  See
+     the Select Graphic Rendition section of
+     https://en.wikipedia.org/wiki/ANSI_escape_code.  In essence each
+     code is just a number, separated by ";"; there are some more
+     wrinkles but we don't support them all..  */
+
+  int fgcolor = -1, bgcolor = -1;
+  bool color_set = false;
+  for (regoff_t i = subexps[DATA_SUBEXP].rm_so;
+       i < subexps[DATA_SUBEXP].rm_eo;
+       ++i)
+    {
+      if (buf[i] == ';')
+	{
+	  /* Skip.  */
+	}
+      else if (buf[i] >= '0' && buf[i] <= '9')
+	{
+	  char *tail;
+	  long value = strtol (buf + i, &tail, 10);
+
+	  switch (value)
+	    {
+	    case 0:
+	      /* Reset.  */
+	      wattron (w, A_NORMAL);
+	      wattroff (w, A_BOLD);
+	      wattroff (w, A_DIM);
+	      wattroff (w, A_REVERSE);
+	      if (last_color_pair != -1)
+		wattroff (w, COLOR_PAIR (last_color_pair));
+	      wattron (w, COLOR_PAIR (0));
+	      color_set = false;
+	      break;
+	    case 1:
+	      /* Bold.  */
+	      wattron (w, A_BOLD);
+	      break;
+	    case 2:
+	      /* Dim.  */
+	      wattron (w, A_DIM);
+	      break;
+	    case 7:
+	      /* Reverse.  */
+	      wattron (w, A_REVERSE);
+	      break;
+	    case 21:
+	      wattroff (w, A_BOLD);
+	      break;
+	    case 22:
+	      /* Normal.  */
+	      wattron (w, A_NORMAL);
+	      break;
+	    case 27:
+	      /* Inverse off.  */
+	      wattroff (w, A_REVERSE);
+	      break;
+
+	    case 30:
+	    case 31:
+	    case 32:
+	    case 33:
+	    case 34:
+	    case 35:
+	    case 36:
+	    case 37:
+	      /* Note: not 38.  */
+	    case 39:
+	      fgcolor = curses_colors[value - 30];
+	      color_set = true;
+	      break;
+
+	    case 40:
+	    case 41:
+	    case 42:
+	    case 43:
+	    case 44:
+	    case 45:
+	    case 46:
+	    case 47:
+	      /* Note: not 48.  */
+	    case 49:
+	      bgcolor = curses_colors[value - 40];
+	      color_set = true;
+	      break;
+
+	    default:
+	      /* Ignore everything else.  Note that this may cause us
+		 to improperly handle some sequences, like RGB color.
+		 FIXME.  */
+	      break;
+	    }
+
+	  i = tail - buf;
+	}
+      else
+	{
+	  /* Unknown, let's just ignore.  */
+	}
+    }
+
+  if (has_colors () && color_set)
+    {
+      int pair = get_color_pair (fgcolor, bgcolor);
+      if (last_color_pair != -1)
+	wattroff (w, COLOR_PAIR (last_color_pair));
+      wattron (w, COLOR_PAIR (pair));
+      last_color_pair = pair;
+    }
+
+  return subexps[0].rm_eo;
+}
+
 /* Print LENGTH characters from the buffer pointed to by BUF to the
    curses command window.  The output is buffered.  It is up to the
    caller to refresh the screen if necessary.  */
@@ -195,10 +408,47 @@ tui_putc (char c)
 void
 tui_write (const char *buf, size_t length)
 {
-  WINDOW *w = TUI_CMD_WIN->generic.handle;
+  /* We need this to be \0-terminated for the regexp matching.  */
+  std::string copy (buf, length);
+  tui_puts (copy.c_str ());
+}
 
-  for (size_t i = 0; i < length; i++)
-    do_tui_putc (w, buf[i]);
+static void
+tui_puts_internal (const char *string, int *height)
+{
+  WINDOW *w = TUI_CMD_WIN->generic.handle;
+  char c;
+  int prev_col = 0;
+
+  while ((c = *string++) != 0)
+    {
+      if (c == '\1' || c == '\2')
+	{
+	  /* Ignore these, they are readline escape-marking
+	     sequences.  */
+	}
+      else
+	{
+	  if (c == '\e')
+	    {
+	      size_t bytes_read = apply_ansi_escape (w, string - 1);
+	      if (bytes_read > 0)
+		{
+		  string = string + bytes_read - 1;
+		  continue;
+		}
+	    }
+	  do_tui_putc (w, c);
+
+	  if (height != nullptr)
+	    {
+	      int col = getcurx (w);
+	      if (col <= prev_col)
+		++*height;
+	      prev_col = col;
+	    }
+	}
+    }
   update_cmdwin_start_line ();
 }
 
@@ -209,12 +459,7 @@ tui_write (const char *buf, size_t length)
 void
 tui_puts (const char *string)
 {
-  WINDOW *w = TUI_CMD_WIN->generic.handle;
-  char c;
-
-  while ((c = *string++) != 0)
-    do_tui_putc (w, c);
-  update_cmdwin_start_line ();
+  tui_puts_internal (string, nullptr);
 }
 
 /* Readline callback.
@@ -254,14 +499,10 @@ tui_redisplay_readline (void)
   wmove (w, start_line, 0);
   prev_col = 0;
   height = 1;
-  for (in = 0; prompt && prompt[in]; in++)
-    {
-      waddch (w, prompt[in]);
-      col = getcurx (w);
-      if (col <= prev_col)
-        height++;
-      prev_col = col;
-    }
+  if (prompt != nullptr)
+    tui_puts_internal (prompt, &height);
+
+  prev_col = getcurx (w);
   for (in = 0; in <= rl_end; in++)
     {
       unsigned char c;
@@ -725,4 +966,13 @@ tui_expand_tabs (const char *string, int col)
     }
 
   return ret;
+}
+
+void
+_initialize_tui_io ()
+{
+  int code = regcomp (&ansi_regex, ansi_regex_text, REG_EXTENDED);
+  /* If the regular expression was incorrect, it was a programming
+     error.  */
+  gdb_assert (code == 0);
 }

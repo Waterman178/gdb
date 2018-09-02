@@ -1355,7 +1355,7 @@ AC_CHECK_FUNCS([getauxval getrusage getuid getgid \
 		sigaction sigprocmask sigsetmask socketpair \
 		ttrace wborder wresize setlocale iconvlist libiconvlist btowc \
 		setrlimit getrlimit posix_madvise waitpid \
-		ptrace64 sigaltstack mkdtemp setns])
+		ptrace64 sigaltstack mkdtemp setns use_default_colors])
 AM_LANGINFO_CODESET
 GDB_AC_COMMON
 
