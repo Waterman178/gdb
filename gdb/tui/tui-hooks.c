@@ -116,36 +116,54 @@ tui_event_modify_breakpoint (struct breakpoint *b)
 static void
 tui_refresh_frame_and_register_information (int registers_too_p)
 {
+  static struct frame_id last_frame_id = null_frame_id;
+  static CORE_ADDR last_frame_pc = 0;
+
   struct frame_info *fi;
-  CORE_ADDR pc;
-  int frame_info_changed_p;
+  CORE_ADDR pc = 0;
+  int frame_info_changed_p = 0;
 
   if (!has_stack_frames ())
-    return;
+    {
+      last_frame_id = null_frame_id;
+      last_frame_pc = 0;
+      return;
+    }
 
   target_terminal::scoped_restore_terminal_state term_state;
   target_terminal::ours_for_output ();
 
   fi = get_selected_frame (NULL);
-  /* Ensure that symbols for this frame are read in.  Also, determine
-     the source language of this frame, and switch to it if
-     desired.  */
-  if (get_frame_pc_if_available (fi, &pc))
-    {
-      struct symtab *s;
-
-      s = find_pc_line_symtab (pc);
-      /* elz: This if here fixes the problem with the pc not being
-	 displayed in the tui asm layout, with no debug symbols.  The
-	 value of s would be 0 here, and select_source_symtab would
-	 abort the command by calling the 'error' function.  */
-      if (s)
-	select_source_symtab (s);
-    }
+  bool have_pc = get_frame_pc_if_available (fi, &pc);
 
   /* Display the frame position (even if there is no symbols or the PC
      is not known).  */
-  frame_info_changed_p = tui_show_frame_info (fi);
+  struct frame_id fid = get_frame_id (fi);
+  if ((!frame_id_p (last_frame_id)
+       || !frame_id_eq (last_frame_id, fid)
+       || pc != last_frame_pc))
+    {
+      last_frame_id = fid;
+      last_frame_pc = pc;
+
+      /* Ensure that symbols for this frame are read in.  Also, determine
+	 the source language of this frame, and switch to it if
+	 desired.  */
+      if (have_pc)
+	{
+	  struct symtab *s;
+
+	  s = find_pc_line_symtab (pc);
+	  /* elz: This if here fixes the problem with the pc not being
+	     displayed in the tui asm layout, with no debug symbols.  The
+	     value of s would be 0 here, and select_source_symtab would
+	     abort the command by calling the 'error' function.  */
+	  if (s)
+	    select_source_symtab (s);
+	}
+
+      frame_info_changed_p = tui_show_frame_info (fi);
+    }
 
   /* Refresh the register window if it's visible.  */
   if (tui_is_window_visible (DATA_WIN)
