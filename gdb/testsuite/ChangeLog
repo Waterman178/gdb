@@ -1,3 +1,10 @@
+2018-10-10  Phil Muldoon  <pmuldoon@redhat.com>
+
+	PR python/23615:
+	* gdb.python/py-gil-mthread.c: New file.
+	* gdb.python/py-gil-mthread.py: New file.
+	* gdb.python/py-gil-mthread.exp: New file.
+
 2018-10-09  Tom de Vries  <tdevries@suse.de>
 
 	* lib/gdb.exp (target_supports_scheduler_locking): Replace gdb_start_cmd
