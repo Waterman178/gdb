@@ -107,6 +107,26 @@ tui_event_modify_breakpoint (struct breakpoint *b)
   tui_update_all_breakpoint_info ();
 }
 
+
+/* Cache the last state of the TUI display, so that we can tell if
+   something has changed.  In particular, if the frame changed, or if
+   the PC changed, or if the current inferior changed, then the
+   display will update.  Otherwise, it will not.  This caching is
+   needed to let "list" affect the source window display without
+   resetting.  See PR tui/18932.  */
+static struct frame_id last_frame_id = null_frame_id;
+static CORE_ADDR last_frame_pc = 0;
+static inferior *last_inferior = nullptr;
+
+/* Clear the inferior cache when the inferior is destroyed.  */
+
+static void
+clear_inferior_cache (inferior *inf)
+{
+  if (last_inferior == inf)
+    last_inferior = nullptr;
+}
+
 /* Refresh TUI's frame and register information.  This is a hook intended to be
    used to update the screen after potential frame and register changes.
 
@@ -117,35 +137,54 @@ static void
 tui_refresh_frame_and_register_information (int registers_too_p)
 {
   struct frame_info *fi;
-  CORE_ADDR pc;
-  int frame_info_changed_p;
+  CORE_ADDR pc = 0;
+  int frame_info_changed_p = 0;
 
   if (!has_stack_frames ())
-    return;
+    {
+      last_frame_id = null_frame_id;
+      last_frame_pc = 0;
+      last_inferior = nullptr;
+      return;
+    }
 
   target_terminal::scoped_restore_terminal_state term_state;
   target_terminal::ours_for_output ();
 
   fi = get_selected_frame (NULL);
-  /* Ensure that symbols for this frame are read in.  Also, determine
-     the source language of this frame, and switch to it if
-     desired.  */
-  if (get_frame_pc_if_available (fi, &pc))
+  bool have_pc = get_frame_pc_if_available (fi, &pc);
+
+  struct frame_id fid = get_frame_id (fi);
+  if ((!frame_id_p (last_frame_id)
+       || !frame_id_eq (last_frame_id, fid)
+       || pc != last_frame_pc
+       || current_inferior () != last_inferior))
     {
-      struct symtab *s;
+      /* Display the frame position (even if there is no symbols or
+	 the PC is not known).  */
 
-      s = find_pc_line_symtab (pc);
-      /* elz: This if here fixes the problem with the pc not being
-	 displayed in the tui asm layout, with no debug symbols.  The
-	 value of s would be 0 here, and select_source_symtab would
-	 abort the command by calling the 'error' function.  */
-      if (s)
-	select_source_symtab (s);
+      last_frame_id = fid;
+      last_frame_pc = pc;
+      last_inferior = current_inferior ();
+
+      /* Ensure that symbols for this frame are read in.  Also, determine
+	 the source language of this frame, and switch to it if
+	 desired.  */
+      if (have_pc)
+	{
+	  struct symtab *s;
+
+	  s = find_pc_line_symtab (pc);
+	  /* elz: This if here fixes the problem with the pc not being
+	     displayed in the tui asm layout, with no debug symbols.  The
+	     value of s would be 0 here, and select_source_symtab would
+	     abort the command by calling the 'error' function.  */
+	  if (s)
+	    select_source_symtab (s);
+	}
+
+      frame_info_changed_p = tui_show_frame_info (fi);
     }
-
-  /* Display the frame position (even if there is no symbols or the PC
-     is not known).  */
-  frame_info_changed_p = tui_show_frame_info (fi);
 
   /* Refresh the register window if it's visible.  */
   if (tui_is_window_visible (DATA_WIN)
@@ -271,4 +310,5 @@ _initialize_tui_hooks (void)
 {
   /* Install the permanent hooks.  */
   gdb::observers::new_objfile.attach (tui_new_objfile_hook);
+  gdb::observers::inferior_removed.attach (clear_inferior_cache);
 }

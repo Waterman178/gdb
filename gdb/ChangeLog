@@ -1,3 +1,13 @@
+2018-09-08  Tom Tromey  <tom@tromey.com>
+
+	PR tui/18932:
+	* tui/tui-hooks.c (last_frame_id, last_frame_pc, last_inferior):
+	New globals.
+	(clear_inferior_cache): New function.
+	(tui_refresh_frame_and_register_information): Cache frame, PC, and
+	inferior to decide when to update.
+	(_initialize_tui_hooks): Attach clear_inferior_cache to observer.
+
 2018-09-06  Simon Ser  <contact@emersion.fr>
 
 	PR gdb/23105
