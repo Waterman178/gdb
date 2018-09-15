@@ -48,6 +48,7 @@
 #include "tui/tui-winsource.h"
 
 #include "gdb_curses.h"
+#include "source.h"
 
 /* This redefines CTRL if it is not already defined, so it must come
    after terminal state releated include files like <term.h> and
@@ -107,6 +108,23 @@ tui_event_modify_breakpoint (struct breakpoint *b)
   tui_update_all_breakpoint_info ();
 }
 
+static bool context_changed;
+static bool sal_changed;
+
+static void
+tui_sal_changed ()
+{
+  context_changed = false;
+  sal_changed = true;
+}
+
+static void
+tui_context_changed (user_selected_what)
+{
+  context_changed = true;
+  sal_changed = false;
+}
+
 /* Refresh TUI's frame and register information.  This is a hook intended to be
    used to update the screen after potential frame and register changes.
 
@@ -125,6 +143,18 @@ tui_refresh_frame_and_register_information (int registers_too_p)
 
   target_terminal::scoped_restore_terminal_state term_state;
   target_terminal::ours_for_output ();
+
+  if (sal_changed)
+    {
+      sal_changed = false;
+      struct symtab_and_line sal = get_current_source_symtab_and_line ();
+      tui_update_source_windows_with_line (sal.symtab, sal.line);
+      return;
+    }
+
+  if (!context_changed)
+    return;
+  context_changed = false;
 
   fi = get_selected_frame (NULL);
   /* Ensure that symbols for this frame are read in.  Also, determine
@@ -271,4 +301,8 @@ _initialize_tui_hooks (void)
 {
   /* Install the permanent hooks.  */
   gdb::observers::new_objfile.attach (tui_new_objfile_hook);
+  gdb::observers::current_source_symtab_and_line_changed.attach
+    (tui_sal_changed);
+  gdb::observers::user_selected_context_changed.attach
+    (tui_context_changed);
 }

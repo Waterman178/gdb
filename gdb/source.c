@@ -45,6 +45,7 @@
 #include "common/scoped_fd.h"
 #include <algorithm>
 #include "common/pathstuff.h"
+#include "observable.h"
 
 #define OPEN_MODE (O_RDONLY | O_BINARY)
 #define FDOPEN_MODE FOPEN_RB
@@ -201,6 +202,26 @@ set_default_source_symtab_and_line (void)
     select_source_symtab (0);
 }
 
+/* Helper function to set the current source SAL and then notify any
+   observers.  */
+
+static void
+internal_set_current_sal (struct program_space *pspace, struct symtab *symtab,
+			  int line)
+{
+  /* Avoid no-op notifications.  */
+  if (current_source_pspace != pspace
+      || current_source_symtab != symtab
+      || current_source_line != line)
+    {
+      current_source_pspace = pspace;
+      current_source_symtab = symtab;
+      current_source_line = line;
+
+      gdb::observers::current_source_symtab_and_line_changed.notify ();
+    }
+}
+
 /* Return the current default file for listing and next line to list
    (the returned sal pc and end fields are not valid.)
    and set the current default to whatever is in SAL.
@@ -217,9 +238,7 @@ set_current_source_symtab_and_line (const symtab_and_line &sal)
   cursal.pc = 0;
   cursal.end = 0;
 
-  current_source_pspace = sal.pspace;
-  current_source_symtab = sal.symtab;
-  current_source_line = sal.line;
+  internal_set_current_sal (sal.pspace, sal.symtab, sal.line);
 
   /* Force the next "list" to center around the current line.  */
   clear_lines_listed_range ();
@@ -232,8 +251,7 @@ set_current_source_symtab_and_line (const symtab_and_line &sal)
 void
 clear_current_source_symtab_and_line (void)
 {
-  current_source_symtab = 0;
-  current_source_line = 0;
+  internal_set_current_sal (nullptr, nullptr, 0);
 }
 
 /* Set the source file default for the "list" command to be S.
@@ -252,9 +270,7 @@ select_source_symtab (struct symtab *s)
 
   if (s)
     {
-      current_source_symtab = s;
-      current_source_line = 1;
-      current_source_pspace = SYMTAB_PSPACE (s);
+      internal_set_current_sal (SYMTAB_PSPACE (s), s, 1);
       return;
     }
 
@@ -269,9 +285,8 @@ select_source_symtab (struct symtab *s)
 	= decode_line_with_current_source (main_name (),
 					   DECODE_LINE_FUNFIRSTLINE);
       const symtab_and_line &sal = sals[0];
-      current_source_pspace = sal.pspace;
-      current_source_symtab = sal.symtab;
-      current_source_line = std::max (sal.line - (lines_to_list - 1), 1);
+      internal_set_current_sal (sal.pspace, sal.symtab,
+				std::max (sal.line - (lines_to_list - 1), 1));
       if (current_source_symtab)
 	return;
     }
@@ -279,7 +294,7 @@ select_source_symtab (struct symtab *s)
   /* Alright; find the last file in the symtab list (ignoring .h's
      and namespace symtabs).  */
 
-  current_source_line = 1;
+  struct symtab *symtab = current_source_symtab;
 
   ALL_FILETABS (ofp, cu, s)
     {
@@ -288,11 +303,10 @@ select_source_symtab (struct symtab *s)
 
       if (!(len > 2 && (strcmp (&name[len - 2], ".h") == 0
 			|| strcmp (name, "<<C++-namespaces>>") == 0)))
-	{
-	  current_source_pspace = current_program_space;
-	  current_source_symtab = s;
-	}
+	symtab = s;
     }
+
+  internal_set_current_sal (current_program_space, symtab, 1);
 
   if (current_source_symtab)
     return;
@@ -302,7 +316,7 @@ select_source_symtab (struct symtab *s)
     if (ofp->sf)
       s = ofp->sf->qf->find_last_source_symtab (ofp);
     if (s)
-      current_source_symtab = s;
+      internal_set_current_sal (current_program_space, s, 1);
   }
   if (current_source_symtab)
     return;
@@ -1255,8 +1269,7 @@ identify_source_line (struct symtab *s, int line, int mid_statement,
   annotate_source (s->fullname, line, s->line_charpos[line - 1],
 		   mid_statement, get_objfile_arch (SYMTAB_OBJFILE (s)), pc);
 
-  current_source_line = line;
-  current_source_symtab = s;
+  internal_set_current_sal (current_source_pspace, s, line);
   clear_lines_listed_range ();
   return 1;
 }
@@ -1276,8 +1289,7 @@ print_source_lines_base (struct symtab *s, int line, int stopline,
   struct ui_out *uiout = current_uiout;
 
   /* Regardless of whether we can open the file, set current_source_symtab.  */
-  current_source_symtab = s;
-  current_source_line = line;
+  internal_set_current_sal (current_source_pspace, s, line);
   first_line_listed = line;
 
   /* If printing of source lines is disabled, just print file and line
@@ -1606,7 +1618,9 @@ forward_search_command (const char *regex, int from_tty)
 	  /* Match!  */
 	  print_source_lines (current_source_symtab, line, line + 1, 0);
 	  set_internalvar_integer (lookup_internalvar ("_"), line);
-	  current_source_line = std::max (line - lines_to_list / 2, 1);
+	  internal_set_current_sal (current_source_pspace,
+				    current_source_symtab,
+				    std::max (line - lines_to_list / 2, 1));
 	  return;
 	}
       line++;
@@ -1677,7 +1691,8 @@ reverse_search_command (const char *regex, int from_tty)
 	  /* Match!  */
 	  print_source_lines (current_source_symtab, line, line + 1, 0);
 	  set_internalvar_integer (lookup_internalvar ("_"), line);
-	  current_source_line = std::max (line - lines_to_list / 2, 1);
+	  internal_set_current_sal (current_source_pspace, current_source_symtab,
+				    std::max (line - lines_to_list / 2, 1));
 	  return;
 	}
       line--;
@@ -1911,7 +1926,6 @@ _initialize_source (void)
 {
   struct cmd_list_element *c;
 
-  current_source_symtab = 0;
   init_source_path ();
 
   /* The intention is to use POSIX Basic Regular Expressions.
