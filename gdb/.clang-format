@@ -1,3 +1,7 @@
+# Notes for gdb.
+# * labels are not handled gnu-style
+#   https://bugs.llvm.org/show_bug.cgi?id=24118
+
 ---
 Language:        Cpp
 # BasedOnStyle:  GNU
@@ -56,9 +60,13 @@ DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: false
 ForEachMacros:
-  - foreach
-  - Q_FOREACH
-  - BOOST_FOREACH
+  - ALL_BLOCK_SYMBOLS
+  - ALL_BLOCK_SYMBOLS_WITH_NAME
+  - ALL_BREAKPOINTS
+  - ALL_BREAKPOINTS_SAFE
+  - ALL_BP_LOCATIONS
+  - ALL_BP_LOCATIONS_AT_ADDR
+  # FIXME many more here
 IncludeBlocks:   Preserve
 IncludeCategories:
   - Regex:           '^"(common-defs.h|defs.h|server.h)/'
