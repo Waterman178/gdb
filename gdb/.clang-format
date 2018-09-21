@@ -1,6 +1,9 @@
 # Notes for gdb.
 # * labels are not handled gnu-style
 #   https://bugs.llvm.org/show_bug.cgi?id=24118
+# * function call bin-packing is weird
+#   https://bugs.llvm.org/show_bug.cgi?id=31907
+#    https://bugs.llvm.org/show_bug.cgi?id=37703
 
 ---
 Language:        Cpp
@@ -9,7 +12,8 @@ AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: Right
+# FIXME probably needs a decision
+AlignEscapedNewlines: Left
 AlignOperands:   true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
@@ -19,7 +23,7 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: All
-AlwaysBreakAfterReturnType: AllDefinitions
+AlwaysBreakAfterReturnType: TopLevelDefinitions
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: false
 BinPackArguments: true
