@@ -377,13 +377,13 @@ struct comp_unit_head
 
   enum dwarf_unit_type unit_type;
 
-  /* Offset to the first byte of this compilation unit header in the
-     .debug_info section, for resolving relative reference dies.  */
-  sect_offset sect_off;
-
   /* Offset to first die in this cu from the start of the cu.
      This will be the first byte following the compilation unit header.  */
   cu_offset first_die_cu_offset;
+
+  /* Offset to the first byte of this compilation unit header in the
+     .debug_info section, for resolving relative reference dies.  */
+  sect_offset sect_off;
 
   /* 64-bit signature of this type unit - it is valid only for
      UNIT_TYPE DW_UT_type.  */
