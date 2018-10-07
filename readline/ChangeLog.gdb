@@ -1,5 +1,9 @@
 2018-10-07  Tom Tromey  <tom@tromey.com>
 
+	* emacs_keymap.c: Remove gdb workaround.
+
+2018-10-07  Tom Tromey  <tom@tromey.com>
+
 	* complete.c (get_y_or_n): Remove gdb workaround.
 
 2018-10-07  Tom Tromey  <tom@tromey.com>
