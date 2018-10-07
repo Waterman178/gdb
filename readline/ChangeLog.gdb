@@ -1,5 +1,9 @@
 2018-10-07  Tom Tromey  <tom@tromey.com>
 
+	* complete.c (get_y_or_n): Remove gdb workaround.
+
+2018-10-07  Tom Tromey  <tom@tromey.com>
+
 	* Imported readline 7.0 patch 5.
 
 2017-05-19  Eli Zaretskii  <eliz@gnu.org>
