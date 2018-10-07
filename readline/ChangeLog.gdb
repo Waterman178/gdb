@@ -1,5 +1,11 @@
 2018-10-07  Tom Tromey  <tom@tromey.com>
 
+	* Makefile.in (xfree.o): Don't depend on readline.h.
+	* xfree.c (xfree): Remove gdb workaround.
+	* xmalloc.h (xfree): Remove #define.
+
+2018-10-07  Tom Tromey  <tom@tromey.com>
+
 	* emacs_keymap.c: Remove gdb workaround.
 
 2018-10-07  Tom Tromey  <tom@tromey.com>
