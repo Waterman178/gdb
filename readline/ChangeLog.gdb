@@ -1,3 +1,7 @@
+2018-10-07  Tom Tromey  <tom@tromey.com>
+
+	* Imported readline 7.0 patch 5.
+
 2017-05-19  Eli Zaretskii  <eliz@gnu.org>
 
 	* input.c [_WIN32]: Include <conio.h> to avoid compiler warning on
