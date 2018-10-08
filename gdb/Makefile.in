@@ -1017,6 +1017,7 @@ COMMON_SFILES = \
 	gdb-dlfcn.c \
 	gdb_obstack.c \
 	gdb_regex.c \
+	gdb_thread.c \
 	gdb_usleep.c \
 	gdbarch.c \
 	gdbarch-selftests.c \
@@ -1246,6 +1247,7 @@ HFILES_NO_SRCDIR = \
 	gdb_regex.h \
 	gdb_select.h \
 	gdb-stabs.h \
+	gdb_thread.h \
 	gdb_usleep.h \
 	gdb_vfork.h \
 	gdb_wchar.h \
