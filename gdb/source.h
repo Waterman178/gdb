@@ -125,4 +125,7 @@ extern void clear_current_source_symtab_and_line (void);
 
 /* Add a source path substitution rule.  */
 extern void add_substitute_path_rule (char *, char *);
+
+extern bool get_line_charpos (struct symtab *s, unsigned line, off_t *result);
+
 #endif

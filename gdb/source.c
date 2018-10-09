@@ -49,10 +49,6 @@
 #define OPEN_MODE (O_RDONLY | O_BINARY)
 #define FDOPEN_MODE FOPEN_RB
 
-/* Prototypes for local functions.  */
-
-static int get_filename_and_charpos (struct symtab *, char **);
-
 /* Path of directories to search for source files.
    Same format as the PATH environment variable's value.  */
 
@@ -133,6 +129,134 @@ static int first_line_listed;
 
 static struct symtab *last_source_visited = NULL;
 static int last_source_error = 0;
+
+
+
+class source_cache
+{
+public:
+
+  source_cache ();
+
+  void clear ()
+  {
+    m_line_map.clear ();
+  }
+
+  bool get_line_charpos (const char *fullname, int desc, unsigned line,
+			 int *result);
+
+private:
+
+  void find_source_lines (const std::string &key, int desc);
+
+  // Map from source file name to line start positions.
+  std::map<std::string, std::vector<int>> m_line_map;
+};
+
+/* Create and initialize the table S->line_charpos that records
+   the positions of the lines in the source file, which is assumed
+   to be open on descriptor DESC.
+   All set S->nlines to the number of such lines.  */
+
+void
+find_source_lines (struct symtab *s, int desc)
+{
+  struct stat st;
+  char *p, *end;
+  long mtime = 0;
+  int size;
+
+  gdb_assert (s);
+  line_charpos = XNEWVEC (int, lines_allocated);
+  if (fstat (desc, &st) < 0)
+    perror_with_name (symtab_to_filename_for_display (s));
+
+  if (SYMTAB_OBJFILE (s) != NULL && SYMTAB_OBJFILE (s)->obfd != NULL)
+    mtime = SYMTAB_OBJFILE (s)->mtime;
+  else if (exec_bfd)
+    mtime = exec_bfd_mtime;
+
+  if (mtime && mtime < st.st_mtime)
+    warning (_("Source file is more recent than executable."));
+
+  {
+    /* st_size might be a large type, but we only support source files whose 
+       size fits in an int.  */
+    size = (int) st.st_size;
+
+    /* Use the heap, not the stack, because this may be pretty large,
+       and we may run into various kinds of limits on stack size.  */
+    gdb::def_vector<char> data (size);
+
+    /* Reassign `size' to result of read for systems where \r\n -> \n.  */
+    size = myread (desc, data.data (), size);
+    if (size < 0)
+      perror_with_name (symtab_to_filename_for_display (s));
+    end = data.data () + size;
+    p = &data[0];
+    line_charpos[0] = 0;
+    nlines = 1;
+    while (p != end)
+      {
+	if (*p++ == '\n'
+	/* A newline at the end does not start a new line.  */
+	    && p != end)
+	  {
+	    if (nlines == lines_allocated)
+	      {
+		lines_allocated *= 2;
+		line_charpos =
+		  (int *) xrealloc ((char *) line_charpos,
+				    sizeof (int) * lines_allocated);
+	      }
+	    line_charpos[nlines++] = p - data.data ();
+	  }
+      }
+  }
+
+  s->nlines = nlines;
+  s->line_charpos =
+    (int *) xrealloc ((char *) line_charpos, nlines * sizeof (int));
+
+}
+
+bool
+source_cache::get_line_charpos (const char *fullname, int desc, int line,
+				int *result)
+{
+  gdb_assert (fullname != nullptr);
+  gdb_assert (desc >= 0);
+  gdb_assert (result != nullptr);
+
+  std::string key = fullname;
+  auto iter = m_line_map.find (key);
+  if (iter == m_line_map.end ())
+    {
+      find_source_lines (key, desc);
+      iter = m_line_map.find (key);
+      gdb_assert (iter != m_line_map.end ());
+    }
+
+  --line;
+  if (line < 0 || line > iter->second.size ())
+    return false;
+
+  *result = iter->second[line];
+  return true;
+}
+
+static source_cache source_cache;
+
+bool
+get_line_charpos (struct symtab *s, int desc, int line, int *result)
+{
+  gdb_assert (s->fullname != nullptr);
+  gdb_assert (desc >= 0);
+  gdb_assert (result != nullptr);
+  return source_cache.get_line_charpos (s->fullname, desc, line, result);
+}
+
 
 /* Return the first line listed by print_source_lines.
    Used by command interpreters to request listing from
@@ -365,11 +489,6 @@ forget_cached_source_info_for_objfile (struct objfile *objfile)
 
   ALL_OBJFILE_FILETABS (objfile, cu, s)
     {
-      if (s->line_charpos != NULL)
-	{
-	  xfree (s->line_charpos);
-	  s->line_charpos = NULL;
-	}
       if (s->fullname != NULL)
 	{
 	  xfree (s->fullname);
@@ -397,6 +516,7 @@ forget_cached_source_info (void)
       forget_cached_source_info_for_objfile (objfile);
     }
 
+  source_cache.clear ();
   last_source_visited = NULL;
 }
 
@@ -1134,102 +1254,24 @@ symtab_to_filename_for_display (struct symtab *symtab)
     internal_error (__FILE__, __LINE__, _("invalid filename_display_string"));
 }
 
-/* Create and initialize the table S->line_charpos that records
-   the positions of the lines in the source file, which is assumed
-   to be open on descriptor DESC.
-   All set S->nlines to the number of such lines.  */
-
-void
-find_source_lines (struct symtab *s, int desc)
-{
-  struct stat st;
-  char *p, *end;
-  int nlines = 0;
-  int lines_allocated = 1000;
-  int *line_charpos;
-  long mtime = 0;
-  int size;
-
-  gdb_assert (s);
-  line_charpos = XNEWVEC (int, lines_allocated);
-  if (fstat (desc, &st) < 0)
-    perror_with_name (symtab_to_filename_for_display (s));
-
-  if (SYMTAB_OBJFILE (s) != NULL && SYMTAB_OBJFILE (s)->obfd != NULL)
-    mtime = SYMTAB_OBJFILE (s)->mtime;
-  else if (exec_bfd)
-    mtime = exec_bfd_mtime;
-
-  if (mtime && mtime < st.st_mtime)
-    warning (_("Source file is more recent than executable."));
-
-  {
-    /* st_size might be a large type, but we only support source files whose 
-       size fits in an int.  */
-    size = (int) st.st_size;
-
-    /* Use the heap, not the stack, because this may be pretty large,
-       and we may run into various kinds of limits on stack size.  */
-    gdb::def_vector<char> data (size);
-
-    /* Reassign `size' to result of read for systems where \r\n -> \n.  */
-    size = myread (desc, data.data (), size);
-    if (size < 0)
-      perror_with_name (symtab_to_filename_for_display (s));
-    end = data.data () + size;
-    p = &data[0];
-    line_charpos[0] = 0;
-    nlines = 1;
-    while (p != end)
-      {
-	if (*p++ == '\n'
-	/* A newline at the end does not start a new line.  */
-	    && p != end)
-	  {
-	    if (nlines == lines_allocated)
-	      {
-		lines_allocated *= 2;
-		line_charpos =
-		  (int *) xrealloc ((char *) line_charpos,
-				    sizeof (int) * lines_allocated);
-	      }
-	    line_charpos[nlines++] = p - data.data ();
-	  }
-      }
-  }
-
-  s->nlines = nlines;
-  s->line_charpos =
-    (int *) xrealloc ((char *) line_charpos, nlines * sizeof (int));
-
-}
-
-
-
 /* Get full pathname and line number positions for a symtab.
-   Return nonzero if line numbers may have changed.
    Set *FULLNAME to actual name of the file as found by `openp',
    or to 0 if the file is not found.  */
 
-static int
+static void
 get_filename_and_charpos (struct symtab *s, char **fullname)
 {
-  int linenums_changed = 0;
-
   scoped_fd desc (open_source_file (s));
   if (desc.get () < 0)
     {
       if (fullname)
 	*fullname = NULL;
-      return 0;
+      return;
     }
   if (fullname)
     *fullname = s->fullname;
   if (s->line_charpos == 0)
-    linenums_changed = 1;
-  if (linenums_changed)
     find_source_lines (s, desc.get ());
-  return linenums_changed;
 }
 
 /* Print text describing the full name of the source file S
