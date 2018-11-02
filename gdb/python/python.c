@@ -1512,7 +1512,8 @@ finalize_python (void *ignore)
 
   (void) PyGILState_Ensure ();
   python_gdbarch = target_gdbarch ();
-  python_language = current_language;
+  /* blah */
+  python_language = &c_language_defn;
 
   Py_Finalize ();
 
