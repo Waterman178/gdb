@@ -114,9 +114,9 @@ require_partial_symbols (struct objfile *objfile, int verbose)
 
       if (objfile->sf->sym_read_psymbols)
 	{
-	  if (verbose)
-	    printf_filtered (_("Reading symbols from %s...\n"),
-			     objfile_name (objfile));
+	  /* if (verbose) */
+	  /*   printf_filtered (_("Reading symbols from %s...\n"), */
+	  /* 		     objfile_name (objfile)); */
 	  (*objfile->sf->sym_read_psymbols) (objfile);
 
 	  /* Partial symbols list are not expected to changed after this
@@ -124,9 +124,9 @@ require_partial_symbols (struct objfile *objfile, int verbose)
 	  objfile->partial_symtabs->global_psymbols.shrink_to_fit ();
 	  objfile->partial_symtabs->static_psymbols.shrink_to_fit ();
 
-	  if (verbose && !objfile_has_symbols (objfile))
-	    printf_filtered (_("(No debugging symbols found in %s)\n"),
-			     objfile_name (objfile));
+	  /* if (verbose && !objfile_has_symbols (objfile)) */
+	  /*   printf_filtered (_("(No debugging symbols found in %s)\n"), */
+	  /* 		     objfile_name (objfile)); */
 	}
     }
 
@@ -340,6 +340,7 @@ find_pc_sect_psymtab (struct objfile *objfile, CORE_ADDR pc,
   /* Try just the PSYMTABS_ADDRMAP mapping first as it has better granularity
      than the later used TEXTLOW/TEXTHIGH one.  */
 
+  require_partial_symbols (objfile, 0);
   if (objfile->partial_symtabs->psymtabs_addrmap != NULL)
     {
       pst = ((struct partial_symtab *)
