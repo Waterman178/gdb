@@ -2540,25 +2540,24 @@ struct bound_minimal_symbol
 hppa_lookup_stub_minimal_symbol (const char *name,
                                  enum unwind_stub_types stub_type)
 {
-  struct objfile *objfile;
-  struct minimal_symbol *msym;
   struct bound_minimal_symbol result = { NULL, NULL };
 
-  ALL_MSYMBOLS (objfile, msym)
-    {
-      if (strcmp (MSYMBOL_LINKAGE_NAME (msym), name) == 0)
-        {
-          struct unwind_table_entry *u;
+  for (objfile *objfile : all_objfiles (current_program_space))
+    for (minimal_symbol *msym : objfile_msymbols (objfile))
+      {
+	if (strcmp (MSYMBOL_LINKAGE_NAME (msym), name) == 0)
+	  {
+	    struct unwind_table_entry *u;
 
-          u = find_unwind_entry (MSYMBOL_VALUE (msym));
-          if (u != NULL && u->stub_unwind.stub_type == stub_type)
-	    {
-	      result.objfile = objfile;
-	      result.minsym = msym;
-	      return result;
-	    }
-        }
-    }
+	    u = find_unwind_entry (MSYMBOL_VALUE (msym));
+	    if (u != NULL && u->stub_unwind.stub_type == stub_type)
+	      {
+		result.objfile = objfile;
+		result.minsym = msym;
+		return result;
+	      }
+	  }
+      }
 
   return result;
 }
