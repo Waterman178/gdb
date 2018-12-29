@@ -64,13 +64,12 @@ fi
 # ari.*.bug: <FILE>:<LINE>: <CATEGORY>: <BUG>: <DOC>
 # ari.*.idx: <BUG>:<FILE>:<CATEGORY>
 # ari.*.doc: <BUG>:<COUNT>:<CATEGORY>:<DOC>
-# Where ``*'' is {source,warning,indent,doschk}
+# Where ``*'' is {source,warning,doschk}
 
 unpack_source_p=true
 delete_source_p=true
 
 check_warning_p=false # broken
-check_indent_p=false # too slow, too many fail
 check_source_p=true
 check_doschk_p=true
 check_werror_p=true
@@ -171,23 +170,6 @@ END {
   }
 }
 ' > ${root}/ari.warning.bug
-fi
-
-# THIS HAS SUFFERED BIT ROT
-if ${check_indent_p} && test -d "${srcdir}"
-then
-    printf "Analizing file indentation:" 1>&2
-    ( cd "${srcdir}" && /bin/sh ${aridir}/gdb_find.sh ${project} | while read f
-    do
-	if /bin/sh ${aridir}/gdb_indent.sh < ${f} 2>/dev/null | cmp -s - ${f}
-	then
-	    :
-	else
-	    # ari.*.bug: <FILE>:<LINE>: <CATEGORY>: <BUG>: <DOC>
-	    echo "${f}:0: info: indent: Indentation does not match GNU indent output"
-	fi
-    done ) > ${wwwdir}/ari.indent.bug
-    echo ""
 fi
 
 if ${check_source_p} && test -d "${srcdir}"
