@@ -1,3 +1,12 @@
+2019-01-03  Tom Tromey  <tom@tromey.com>
+
+	* ppc-linux-nat.c (thread_points_p): Remove typedef.  Don't
+	declare VEC.
+	(ppc_threads): Now static, and a std::vector.
+	(hwdebug_find_thread_points_by_tid)
+	(ppc_linux_nat_target::low_new_thread, ppc_linux_thread_exit):
+	Update.
+
 2019-01-02  Tom Tromey  <tom@tromey.com>
 
 	* xml-tdesc.c (xml_cache): Hold a target_desc_up.
