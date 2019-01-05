@@ -9236,7 +9236,6 @@ create_breakpoint (struct gdbarch *gdbarch,
 		   unsigned flags)
 {
   struct linespec_result canonical;
-  struct cleanup *bkpt_chain = NULL;
   int pending = 0;
   int task = 0;
   int prev_bkpt_count = breakpoint_count;
@@ -9285,12 +9284,6 @@ create_breakpoint (struct gdbarch *gdbarch,
 
   if (!pending && canonical.lsals.empty ())
     return 0;
-
-  /* ----------------------------- SNIP -----------------------------
-     Anything added to the cleanup chain beyond this point is assumed
-     to be part of a breakpoint.  If the breakpoint create succeeds
-     then the memory is not reclaimed.  */
-  bkpt_chain = make_cleanup (null_cleanup, 0);
 
   /* Resolve all line numbers to PC's and verify that the addresses
      are ok for the target.  */
@@ -9389,10 +9382,6 @@ create_breakpoint (struct gdbarch *gdbarch,
 		 "\"delete\" command to delete unwanted breakpoints."));
       prev_breakpoint_count = prev_bkpt_count;
     }
-
-  /* That's it.  Discard the cleanups for data inserted into the
-     breakpoint.  */
-  discard_cleanups (bkpt_chain);
 
   /* error call may happen here - have BKPT_CHAIN already discarded.  */
   update_global_location_list (UGLL_MAY_INSERT);

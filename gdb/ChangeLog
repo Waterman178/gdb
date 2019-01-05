@@ -1,5 +1,9 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* breakpoint.c (create_breakpoint): Remove cleanup.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* common/cleanup-function.h: New file.
 	* breakpoint.c (until_break_command): Use
 	cleanup_function.
