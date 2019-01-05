@@ -1,5 +1,11 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* infrun.c (reinstall_readline_callback_handler_cleanup): Remove
+	argument.
+	(fetch_inferior_event): Use cleanup_function.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* infrun.c (disable_thread_events): Remove argument.
 	(stop_all_threads): Use cleanup_function.
 
