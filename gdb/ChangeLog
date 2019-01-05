@@ -1,5 +1,14 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* common/cleanup-function.h: New file.
+	* breakpoint.c (until_break_command): Use
+	cleanup_function.
+	* infcmd.c (delete_longjmp_breakpoint_cleanup): Remove.
+	(until_next_command): Use cleanup_function.
+	* inferior.h (delete_longjmp_breakpoint_cleanup): Don't declare.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* contrib/cleanup_check.py: Remove.
 	* contrib/gcc-with-excheck: Remove.
 	* contrib/exsummary.py: Remove.

@@ -198,8 +198,6 @@ extern void continue_1 (int all_threads);
 
 extern void interrupt_target_1 (int all_threads);
 
-extern void delete_longjmp_breakpoint_cleanup (void *arg);
-
 extern void detach_command (const char *, int);
 
 extern void notice_new_inferior (struct thread_info *, int, int);
