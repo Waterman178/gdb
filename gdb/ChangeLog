@@ -1,5 +1,10 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* infrun.c (wait_for_inferior): Use cleanup_function.
+	(delete_just_stopped_threads_infrun_breakpoints_cleanup): Remove.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* symfile.c (syms_from_objfile_1): Use cleanup_function.
 	(clear_symtab_users_cleanup): Remove.
 	(reread_symbols): Use cleanup_function.

@@ -3248,14 +3248,6 @@ delete_just_stopped_threads_single_step_breakpoints (void)
   for_each_just_stopped_thread (delete_single_step_breakpoints);
 }
 
-/* A cleanup wrapper.  */
-
-static void
-delete_just_stopped_threads_infrun_breakpoints_cleanup (void *arg)
-{
-  delete_just_stopped_threads_infrun_breakpoints ();
-}
-
 /* See infrun.h.  */
 
 void
@@ -3539,15 +3531,12 @@ prepare_for_detach (void)
 void
 wait_for_inferior (void)
 {
-  struct cleanup *old_cleanups;
-
   if (debug_infrun)
     fprintf_unfiltered
       (gdb_stdlog, "infrun: wait_for_inferior ()\n");
 
-  old_cleanups
-    = make_cleanup (delete_just_stopped_threads_infrun_breakpoints_cleanup,
-		    NULL);
+  cleanup_function defer_delete_threads
+    (delete_just_stopped_threads_infrun_breakpoints);
 
   /* If an error happens while handling the event, propagate GDB's
      knowledge of the executing state to the frontend/user running
@@ -3584,8 +3573,6 @@ wait_for_inferior (void)
 
   /* No error, don't finish the state yet.  */
   finish_state.release ();
-
-  do_cleanups (old_cleanups);
 }
 
 /* Cleanup that reinstalls the readline callback handler, if the
