@@ -1,5 +1,11 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* linux-nat.c (cleanup_target_stop): Remove.
+	(linux_nat_target::static_tracepoint_markers_by_strid): Use
+	cleanup_function.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* infcall.c (cleanup_delete_std_terminate_breakpoint): Remove.
 	(call_function_by_hand_dummy): Use cleanup_function.
 
