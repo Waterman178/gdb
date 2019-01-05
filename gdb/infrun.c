@@ -67,6 +67,7 @@
 #include "progspace-and-thread.h"
 #include "common/gdb_optional.h"
 #include "arch-utils.h"
+#include "common/cleanup-function.h"
 
 /* Prototypes for local functions */
 
@@ -3758,9 +3759,9 @@ fetch_inferior_event (void *client_data)
 
   /* Get executed before make_cleanup_restore_current_thread above to apply
      still for the thread which has thrown the exception.  */
-  struct cleanup *ts_old_chain = make_bpstat_clear_actions_cleanup ();
-
-  make_cleanup (delete_just_stopped_threads_infrun_breakpoints_cleanup, NULL);
+  cleanup_function defer_bpstat_clear (bpstat_clear_actions);
+  cleanup_function defer_delete_threads
+    (delete_just_stopped_threads_infrun_breakpoints);
 
   /* Now figure out what to do with the result of the result.  */
   handle_inferior_event (ecs);
@@ -3813,7 +3814,8 @@ fetch_inferior_event (void *client_data)
 	}
     }
 
-  discard_cleanups (ts_old_chain);
+  defer_delete_threads.reset ();
+  defer_bpstat_clear.reset ();
 
   /* No error, don't finish the thread states yet.  */
   finish_state.release ();
