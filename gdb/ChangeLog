@@ -1,5 +1,10 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* infrun.c (disable_thread_events): Remove argument.
+	(stop_all_threads): Use cleanup_function.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* infrun.c (wait_for_inferior): Use cleanup_function.
 	(delete_just_stopped_threads_infrun_breakpoints_cleanup): Remove.
 

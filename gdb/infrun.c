@@ -4276,7 +4276,7 @@ save_waitstatus (struct thread_info *tp, struct target_waitstatus *ws)
 /* A cleanup that disables thread create/exit events.  */
 
 static void
-disable_thread_events (void *arg)
+disable_thread_events ()
 {
   target_thread_events (0);
 }
@@ -4289,7 +4289,6 @@ stop_all_threads (void)
   /* We may need multiple passes to discover all threads.  */
   int pass;
   int iterations = 0;
-  struct cleanup *old_chain;
 
   gdb_assert (target_is_non_stop_p ());
 
@@ -4299,7 +4298,7 @@ stop_all_threads (void)
   scoped_restore_current_thread restore_thread;
 
   target_thread_events (1);
-  old_chain = make_cleanup (disable_thread_events, NULL);
+  cleanup_function defer_disable_events (disable_thread_events);
 
   /* Request threads to stop, and then wait for the stops.  Because
      threads we already know about can spawn more threads while we're
@@ -4483,8 +4482,6 @@ stop_all_threads (void)
 	    }
 	}
     }
-
-  do_cleanups (old_chain);
 
   if (debug_infrun)
     fprintf_unfiltered (gdb_stdlog, "infrun: stop_all_threads done\n");
