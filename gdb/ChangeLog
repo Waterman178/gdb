@@ -1,5 +1,10 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* infcall.c (cleanup_delete_std_terminate_breakpoint): Remove.
+	(call_function_by_hand_dummy): Use cleanup_function.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* infrun.c (fetch_inferior_event): Use cleanup_function.
 	* utils.h (make_bpstat_clear_actions_cleanup): Don't declare.
 	* top.c (execute_command): Use cleanup_function.
