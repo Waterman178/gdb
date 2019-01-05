@@ -1,5 +1,11 @@
 2019-01-05  Tom Tromey  <tom@tromey.com>
 
+	* symfile.c (syms_from_objfile_1): Use cleanup_function.
+	(clear_symtab_users_cleanup): Remove.
+	(reread_symbols): Use cleanup_function.
+
+2019-01-05  Tom Tromey  <tom@tromey.com>
+
 	* linux-nat.c (cleanup_target_stop): Remove.
 	(linux_nat_target::static_tracepoint_markers_by_strid): Use
 	cleanup_function.
